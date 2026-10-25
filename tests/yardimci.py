@@ -41,6 +41,8 @@ class SahteYZ(IYapayZekaServisi):
         return "sahte:test"
 
     def gommeUret(self, metin):
+        if self.mod == "gomme_hata":
+            raise IsKuraliIhlaliException("IK-19", "test gomme hatası")
         return yerel_gomme(metin)
 
     def yanitUret(self, soru_metni, parcalar, baglam):
