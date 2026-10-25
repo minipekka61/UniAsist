@@ -28,6 +28,7 @@ class YanitUretmeServisi:
                 bolum_bilgisi=s.parca.bolumBilgisiGetir(),
                 kaynak_adi=s.parca.kaynak_adi,
                 benzerlik_skoru=s.skor,
+                kategori=s.parca.kategori,
             )
             for s in sonuclar
             if s.parca.kaynak_adi

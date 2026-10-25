@@ -1,4 +1,4 @@
-import sqlite3
+﻿import sqlite3
 from datetime import datetime
 from pathlib import Path
 
@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS icerik_parcasi (
     gomme_saglayici TEXT NOT NULL,
     kaynak_adi TEXT,
     bolum_bilgisi TEXT,
+    kategori TEXT,
     aktif INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS yanitlanamayan_soru (

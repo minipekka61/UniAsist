@@ -109,6 +109,7 @@ class BilgiTabaniServisi:
             sira=1,
             metin=girdi.icerikMetniGetir(),
             kaynak_adi="SSS",
+            kategori=girdi.kategori,
         )
         parca.gomme = self.belge_isleme_servisi._gommeUret(parca.metin)
         parca.gomme_saglayici = self.belge_isleme_servisi.yapay_zeka_servisi.saglayici_etiketi

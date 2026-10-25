@@ -129,11 +129,12 @@ class Mesaj:
 
 class KaynakReferansi:
     def __init__(self, bolum_bilgisi="", kaynak_adi="", benzerlik_skoru=0.0,
-                 kaynak_id=None):
+                 kaynak_id=None, kategori=""):
         self.kaynak_id = kaynak_id
         self.bolum_bilgisi = bolum_bilgisi
         self.kaynak_adi = kaynak_adi
         self.benzerlik_skoru = benzerlik_skoru
+        self.kategori = kategori
 
     def kaynakMevcutMu(self):
         return self.kaynak_id is not None
@@ -251,7 +252,7 @@ class SSSGirdisi(BilgiKaynagi):
 class IcerikParcasi:
     def __init__(self, kaynak_id, sira, metin, gomme=None, surum_no=1,
                  gomme_saglayici="", kaynak_adi="", bolum_bilgisi=None,
-                 aktif=True, parca_id=None):
+                 kategori="", aktif=True, parca_id=None):
         self.parca_id = parca_id
         self.kaynak_id = kaynak_id
         self.surum_no = surum_no
@@ -260,6 +261,7 @@ class IcerikParcasi:
         self.gomme = gomme
         self.gomme_saglayici = gomme_saglayici
         self.kaynak_adi = kaynak_adi
+        self.kategori = kategori
         self._bolum_bilgisi = bolum_bilgisi
         self.aktif = aktif
 

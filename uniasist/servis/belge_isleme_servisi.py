@@ -65,6 +65,7 @@ class BelgeIslemeServisi:
             parca.kaynak_id = belge.kaynak_id
             parca.surum_no = belge.surum_no
             parca.kaynak_adi = belge.kaynakAdiGetir()
+            parca.kategori = belge.kategori
             parca.gomme_saglayici = self.yapay_zeka_servisi.saglayici_etiketi
             parca._bolum_bilgisi = f"{belge.baslik} — parça {parca.sira}"
             parca.gomme = self._gommeUret(parca.metin)
