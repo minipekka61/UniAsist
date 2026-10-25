@@ -33,8 +33,8 @@ class SahteYZ(IYapayZekaServisi):
     def __init__(self, mod="yanit"):
         self.mod = mod
         self.cagri_sayisi = 0
-        self.gorulen_baglam = None
-        self.gorulen_parcalar = None
+        self.gorunen_baglam = None
+        self.gorunen_parcalar = None
 
     @property
     def saglayici_etiketi(self):
@@ -47,8 +47,8 @@ class SahteYZ(IYapayZekaServisi):
 
     def yanitUret(self, soru_metni, parcalar, baglam):
         self.cagri_sayisi += 1
-        self.gorulen_baglam = baglam
-        self.gorulen_parcalar = parcalar
+        self.gorunen_baglam = baglam
+        self.gorunen_parcalar = parcalar
         if self.mod == "hata":
             raise IsKuraliIhlaliException("IK-19", "test hatası")
         if self.mod == "bilgi_yok":
@@ -64,3 +64,15 @@ class SahteYZ(IYapayZekaServisi):
         tam = self.yanitUret(soru_metni, parcalar, baglam)
         for i in range(0, len(tam), 25):
             yield tam[i : i + 25]
+
+
+class SahteAramaDizini:
+    def __init__(self, sonuclar=None, sorgu_gommesi=None):
+        self.sonuclar = sonuclar or []
+        self.sorgu_gommesi = sorgu_gommesi
+        self.gorulen_adet = None
+
+    def enYakinParcalar(self, sorgu_gommesi, adet):
+        self.gorulen_adet = adet
+        return self.sonuclar[:adet]
+
