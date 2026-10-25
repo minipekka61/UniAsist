@@ -5,6 +5,7 @@ API_BASE = os.environ.get("UNIASIST_API_BASE", "https://api.openai.com/v1")
 MODEL = os.environ.get("UNIASIST_MODEL", "gpt-4o-mini")
 EMBEDDING_MODEL = os.environ.get("UNIASIST_EMBEDDING_MODEL", "text-embedding-3-small")
 VERITABANI_YOLU = os.environ.get("UNIASIST_DB", "data/uniasist.db")
+SECRET_KEY = os.environ.get("UNIASIST_SECRET_KEY", "uniasist-gelistirme-anahtari")
 
 UNIVERSITE_ALAN_ADI = "universite.edu.tr"
 BENZERLIK_ESIGI = 0.60

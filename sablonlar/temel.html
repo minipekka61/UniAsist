@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block baslik %}UniAsist{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stil.css') }}">
+</head>
+<body>
+<header class="ust-cubuk">
+    <a class="marka" href="/">UniAsist</a>
+    {% if yerel_mod %}<span class="rozet rozet-yerel" title="API anahtarı tanımlı değil; yanıtlar yerel arama modunda üretiliyor">Yerel mod</span>{% endif %}
+    <nav class="menu">
+        {% if aktif_kullanici %}
+            <span class="kullanici">{{ aktif_kullanici.ad_soyad }} · {{ aktif_kullanici.rol.value }}</span>
+            <a href="/sifre-degistir">Şifre Değiştir</a>
+            <a href="/cikis">Çıkış</a>
+        {% else %}
+            <a href="/giris">Giriş</a>
+            <a href="/kayit">Kayıt Ol</a>
+        {% endif %}
+    </nav>
+</header>
+<main class="icerik">
+    {% if hata %}<div class="mesaj mesaj-hata">{{ hata }}</div>{% endif %}
+    {% if bilgi %}<div class="mesaj mesaj-bilgi">{{ bilgi }}</div>{% endif %}
+    {% block icerik %}{% endblock %}
+</main>
+<footer class="alt-cubuk">
+    UniAsist — Üniversite Öğrenci Destek Asistanı · Yanıtlar bilgilendirme amaçlıdır.
+</footer>
+</body>
+</html>

@@ -1,0 +1,24 @@
+﻿{% extends "temel.html" %}
+{% block baslik %}Kayıt Ol — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart">
+    <h1>Kayıt Ol</h1>
+    <form method="post">
+        <label>Ad Soyad
+            <input type="text" name="ad_soyad" required>
+        </label>
+        <label>Üniversite E-postası
+            <input type="email" name="eposta" required placeholder="ad@universite.edu.tr">
+        </label>
+        <label>Şifre
+            <input type="password" name="sifre" required minlength="8">
+        </label>
+        <label>Şifre (Tekrar)
+            <input type="password" name="sifre_tekrar" required minlength="8">
+        </label>
+        <p class="ipucu">Şifre en az 8 karakter olmalı, en az bir harf ve bir rakam içermelidir.</p>
+        <button type="submit">Kayıt Ol</button>
+    </form>
+    <p>Zaten hesabınız var mı? <a href="/giris">Giriş yapın</a>.</p>
+</div>
+{% endblock %}

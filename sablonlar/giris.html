@@ -1,0 +1,17 @@
+﻿{% extends "temel.html" %}
+{% block baslik %}Giriş — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart">
+    <h1>Giriş Yap</h1>
+    <form method="post">
+        <label>E-posta
+            <input type="email" name="eposta" required placeholder="ad@universite.edu.tr">
+        </label>
+        <label>Şifre
+            <input type="password" name="sifre" required>
+        </label>
+        <button type="submit">Giriş</button>
+    </form>
+    <p>Hesabınız yok mu? <a href="/kayit">Kayıt olun</a>.</p>
+</div>
+{% endblock %}

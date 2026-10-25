@@ -1,0 +1,31 @@
+﻿* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", Arial, sans-serif; background: #f2f4f8; color: #1f2937; min-height: 100vh; display: flex; flex-direction: column; }
+.ust-cubuk { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: #1e3a8a; color: #fff; flex-wrap: wrap; }
+.marka { font-weight: bold; font-size: 1.2rem; color: #fff; text-decoration: none; }
+.menu { margin-left: auto; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.menu a { color: #dbeafe; text-decoration: none; }
+.menu a:hover { text-decoration: underline; }
+.kullanici { color: #e0e7ff; font-size: .9rem; }
+.rozet { font-size: .75rem; padding: 2px 8px; border-radius: 10px; }
+.rozet-yerel { background: #b45309; color: #fff; }
+.icerik { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+.alt-cubuk { text-align: center; font-size: .8rem; color: #6b7280; padding: 12px; }
+.kart { background: #fff; border-radius: 10px; padding: 24px; max-width: 480px; margin: 32px auto; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.kart h1 { font-size: 1.3rem; margin-bottom: 16px; }
+form { display: flex; flex-direction: column; gap: 12px; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: #374151; }
+input, textarea, select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+button, .buton { background: #1e3a8a; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; font-size: 1rem; cursor: pointer; text-decoration: none; display: inline-block; }
+button:hover, .buton:hover { background: #1e40af; }
+.mesaj { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.mesaj-hata { background: #fee2e2; color: #991b1b; }
+.mesaj-bilgi { background: #dbeafe; color: #1e3a8a; }
+.ipucu { font-size: .8rem; color: #6b7280; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: .9rem; }
+th { background: #eef2ff; }
+@media (max-width: 600px) {
+    .ust-cubuk { padding: 8px 12px; }
+    .menu { width: 100%; margin-left: 0; }
+    .kart { padding: 16px; margin: 16px auto; }
+}
