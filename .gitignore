@@ -1,0 +1,5 @@
+.venv/
+data/
+veri/dosyalar/
+__pycache__/
+*.pyc
