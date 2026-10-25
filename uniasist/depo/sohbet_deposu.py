@@ -45,17 +45,16 @@ class SohbetDeposu:
                 mesaj.mesaj_id = imleç.lastrowid
                 mesaj.sohbet_id = sohbet.sohbet_id
                 for referans in mesaj.kaynaklar:
-                    if referans.kaynak_id is None:
-                        imleç = self.db.execute(
-                            "INSERT INTO kaynak_referansi (mesaj_id, bolum_bilgisi, kaynak_adi, benzerlik_skoru) VALUES (?,?,?,?)",
-                            (
-                                mesaj.mesaj_id,
-                                referans.bolum_bilgisi,
-                                referans.kaynak_adi,
-                                referans.benzerlik_skoru,
-                            ),
-                        )
-                        referans.kaynak_id = imleç.lastrowid
+                    self.db.execute(
+                        "INSERT INTO kaynak_referansi (mesaj_id, bolum_bilgisi, kaynak_adi, benzerlik_skoru, belge_kaynak_id) VALUES (?,?,?,?,?)",
+                        (
+                            mesaj.mesaj_id,
+                            referans.bolum_bilgisi,
+                            referans.kaynak_adi,
+                            referans.benzerlik_skoru,
+                            referans.kaynak_id,
+                        ),
+                    )
 
     def _mesaj_satirdan(self, satir):
         mesaj = Mesaj(
@@ -72,7 +71,7 @@ class SohbetDeposu:
         for r in ref_satirlar:
             mesaj.kaynakEkle(
                 KaynakReferansi(
-                    kaynak_id=r["kaynak_id"],
+                    kaynak_id=r["belge_kaynak_id"],
                     bolum_bilgisi=r["bolum_bilgisi"],
                     kaynak_adi=r["kaynak_adi"],
                     benzerlik_skoru=r["benzerlik_skoru"],

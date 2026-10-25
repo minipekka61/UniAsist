@@ -1,0 +1,50 @@
+{% extends "temel.html" %}
+{% block baslik %}Sohbet — UniAsist{% endblock %}
+{% block icerik %}
+<div class="sohbet-kapsul">
+    <div class="sohbet-ust">
+        <button id="yeni-sohbet" type="button">Yeni Sohbet</button>
+        {% if aktif_kullanici %}<a class="buton" href="/gecmis">Geçmiş</a>{% endif %}
+    </div>
+    <div id="mesajlar" class="mesajlar">
+        {% for m in mesajlar %}
+            <div class="mesaj {{ 'mesaj-kullanici' if m.gonderen.name == 'KULLANICI' else 'mesaj-sistem' }}">
+                <div class="balon">
+                    <div class="metin">{{ m.metin }}</div>
+                    {% if m.gonderen.name == 'SISTEM' and m.kaynaklariGetir() %}
+                        <div class="kaynaklar">
+                            <span class="kaynak-baslik">Kaynaklar:</span>
+                            {% for r in m.kaynaklariGetir() %}
+                                <a class="kaynak-cip" href="/kaynak/{{ r.kaynak_id }}?bolum={{ r.bolum_bilgisi | urlencode }}" target="_blank" rel="noopener">{{ r.kaynak_adi }} — {{ r.bolum_bilgisi }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if m.gonderen.name == 'SISTEM' %}
+                        <div class="uyari-kucuk">Bu yanıt bilgilendirme amaçlıdır; kesin bilgi için resmî belgeyi kontrol ediniz.</div>
+                    {% endif %}
+                    {% if m.gonderen.name == 'SISTEM' and m.mesaj_id and aktif_kullanici and not sadece_okuma %}
+                        <div class="geri-bildirim" data-mesaj-id="{{ m.mesaj_id }}">
+                            <button class="gb-buton gb-yararli" type="button">Yararlı</button>
+                            <button class="gb-buton gb-yararsiz" type="button">Yararsız</button>
+                            <div class="gb-aciklama-kutu gizli">
+                                <textarea class="gb-aciklama" maxlength="300" placeholder="İsteğe bağlı açıklama (en fazla 300 karakter)"></textarea>
+                                <button class="gb-gonder" type="button">Gönder</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="yaziyor" class="yaziyor gizli">UniAsist yazıyor…</div>
+    {% if not sadece_okuma %}
+    <form id="soru-formu" class="soru-formu">
+        <textarea id="soru" name="soru" maxlength="500" rows="2" placeholder="Sorunuzu yazın (en fazla 500 karakter)" required></textarea>
+        <button type="submit">Gönder</button>
+    </form>
+    <p class="ipucu">Lütfen öğrenci no, T.C. kimlik no gibi kişisel veri paylaşmayın.</p>
+    {% endif %}
+</div>
+<script>window.uniasistGirisli = {{ 'true' if aktif_kullanici else 'false' }};</script>
+<script src="{{ url_for('static', filename='sohbet.js') }}"></script>
+{% endblock %}

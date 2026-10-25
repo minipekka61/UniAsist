@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from flask import Flask, g, render_template
+from flask import Flask, g
 
 import config
 from uniasist.ekran.giris import giris_bp
+from uniasist.ekran.sohbet import sohbet_bp
 from uniasist.ekran.yardimcilar import oturum_yukle
 from uniasist.kurulum import kur
 
@@ -33,11 +34,8 @@ def uygulama_olustur(paket=None):
     def _oturum_yukle():
         oturum_yukle(paket)
 
-    @uygulama.route("/")
-    def ana_sayfa():
-        return render_template("anasayfa.html")
-
     uygulama.register_blueprint(giris_bp)
+    uygulama.register_blueprint(sohbet_bp)
 
     @uygulama.context_processor
     def _ortak():

@@ -1,0 +1,16 @@
+{% extends "temel.html" %}
+{% block baslik %}Kaynak — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart kart-genis">
+    {% if kaynak %}
+    <h1>{{ kaynak.baslik }}</h1>
+    <p class="ipucu">Kategori: {{ kaynak.kategori }} · Durum: {{ kaynak.durum.value }}</p>
+    {% if bolum %}<p class="bolum-vurgu">Yanıtın dayandığı bölüm: <strong>{{ bolum }}</strong></p>{% endif %}
+    <pre class="kaynak-metin">{{ kaynak.icerikMetniGetir() }}</pre>
+    {% else %}
+    <h1>Kaynak Bulunamadı</h1>
+    <p>Bu kaynak artık mevcut değil. Belge silinmiş veya pasif durumda olabilir.</p>
+    {% endif %}
+    <p><a href="/">Sohbete dön</a></p>
+</div>
+{% endblock %}

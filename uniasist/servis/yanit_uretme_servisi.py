@@ -29,6 +29,7 @@ class YanitUretmeServisi:
                 kaynak_adi=s.parca.kaynak_adi,
                 benzerlik_skoru=s.skor,
                 kategori=s.parca.kategori,
+                kaynak_id=s.parca.kaynak_id,
             )
             for s in sonuclar
             if s.parca.kaynak_adi

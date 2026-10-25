@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS kaynak_referansi (
     mesaj_id INTEGER NOT NULL,
     bolum_bilgisi TEXT NOT NULL,
     kaynak_adi TEXT NOT NULL,
-    benzerlik_skoru REAL NOT NULL
+    benzerlik_skoru REAL NOT NULL,
+    belge_kaynak_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS geri_bildirim (
     geri_bildirim_id INTEGER PRIMARY KEY AUTOINCREMENT,

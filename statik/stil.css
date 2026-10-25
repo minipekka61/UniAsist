@@ -29,3 +29,33 @@ th { background: #eef2ff; }
     .menu { width: 100%; margin-left: 0; }
     .kart { padding: 16px; margin: 16px auto; }
 }
+.sohbet-kapsul { display: flex; flex-direction: column; height: calc(100vh - 160px); min-height: 420px; background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; }
+.sohbet-ust { display: flex; gap: 8px; margin-bottom: 8px; }
+.mesajlar { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 6px; }
+.mesaj { display: flex; }
+.mesaj-kullanici { justify-content: flex-end; }
+.mesaj-sistem { justify-content: flex-start; }
+.balon { max-width: 78%; background: #e5edff; padding: 10px 14px; border-radius: 12px; }
+.mesaj-kullanici .balon { background: #1e3a8a; color: #fff; }
+.metin { white-space: pre-wrap; word-wrap: break-word; }
+.kaynaklar { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.kaynak-baslik { font-size: .75rem; color: #374151; }
+.kaynak-cip { font-size: .75rem; background: #eef2ff; color: #1e3a8a; border: 1px solid #c7d2fe; border-radius: 12px; padding: 2px 10px; text-decoration: none; }
+.kaynak-cip:hover { background: #dbeafe; }
+.uyari-kucuk { margin-top: 6px; font-size: .72rem; color: #6b7280; }
+.geri-bildirim { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.gb-buton, .gb-gonder { font-size: .75rem; padding: 3px 10px; border-radius: 12px; border: 1px solid #c7d2fe; background: #fff; color: #1e3a8a; cursor: pointer; }
+.gb-buton:hover, .gb-gonder:hover { background: #eef2ff; }
+.gb-aciklama-kutu { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.gb-aciklama { font-size: .8rem; padding: 6px; }
+.yaziyor { font-size: .8rem; color: #6b7280; padding: 6px; font-style: italic; }
+.soru-formu { display: flex; gap: 8px; margin-top: 8px; }
+.soru-formu textarea { flex: 1; resize: vertical; }
+.gizli { display: none !important; }
+.kart-genis { max-width: 900px; }
+.satir-ici { display: inline; }
+.buton-kucuk { font-size: .8rem; padding: 4px 10px; }
+.buton-tehlike { background: #b91c1c; }
+.buton-tehlike:hover { background: #991b1b; }
+.bolum-vurgu { background: #fef9c3; padding: 6px 10px; border-radius: 6px; }
+.kaynak-metin { white-space: pre-wrap; font-family: inherit; background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb; max-height: 60vh; overflow-y: auto; }
