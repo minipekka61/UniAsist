@@ -33,6 +33,27 @@ class KullanimRaporu:
     def tarihAraligiGecerliMi(self):
         return self.bitis >= self.baslangic
 
+    def csvOlustur(self):
+        def yuzde(oran):
+            return "%" + f"{oran * 100:.1f}".replace(".", ",")
+
+        satirlar = ["Metrik;Değer"]
+        satirlar.append(
+            "Rapor Dönemi;{} - {}".format(
+                self.baslangic.strftime("%d.%m.%Y"), self.bitis.strftime("%d.%m.%Y")
+            )
+        )
+        satirlar.append(f"Toplam Soru;{self.toplam_soru}")
+        satirlar.append(f"Yanıtlanamayan Soru Oranı;{yuzde(self.yanitlanamayan_orani)}")
+        satirlar.append(
+            f"Olumlu Geri Bildirim Oranı;{yuzde(self.olumlu_geri_bildirim_orani)}"
+        )
+        satirlar.append("")
+        satirlar.append("En Çok Sorulan Kategoriler;Adet")
+        for kategori, adet in self.en_cok_sorulan_kategoriler.items():
+            satirlar.append(f"{kategori};{adet}")
+        return "\n".join(satirlar) + "\n"
+
 
 class GeriBildirimOzeti:
     def __init__(self, soru, yanit, kaynaklar=None, aciklama="", tarih=None):
