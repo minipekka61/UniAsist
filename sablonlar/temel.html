@@ -16,6 +16,10 @@
             {% if aktif_kullanici.rol.value in ('PERSONEL', 'YONETICI') %}
                 <a href="/personel/belgeler">Bilgi Tabanı</a>
             {% endif %}
+            {% if aktif_kullanici.rol.value == 'YONETICI' %}
+                <a href="/yonetici/kullanicilar">Kullanıcılar</a>
+                <a href="/yonetici/rapor">Rapor</a>
+            {% endif %}
             <a href="/sifre-degistir">Şifre Değiştir</a>
             <a href="/cikis">Çıkış</a>
         {% else %}

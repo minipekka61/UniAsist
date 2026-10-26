@@ -64,3 +64,5 @@ th { background: #eef2ff; }
 .guncelleme-satiri td { border-top: none; padding-top: 0; }
 .guncelleme-satiri .satir-ici { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .filtre a.etkin { font-weight: 700; text-decoration: none; }
+.arama-formu { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.grafik { width: 100%; max-width: 700px; height: auto; }

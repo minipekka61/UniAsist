@@ -1,0 +1,49 @@
+{% extends "temel.html" %}
+{% block baslik %}Kullanım Raporu — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart kart-genis">
+    <h1>Kullanım Raporu</h1>
+    <form method="get" action="/yonetici/rapor" class="satir-ici arama-formu">
+        <label>Başlangıç <input type="date" name="baslangic" value="{{ rapor.baslangic | tarih('%Y-%m-%d') }}"></label>
+        <label>Bitiş <input type="date" name="bitis" value="{{ rapor.bitis | tarih('%Y-%m-%d') }}"></label>
+        <button type="submit" class="buton-kucuk">Raporla</button>
+        <a href="/yonetici/rapor/csv" class="buton-kucuk">CSV İndir</a>
+    </form>
+
+    <h2>Metrikler</h2>
+    <table>
+        <tr><th>Metrik</th><th>Değer</th></tr>
+        <tr><td>Rapor Dönemi</td><td>{{ rapor.baslangic | tarih('%d.%m.%Y') }} - {{ rapor.bitis | tarih('%d.%m.%Y') }}</td></tr>
+        <tr><td>Toplam Soru</td><td>{{ rapor.toplam_soru }}</td></tr>
+        <tr><td>Yanıtlanamayan Soru Oranı</td><td>%{{ "%.1f" | format(rapor.yanitlanamayan_orani * 100) | replace('.', ',') }}</td></tr>
+        <tr><td>Olumlu Geri Bildirim Oranı</td><td>%{{ "%.1f" | format(rapor.olumlu_geri_bildirim_orani * 100) | replace('.', ',') }}</td></tr>
+    </table>
+
+    <h2>En Çok Sorulan Kategoriler</h2>
+    {% if rapor.en_cok_sorulan_kategoriler %}
+    {% set en_fazla = rapor.en_cok_sorulan_kategoriler.values() | max %}
+    <svg viewBox="0 0 {{ 40 + rapor.en_cok_sorulan_kategoriler | length * 100 }} 220" class="grafik"
+         role="img" aria-label="Kategori dağılım grafiği">
+        {% for kategori, adet in rapor.en_cok_sorulan_kategoriler.items() %}
+        {% set yukseklik = (adet / en_fazla * 150) | round | int %}
+        <g>
+            <rect x="{{ 30 + loop.index0 * 100 }}" y="{{ 180 - yukseklik }}" width="60"
+                  height="{{ yukseklik }}" fill="#3b82f6" rx="4"></rect>
+            <text x="{{ 60 + loop.index0 * 100 }}" y="{{ 172 - yukseklik }}" text-anchor="middle"
+                  font-size="13">{{ adet }}</text>
+            <text x="{{ 60 + loop.index0 * 100 }}" y="205" text-anchor="middle"
+                  font-size="12">{{ kategori }}</text>
+        </g>
+        {% endfor %}
+    </svg>
+    <table>
+        <tr><th>Kategori</th><th>Soru Sayısı</th></tr>
+        {% for kategori, adet in rapor.en_cok_sorulan_kategoriler.items() %}
+        <tr><td>{{ kategori }}</td><td>{{ adet }}</td></tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Bu dönemde kayıtlı soru bulunmuyor.</p>
+    {% endif %}
+</div>
+{% endblock %}
