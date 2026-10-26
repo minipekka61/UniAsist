@@ -1,0 +1,31 @@
+{% extends "temel.html" %}
+{% block baslik %}Yanıtlanamayan Sorular — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart kart-genis">
+    <h1>Yanıtlanamayan Sorular</h1>
+    <p class="filtre">
+        Durum:
+        <a href="/personel/yanitlanamayan-sorular?durum=ACIK"{% if durum == 'ACIK' %} class="etkin"{% endif %}>Açık</a> ·
+        <a href="/personel/yanitlanamayan-sorular?durum=COZULDU"{% if durum == 'COZULDU' %} class="etkin"{% endif %}>Çözüldü</a>
+    </p>
+    {% if kayitlar %}
+    <table>
+        <tr><th>Soru</th><th>Tekrar Sayısı</th><th>İlk Tarihi</th><th></th></tr>
+        {% for k in kayitlar %}
+        <tr>
+            <td>{{ k.soru_metni }}</td>
+            <td>{{ k.tekrar_sayisi }}</td>
+            <td>{{ k.ilk_tarih | tarih }}</td>
+            <td>
+                {% if k.durum.value == 'ACIK' %}
+                <a href="/personel/sss-ekle?kayit_id={{ k.kayit_id }}">SSS ile çöz</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Bu durumda kayıt bulunmuyor.</p>
+    {% endif %}
+</div>
+{% endblock %}

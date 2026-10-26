@@ -13,6 +13,9 @@
     <nav class="menu">
         {% if aktif_kullanici %}
             <span class="kullanici">{{ aktif_kullanici.ad_soyad }} · {{ aktif_kullanici.rol.value }}</span>
+            {% if aktif_kullanici.rol.value in ('PERSONEL', 'YONETICI') %}
+                <a href="/personel/belgeler">Bilgi Tabanı</a>
+            {% endif %}
             <a href="/sifre-degistir">Şifre Değiştir</a>
             <a href="/cikis">Çıkış</a>
         {% else %}

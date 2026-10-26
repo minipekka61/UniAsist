@@ -59,3 +59,8 @@ th { background: #eef2ff; }
 .buton-tehlike:hover { background: #991b1b; }
 .bolum-vurgu { background: #fef9c3; padding: 6px 10px; border-radius: 6px; }
 .kaynak-metin { white-space: pre-wrap; font-family: inherit; background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb; max-height: 60vh; overflow-y: auto; }
+.kart-orta { max-width: 560px; }
+.form-dikey { display: flex; flex-direction: column; gap: 10px; max-width: 480px; }
+.guncelleme-satiri td { border-top: none; padding-top: 0; }
+.guncelleme-satiri .satir-ici { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.filtre a.etkin { font-weight: 700; text-decoration: none; }

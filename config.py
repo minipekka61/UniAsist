@@ -21,6 +21,7 @@ YENIDEN_DENEME = 3
 LLM_ZAMAN_ASIMI_SANIYE = 30
 PARCA_BOYUTU = 900
 PARCA_ORTUSME = 150
+DOSYA_KLASORU = "veri/dosyalar"
 
 HATA_EPOSTA_SIFRE = "E-posta veya şifre hatalı."
 HATA_KILIT = "Hesabınız geçici olarak kilitlendi. Lütfen 15 dakika sonra tekrar deneyin."

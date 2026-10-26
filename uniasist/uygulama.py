@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import Flask, g
 
 import config
+from uniasist.ekran.belgeyonetim import belgeyonetim_bp
 from uniasist.ekran.giris import giris_bp
 from uniasist.ekran.sohbet import sohbet_bp
 from uniasist.ekran.yardimcilar import oturum_yukle
@@ -36,6 +37,7 @@ def uygulama_olustur(paket=None):
 
     uygulama.register_blueprint(giris_bp)
     uygulama.register_blueprint(sohbet_bp)
+    uygulama.register_blueprint(belgeyonetim_bp)
 
     @uygulama.context_processor
     def _ortak():

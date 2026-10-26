@@ -1,0 +1,26 @@
+{% extends "temel.html" %}
+{% block baslik %}SSS Girdisi Ekle — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart kart-orta">
+    <h1>SSS Girdisi Ekle</h1>
+    {% if kayit_id %}
+    <div class="mesaj mesaj-bilgi">
+        Bu girdi, yanıtlanamayan soru kaydından oluşturuluyor. Kayıt, gönderildiğinde
+        çözüldü olarak işaretlenecek.
+    </div>
+    {% endif %}
+    <form method="post" action="/personel/sss-ekle" class="form-dikey">
+        {% if kayit_id %}<input type="hidden" name="kayit_id" value="{{ kayit_id }}">{% endif %}
+        <label>Soru
+            <input type="text" name="soru" value="{{ soru }}" required>
+        </label>
+        <label>Cevap
+            <textarea name="cevap" rows="4" required></textarea>
+        </label>
+        <label>Kategori
+            <input type="text" name="kategori" required>
+        </label>
+        <button type="submit">Ekle</button>
+    </form>
+</div>
+{% endblock %}
