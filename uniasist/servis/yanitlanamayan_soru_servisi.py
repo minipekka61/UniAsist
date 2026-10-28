@@ -24,7 +24,7 @@ class YanitlanamayanSoruServisi:
     def listele(self, durum):
         return self.yanitlanamayan_soru_deposu.durumaGoreListele(durum)
 
-    def sssIleCoz(self, kayit_id, sss):
+    def cozulduIsaretle(self, kayit_id):
         kayit = self.yanitlanamayan_soru_deposu.idIleBul(kayit_id)
         if kayit is None:
             raise IsKuraliIhlaliException("IK-29", "Kayıt bulunamadı.")

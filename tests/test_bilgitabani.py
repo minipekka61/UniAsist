@@ -222,33 +222,3 @@ def test_ik27_silme_dizinden_kaldirir(servisler, belge_dosyasi):
     assert bilgi_tabani.belgeleriListele() == []
     assert bilgi_tabani.kaynagiGetir(belge.kaynak_id) is None
     assert dizin.enYakinParcalar(yz.gommeUret("kayit"), 100) == []
-
-
-def test_ik28_sss_zorunlu_alanlar(servisler):
-    bilgi_tabani, _, _, _, _ = servisler
-    with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.sssEkle("", "Cevap.", "Burs")
-    assert h.value.kural_no_getir() == "IK-28"
-    with pytest.raises(IsKuraliIhlaliException):
-        bilgi_tabani.sssEkle("Soru?", "", "Burs")
-    with pytest.raises(IsKuraliIhlaliException):
-        bilgi_tabani.sssEkle("Soru?", "Cevap.", "")
-
-
-def test_ik28_sss_ekle_ve_arama(servisler):
-    bilgi_tabani, dizin, _, yz, _ = servisler
-    girdi = bilgi_tabani.sssEkle("Burs başvurusu ne zaman yapılır?", "Eylül ayının ilk haftasında yapılır.", "Burs")
-    assert girdi.durum == KaynakDurumu.AKTIF
-    assert girdi.kaynakAdiGetir() == "SSS"
-    sonuclar = dizin.enYakinParcalar(yz.gommeUret("burs basvurusu ne zaman"), 5)
-    assert len(sonuclar) > 0
-    sss_sonuc = [s for s in sonuclar if s.parca.kaynak_id == girdi.kaynak_id]
-    assert sss_sonuc and sss_sonuc[0].parca.kaynak_adi == "SSS"
-
-
-def test_ik28_sss_ayni_soru_uyarisi(servisler):
-    bilgi_tabani, _, _, _, _ = servisler
-    bilgi_tabani.sssEkle("Burs başvurusu ne zaman yapılır?", "Eylül ayının ilk haftasında yapılır.", "Burs")
-    with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.sssEkle("Burs başvurusu ne zaman yapılır?", "Başka cevap.", "Burs")
-    assert h.value.kural_no_getir() == "IK-28"

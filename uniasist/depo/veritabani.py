@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS oturum (
 CREATE TABLE IF NOT EXISTS sohbet (
     sohbet_id INTEGER PRIMARY KEY AUTOINCREMENT,
     kullanici_id INTEGER,
-    ziyaretci_oturum_id TEXT,
     baslik TEXT NOT NULL,
     olusturma_zamani TEXT NOT NULL
 );
@@ -73,9 +72,7 @@ CREATE TABLE IF NOT EXISTS bilgi_kaynagi (
     dosya_turu TEXT,
     boyut_byte INTEGER,
     dosya_yolu TEXT,
-    surum_no INTEGER,
-    soru TEXT,
-    cevap TEXT
+    surum_no INTEGER
 );
 CREATE TABLE IF NOT EXISTS icerik_parcasi (
     parca_id INTEGER PRIMARY KEY AUTOINCREMENT,

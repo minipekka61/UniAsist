@@ -70,28 +70,35 @@ def test_uc20_liste_ve_arama(ortam):
 
 def test_uc21_rol_degistirme(ortam):
     istemci, paket = ortam
-    yonetici = None
     yonetici_giris_yap(istemci, paket)
     yonetici = paket.kimlik.kullanici_deposu.epostaIleBul("admin@universite.edu.tr")
     ali = kullanici_ekle(paket, "Ali Veli", "ali@universite.edu.tr", Rol.OGRENCI)
 
     yanit = istemci.post(
         f"/yonetici/kullanicilar/{ali.kullanici_id}/rol",
-        data={"yeni_rol": "PERSONEL"},
+        data={"yeni_rol": "OGRENCI"},
         follow_redirects=True,
     )
     assert yanit.status_code == 200
     assert "güncellendi" in yanit.get_data(as_text=True)
-    assert paket.kimlik.kullanici_deposu.idIleBul(ali.kullanici_id).rol == Rol.PERSONEL
+    assert paket.kimlik.kullanici_deposu.idIleBul(ali.kullanici_id).rol == Rol.OGRENCI
 
     yanit = istemci.post(
         f"/yonetici/kullanicilar/{yonetici.kullanici_id}/rol",
-        data={"yeni_rol": "PERSONEL"},
+        data={"yeni_rol": "OGRENCI"},
         follow_redirects=True,
     )
     assert yanit.status_code == 200
     assert "kendi rolünü" in yanit.get_data(as_text=True)
     assert paket.kimlik.kullanici_deposu.idIleBul(yonetici.kullanici_id).rol == Rol.YONETICI
+
+    yanit = istemci.post(
+        f"/yonetici/kullanicilar/{ali.kullanici_id}/rol",
+        data={"yeni_rol": "YONETICI"},
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert paket.kimlik.kullanici_deposu.idIleBul(ali.kullanici_id).rol == Rol.OGRENCI
 
 
 def test_uc22_devre_disi_birakma(ortam):
@@ -183,12 +190,12 @@ def test_uc24_csv_baglantisi_filtre_tarihlerini_tasir(ortam):
     )
 
 
-def test_nfr03_personel_yonetici_sayfasina_ulasamaz(ortam):
+def test_nfr03_ogrenci_yonetici_sayfasina_ulasamaz(ortam):
     istemci, paket = ortam
     assert istemci.get("/yonetici/kullanicilar").status_code == 302
 
-    kullanici_ekle(paket, "Personel Bey", "personel@universite.edu.tr", Rol.PERSONEL)
-    istemci.post("/giris", data={"eposta": "personel@universite.edu.tr", "sifre": "Gizli1234"})
+    kullanici_ekle(paket, "Öğrenci Bey", "ogrenci@universite.edu.tr", Rol.OGRENCI)
+    istemci.post("/giris", data={"eposta": "ogrenci@universite.edu.tr", "sifre": "Gizli1234"})
     assert istemci.get("/yonetici/kullanicilar").status_code == 403
     assert istemci.get("/yonetici/rapor").status_code == 403
     assert istemci.get("/yonetici/rapor/csv").status_code == 403

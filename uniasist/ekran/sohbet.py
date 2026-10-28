@@ -1,41 +1,33 @@
 import json
-import uuid
 
 from flask import Blueprint, Response, abort, g, redirect, render_template, request
 
 from uniasist.ekran.yardimcilar import giris_required, paket_getir
-from uniasist.enumlar import GonderenTuru, KayitDurumu
+from uniasist.enumlar import GonderenTuru
 from uniasist.hatalar import IsKuraliIhlaliException
 
 sohbet_bp = Blueprint("sohbet", __name__)
 
 
-def _ziyaretci_kimligi():
-    return request.cookies.get("ziyaretci_id")
-
-
 @sohbet_bp.route("/")
 def sohbet_sayfasi():
+    if not g.aktif_kullanici:
+        return redirect("/giris")
     kur_ = paket_getir()
     mesajlar = []
     gosterilen_sohbet_id = None
-    if g.aktif_kullanici:
-        sohbet_id = request.args.get("sohbet_id", type=int)
-        if request.args.get("yeni") is None and not sohbet_id:
-            liste = kur_.sohbet.sohbetleriListele(g.aktif_kullanici.kullanici_id)
-            if liste:
-                sohbet_id = liste[0].sohbet_id
-        if sohbet_id:
-            try:
-                sohbet = kur_.sohbet.sohbetGetir(sohbet_id, g.aktif_kullanici.kullanici_id)
-                mesajlar = sohbet.mesajlar
-                gosterilen_sohbet_id = sohbet.sohbet_id
-            except IsKuraliIhlaliException:
-                mesajlar = []
-    else:
-        ziyaretci_id = _ziyaretci_kimligi()
-        if ziyaretci_id and ziyaretci_id in kur_.sohbet.ziyaretci_sohbetleri:
-            mesajlar = kur_.sohbet.ziyaretci_sohbetleri[ziyaretci_id].mesajlar
+    sohbet_id = request.args.get("sohbet_id", type=int)
+    if request.args.get("yeni") is None and not sohbet_id:
+        liste = kur_.sohbet.sohbetleriListele(g.aktif_kullanici.kullanici_id)
+        if liste:
+            sohbet_id = liste[0].sohbet_id
+    if sohbet_id:
+        try:
+            sohbet = kur_.sohbet.sohbetGetir(sohbet_id, g.aktif_kullanici.kullanici_id)
+            mesajlar = sohbet.mesajlar
+            gosterilen_sohbet_id = sohbet.sohbet_id
+        except IsKuraliIhlaliException:
+            mesajlar = []
     return render_template(
         "sohbet.html", mesajlar=mesajlar, sohbet_id=gosterilen_sohbet_id
     )
@@ -50,23 +42,17 @@ def _ogrenci_sohbeti(kur_):
 
 @sohbet_bp.route("/sohbet/yanit", methods=["POST"])
 def yanit():
+    if not g.aktif_kullanici:
+        return redirect("/giris")
     kur_ = paket_getir()
     soru = request.form.get("soru", "")
-    ziyaretci_id = None
-    if g.aktif_kullanici:
-        sohbet = _ogrenci_sohbeti(kur_)
-    else:
-        ziyaretci_id = _ziyaretci_kimligi() or uuid.uuid4().hex
-        sohbet = kur_.sohbet.yeniSohbetBaslat(ziyaretci_oturum_id=ziyaretci_id)
+    sohbet = _ogrenci_sohbeti(kur_)
 
     def akis():
         for olay in kur_.sohbet.soruSorAkis(sohbet, soru):
             yield _sse(olay, sohbet)
 
-    yanit_ = Response(akis(), mimetype="text/event-stream")
-    if ziyaretci_id and not _ziyaretci_kimligi():
-        yanit_.set_cookie("ziyaretci_id", ziyaretci_id, httponly=True)
-    return yanit_
+    return Response(akis(), mimetype="text/event-stream")
 
 
 def _sse(olay, sohbet):
@@ -96,12 +82,6 @@ def _sse(olay, sohbet):
 
 @sohbet_bp.route("/sohbet/yeni", methods=["GET", "POST"])
 def yeni_sohbet():
-    kur_ = paket_getir()
-    if not g.aktif_kullanici:
-        ziyaretci_id = _ziyaretci_kimligi()
-        if ziyaretci_id and ziyaretci_id in kur_.sohbet.ziyaretci_sohbetleri:
-            del kur_.sohbet.ziyaretci_sohbetleri[ziyaretci_id]
-        return redirect("/")
     return redirect("/?yeni=1")
 
 

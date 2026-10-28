@@ -1,4 +1,4 @@
-from uniasist.entity import Belge, IcerikParcasi, SSSGirdisi
+from uniasist.entity import Belge
 from uniasist.enumlar import KaynakDurumu
 from uniasist.hatalar import IsKuraliIhlaliException
 
@@ -93,33 +93,6 @@ class BilgiTabaniServisi:
 
     def belgeleriListele(self):
         return self.bilgi_kaynagi_deposu.belgeler()
-
-    def sssEkle(self, soru, cevap, kategori):
-        girdi = SSSGirdisi(baslik=soru, kategori=kategori, soru=soru, cevap=cevap)
-        if not girdi.alanlarGecerliMi():
-            raise IsKuraliIhlaliException(
-                "IK-28", "SSS girdisinde soru, cevap ve kategori alanları zorunludur."
-            )
-        for kaynak in self.bilgi_kaynagi_deposu.aktifKaynaklar():
-            if isinstance(kaynak, SSSGirdisi) and kaynak.soru.strip() == soru.strip():
-                raise IsKuraliIhlaliException(
-                    "IK-28",
-                    "Bu soru SSS'de zaten var; mevcut girdiyi güncellemeniz önerilir.",
-                )
-        girdi.aktifYap()
-        self.bilgi_kaynagi_deposu.kaydet(girdi)
-        parca = IcerikParcasi(
-            kaynak_id=girdi.kaynak_id,
-            sira=1,
-            metin=girdi.icerikMetniGetir(),
-            kaynak_adi="SSS",
-            kategori=girdi.kategori,
-        )
-        parca.gomme = self.belge_isleme_servisi._gommeUret(parca.metin)
-        parca.gomme_saglayici = self.belge_isleme_servisi.yapay_zeka_servisi.saglayici_etiketi
-        parca._bolum_bilgisi = f"{girdi.baslik} — SSS"
-        self.arama_dizini.parcaEkle(parca)
-        return girdi
 
     def kaynagiGetir(self, kaynak_id):
         if kaynak_id is None:

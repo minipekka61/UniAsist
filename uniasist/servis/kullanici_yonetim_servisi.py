@@ -22,9 +22,9 @@ class KullaniciYonetimServisi:
             raise IsKuraliIhlaliException(
                 "IK-10", "Yönetici rolündeki kullanıcının rolü değiştirilemez."
             )
-        if yeni_rol not in (Rol.OGRENCI, Rol.PERSONEL):
+        if yeni_rol != Rol.OGRENCI:
             raise IsKuraliIhlaliException(
-                "IK-32", "Bu sürümde yalnızca Öğrenci ve Personel rolleri arasında geçiş yapılabilir."
+                "IK-32", "Bu sürümde yönetici olmayan kullanıcılar yalnızca Öğrenci rolünde olabilir."
             )
         hedef.rolDegistir(yeni_rol)
         self.kullanici_deposu.kaydet(hedef)

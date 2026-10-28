@@ -159,11 +159,9 @@ def test_ik10_kendi_rolunu_degistiremez(servisler):
     kimlik, yonetim, _ = servisler
     yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
     yonetici.rolDegistir(Rol.YONETICI)
-    from uniasist.depo.kullanici_deposu import KullaniciDeposu
-
     kimlik.kullanici_deposu.kaydet(yonetici)
     with pytest.raises(IsKuraliIhlaliException) as h:
-        yonetim.rolDegistir(yonetici.kullanici_id, yonetici.kullanici_id, Rol.PERSONEL)
+        yonetim.rolDegistir(yonetici.kullanici_id, yonetici.kullanici_id, Rol.OGRENCI)
     assert h.value.kural_no_getir() == "IK-10"
 
 
@@ -175,26 +173,28 @@ def test_ik10_son_aktif_yonetici_korunur(servisler):
     with pytest.raises(IsKuraliIhlaliException) as h:
         yonetim.hesapDevreDisiBirak(yonetici.kullanici_id, yonetici.kullanici_id)
     assert h.value.kural_no_getir() == "IK-10"
-    hedef = kimlik.kayitOl("Personel", "personel@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    hedef = kimlik.kayitOl("Hedef Kullanıcı", "hedef@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
     hedef.rolDegistir(Rol.YONETICI)
     depo.kaydet(hedef)
     yonetim.hesapDevreDisiBirak(yonetici.kullanici_id, hedef.kullanici_id)
     assert depo.idIleBul(hedef.kullanici_id).durum == HesapDurumu.DEVRE_DISI
 
 
-def test_ik32_rol_degisimi_sonraki_istekte(servisler):
+def test_ik32_yonetici_hedefin_rolu_degistirilemez(servisler):
     kimlik, yonetim, depo = servisler
     yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
     yonetici.rolDegistir(Rol.YONETICI)
     depo.kaydet(yonetici)
-    ogrenci = kimlik.kayitOl("Ali", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
-    oturum = kimlik.girisYap("ali@universite.edu.tr", "Gizli1234")
-    assert kimlik.oturumDogrula(oturum.oturum_id).rol == Rol.OGRENCI
-    yonetim.rolDegistir(yonetici.kullanici_id, ogrenci.kullanici_id, Rol.PERSONEL)
-    assert kimlik.oturumDogrula(oturum.oturum_id).rol == Rol.PERSONEL
+    ikinci = kimlik.kayitOl("Ayse", "ayse@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    ikinci.rolDegistir(Rol.YONETICI)
+    depo.kaydet(ikinci)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        yonetim.rolDegistir(yonetici.kullanici_id, ikinci.kullanici_id, Rol.OGRENCI)
+    assert "değiştirilemez" in h.value.mesaj
+    assert depo.idIleBul(ikinci.kullanici_id).rol == Rol.YONETICI
 
 
-def test_ik32_rol_degisimi_yalniz_ogrenci_personel(servisler):
+def test_ik32_yonetici_rolu_verilemez(servisler):
     kimlik, yonetim, depo = servisler
     yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
     yonetici.rolDegistir(Rol.YONETICI)

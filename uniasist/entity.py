@@ -106,11 +106,10 @@ class Oturum:
 
 
 class Sohbet:
-    def __init__(self, baslik, olusturma_zamani, kullanici_id=None,
-                 ziyaretci_oturum_id=None, sohbet_id=None, mesajlar=None):
+    def __init__(self, baslik, olusturma_zamani, kullanici_id=None, sohbet_id=None,
+                 mesajlar=None):
         self.sohbet_id = sohbet_id
         self.kullanici_id = kullanici_id
-        self.ziyaretci_oturum_id = ziyaretci_oturum_id
         self.baslik = baslik
         self.olusturma_zamani = olusturma_zamani
         self.mesajlar = mesajlar if mesajlar is not None else []
@@ -125,9 +124,6 @@ class Sohbet:
 
     def bosMu(self):
         return len(self.mesajlar) == 0
-
-    def kaliciMi(self):
-        return self.kullanici_id is not None
 
 
 class Mesaj:
@@ -248,25 +244,6 @@ class Belge(BilgiKaynagi):
 
     def kaynakAdiGetir(self):
         return self.dosya_adi
-
-
-class SSSGirdisi(BilgiKaynagi):
-    def __init__(self, baslik="", kategori="", soru="", cevap="", **kwargs):
-        kwargs.setdefault("tur", "SSS")
-        super().__init__(baslik=baslik or soru, kategori=kategori, **kwargs)
-        self.soru = soru
-        self.cevap = cevap
-
-    def alanlarGecerliMi(self):
-        return bool(
-            self.soru.strip() and self.cevap.strip() and self.kategori.strip()
-        )
-
-    def icerikMetniGetir(self):
-        return f"S: {self.soru}\nC: {self.cevap}"
-
-    def kaynakAdiGetir(self):
-        return "SSS"
 
 
 class IcerikParcasi:

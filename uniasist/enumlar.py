@@ -3,7 +3,6 @@ from enum import Enum
 
 class Rol(Enum):
     OGRENCI = "OGRENCI"
-    PERSONEL = "PERSONEL"
     YONETICI = "YONETICI"
 
 

@@ -8,7 +8,6 @@ from uniasist.entity import (
     Kullanici,
     Mesaj,
     Oturum,
-    SSSGirdisi,
     Sohbet,
     YanitlanamayanSoru,
 )
@@ -76,8 +75,8 @@ def test_kullanici_durum_gecisleri():
     k.devreDisiBirak()
     assert k.durum == HesapDurumu.DEVRE_DISI
     assert not k.aktifMi()
-    k.rolDegistir(Rol.PERSONEL)
-    assert k.rol == Rol.PERSONEL
+    k.rolDegistir(Rol.YONETICI)
+    assert k.rol == Rol.YONETICI
     k.denemeleriSifirla()
     assert k.basarisiz_deneme_sayisi == 0 and not k.kilitliMi()
 
@@ -110,12 +109,11 @@ def test_sohbet_son_mesajlari_getir_10():
     assert s.bosMu() is False
 
 
-def test_sohbet_bos_ve_kalici():
+def test_sohbet_bos_mu():
     s = Sohbet(baslik="b", olusturma_zamani=datetime.now())
     assert s.bosMu()
-    assert not s.kaliciMi()
-    o = Sohbet(kullanici_id=7, baslik="b", olusturma_zamani=datetime.now())
-    assert o.kaliciMi()
+    s.mesajEkle(Mesaj(gonderen=GonderenTuru.KULLANICI, metin="x", zaman=datetime.now()))
+    assert not s.bosMu()
 
 
 def test_mesaj_kaynak_ekle():
@@ -163,15 +161,6 @@ def test_bilgi_kaynagi_durum_gecisleri():
     assert b.aktifMi()
     b.pasifYap()
     assert not b.aktifMi()
-
-
-def test_sssgirdisi_alanlar_gecerli_mi():
-    g = SSSGirdisi(baslik="SSS", kategori="Burs", soru="Soru?", cevap="Cevap.")
-    assert g.alanlarGecerliMi()
-    assert g.kaynakAdiGetir() == "SSS"
-    assert "Soru?" in g.icerikMetniGetir() and "Cevap." in g.icerikMetniGetir()
-    assert not SSSGirdisi(baslik="SSS", kategori="Burs", soru="", cevap="Cevap.").alanlarGecerliMi()
-    assert not SSSGirdisi(baslik="SSS", kategori="Burs", soru="S?", cevap="").alanlarGecerliMi()
 
 
 def test_geri_bildirim_aciklama_gecerli_mi():

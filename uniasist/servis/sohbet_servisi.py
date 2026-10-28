@@ -33,7 +33,6 @@ class SohbetServisi:
         self.yanit_uretme_servisi = yanit_uretme_servisi
         self.yanitlanamayan_soru_servisi = yanitlanamayan_soru_servisi
         self.bilgi_kaynagi_deposu = bilgi_kaynagi_deposu
-        self.ziyaretci_sohbetleri = {}
 
     def _soruGecerliMi(self, soru_metni):
         if not soru_metni or not soru_metni.strip():
@@ -50,22 +49,12 @@ class SohbetServisi:
             return False
         return True
 
-    def yeniSohbetBaslat(self, kullanici=None, ziyaretci_oturum_id=None):
-        if kullanici is not None:
-            return Sohbet(
-                baslik="Yeni sohbet",
-                olusturma_zamani=datetime.now(),
-                kullanici_id=kullanici.kullanici_id,
-            )
-        if ziyaretci_oturum_id in self.ziyaretci_sohbetleri:
-            return self.ziyaretci_sohbetleri[ziyaretci_oturum_id]
-        sohbet = Sohbet(
-            baslik="Ziyaretçi sohbeti",
+    def yeniSohbetBaslat(self, kullanici):
+        return Sohbet(
+            baslik="Yeni sohbet",
             olusturma_zamani=datetime.now(),
-            ziyaretci_oturum_id=ziyaretci_oturum_id,
+            kullanici_id=kullanici.kullanici_id,
         )
-        self.ziyaretci_sohbetleri[ziyaretci_oturum_id] = sohbet
-        return sohbet
 
     def soruSorAkis(self, sohbet, soru_metni):
         if not self._soruGecerliMi(soru_metni):
@@ -99,7 +88,7 @@ class SohbetServisi:
             }
             return
 
-        if sohbet.bosMu() and sohbet.baslik in (None, "", "Yeni sohbet", "Ziyaretçi sohbeti"):
+        if sohbet.bosMu() and sohbet.baslik in (None, "", "Yeni sohbet"):
             sohbet.baslik = soru_metni[:50]
         soru_mesaji = Mesaj(
             gonderen=GonderenTuru.KULLANICI, metin=soru_metni, zaman=datetime.now()
@@ -111,8 +100,7 @@ class SohbetServisi:
         for referans in sonuc.kaynaklar:
             yanit_mesaji.kaynakEkle(referans)
         sohbet.mesajEkle(yanit_mesaji)
-        if sohbet.kaliciMi():
-            self.sohbet_deposu.kaydet(sohbet)
+        self.sohbet_deposu.kaydet(sohbet)
 
         kategori = None
         if sonuc.kaynaklar:

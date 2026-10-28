@@ -13,12 +13,11 @@
     <nav class="menu">
         {% if aktif_kullanici %}
             <span class="kullanici">{{ aktif_kullanici.ad_soyad }} · {{ aktif_kullanici.rol.value }}</span>
-            {% if aktif_kullanici.rol.value in ('PERSONEL', 'YONETICI') %}
-                <a href="/personel/belgeler">Bilgi Tabanı</a>
-            {% endif %}
             {% if aktif_kullanici.rol.value == 'YONETICI' %}
                 <a href="/yonetici/kullanicilar">Kullanıcılar</a>
                 <a href="/yonetici/rapor">Rapor</a>
+                <a href="/yonetici/yanitlanamayan-sorular">Yanıtlanamayanlar</a>
+                <a href="/yonetici/geri-bildirimler">Geri Bildirimler</a>
             {% endif %}
             <a href="/sifre-degistir">Şifre Değiştir</a>
             <a href="/cikis">Çıkış</a>

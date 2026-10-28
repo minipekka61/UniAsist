@@ -13,7 +13,6 @@ from uniasist.entity import (
     KaynakReferansi,
     Kullanici,
     Mesaj,
-    SSSGirdisi,
     Sohbet,
     SoruKaydi,
     YanitlanamayanSoru,
@@ -123,20 +122,15 @@ def test_sohbet_sil_kaskat():
     assert depo.kullaniciSohbetleri(k.kullanici_id) == []
 
 
-def test_bilgi_kaynagi_tur_ayrimi():
+def test_bilgi_kaynagi_belge_roundtrip():
     db = gecici_db()
     depo = BilgiKaynagiDeposu(db)
     b = Belge(baslik="Burs Yönergesi", kategori="Burs", dosya_adi="burs.txt", dosya_turu="txt", boyut_byte=10, dosya_yolu="p")
-    s = SSSGirdisi(baslik="SSS", kategori="Burs", soru="Soru?", cevap="Cevap.")
     depo.kaydet(b)
-    depo.kaydet(s)
 
     gelen_b = depo.idIleBul(b.kaynak_id)
     assert isinstance(gelen_b, Belge)
     assert gelen_b.dosya_adi == "burs.txt" and gelen_b.boyut_byte == 10
-    gelen_s = depo.idIleBul(s.kaynak_id)
-    assert isinstance(gelen_s, SSSGirdisi)
-    assert gelen_s.soru == "Soru?" and gelen_s.cevap == "Cevap."
 
     b.aktifYap()
     depo.kaydet(b)

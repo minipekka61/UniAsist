@@ -3,8 +3,8 @@ from pathlib import Path
 from flask import Flask, g
 
 import config
-from uniasist.ekran.belgeyonetim import belgeyonetim_bp
 from uniasist.ekran.giris import giris_bp
+from uniasist.ekran.inceleme import inceleme_bp
 from uniasist.ekran.kullaniciyonetimi import kullaniciyonetimi_bp
 from uniasist.ekran.rapor import rapor_bp
 from uniasist.ekran.sohbet import sohbet_bp
@@ -39,7 +39,7 @@ def uygulama_olustur(paket=None):
 
     uygulama.register_blueprint(giris_bp)
     uygulama.register_blueprint(sohbet_bp)
-    uygulama.register_blueprint(belgeyonetim_bp)
+    uygulama.register_blueprint(inceleme_bp)
     uygulama.register_blueprint(kullaniciyonetimi_bp)
     uygulama.register_blueprint(rapor_bp)
 

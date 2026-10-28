@@ -17,13 +17,10 @@ def paket():
 
 def test_seed_hesaplar_ve_belgeler(paket):
     admin = paket.kimlik.kullanici_deposu.epostaIleBul("admin@universite.edu.tr")
-    personel = paket.kimlik.kullanici_deposu.epostaIleBul("personel@universite.edu.tr")
     ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
     assert admin is not None and admin.rol.value == "YONETICI"
-    assert personel is not None and personel.rol.value == "PERSONEL"
     assert ogrenci is not None and ogrenci.rol.value == "OGRENCI"
     assert admin.sifreDogrula("Yonetici1234")
-    assert personel.sifreDogrula("Personel1234")
     assert ogrenci.sifreDogrula("Ogrenci1234")
 
     belgeler = paket.bilgi_tabani.belgeleriListele()
@@ -36,7 +33,7 @@ def test_seed_hesaplar_ve_belgeler(paket):
     sss_sayisi = paket.db.execute(
         "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
     ).fetchone()["n"]
-    assert sss_sayisi == 10
+    assert sss_sayisi == 0
 
 
 def test_seed_idempotent(paket):

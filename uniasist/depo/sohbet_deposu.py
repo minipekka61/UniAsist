@@ -11,10 +11,9 @@ class SohbetDeposu:
     def kaydet(self, sohbet):
         if sohbet.sohbet_id is None:
             imleç = self.db.execute(
-                "INSERT INTO sohbet (kullanici_id, ziyaretci_oturum_id, baslik, olusturma_zamani) VALUES (?,?,?,?)",
+                "INSERT INTO sohbet (kullanici_id, baslik, olusturma_zamani) VALUES (?,?,?)",
                 (
                     sohbet.kullanici_id,
-                    sohbet.ziyaretci_oturum_id,
                     sohbet.baslik,
                     sohbet.olusturma_zamani.isoformat(),
                 ),
@@ -22,10 +21,9 @@ class SohbetDeposu:
             sohbet.sohbet_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE sohbet SET kullanici_id=?, ziyaretci_oturum_id=?, baslik=?, olusturma_zamani=? WHERE sohbet_id=?",
+                "UPDATE sohbet SET kullanici_id=?, baslik=?, olusturma_zamani=? WHERE sohbet_id=?",
                 (
                     sohbet.kullanici_id,
-                    sohbet.ziyaretci_oturum_id,
                     sohbet.baslik,
                     sohbet.olusturma_zamani.isoformat(),
                     sohbet.sohbet_id,
@@ -83,7 +81,6 @@ class SohbetDeposu:
         sohbet = Sohbet(
             sohbet_id=satir["sohbet_id"],
             kullanici_id=satir["kullanici_id"],
-            ziyaretci_oturum_id=satir["ziyaretci_oturum_id"],
             baslik=satir["baslik"],
             olusturma_zamani=datetime.fromisoformat(satir["olusturma_zamani"]),
         )

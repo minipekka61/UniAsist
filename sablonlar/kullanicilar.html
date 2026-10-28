@@ -23,7 +23,6 @@
                       onsubmit="return confirm('Bu kullanıcının rolü değiştirilecek. Devam edilsin mi?');">
                     <select name="yeni_rol" aria-label="Yeni rol">
                         <option value="OGRENCI" {% if k.rol.value == 'OGRENCI' %}selected{% endif %}>OGRENCI</option>
-                        <option value="PERSONEL" {% if k.rol.value == 'PERSONEL' %}selected{% endif %}>PERSONEL</option>
                     </select>
                     <button type="submit" class="buton-kucuk">Rolü Değiştir</button>
                 </form>

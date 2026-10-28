@@ -41,20 +41,23 @@ def giris_yap(istemci, paket, eposta="ali@universite.edu.tr"):
     istemci.post("/giris", data={"eposta": eposta, "sifre": "Gizli1234"})
 
 
-def test_fr06_ziyaretci_soru_sorabilir(ortam):
-    istemci, paket, _ = ortam
+def test_kayitsiz_anasayfa_girise_yonlendirir(ortam):
+    istemci, _, _ = ortam
+    yanit = istemci.get("/")
+    assert yanit.status_code == 302
+    assert "/giris" in yanit.headers["Location"]
+
+
+def test_kayitsiz_soru_gonderemez(ortam):
+    istemci, _, _ = ortam
     yanit = istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"})
-    assert yanit.status_code == 200
-    assert yanit.mimetype == "text/event-stream"
-    govde = yanit.get_data(as_text=True)
-    assert "event: parca" in govde
-    assert "event: sonuc" in govde
-    assert "Burs" in govde
-    assert paket.sohbet.sohbetleriListele(1) == []
+    assert yanit.status_code == 302
+    assert "/giris" in yanit.headers["Location"]
 
 
 def test_fr14_yaziyor_gostergesi_ve_script(ortam):
-    istemci, _, uygulama = ortam
+    istemci, paket, uygulama = ortam
+    giris_yap(istemci, paket)
     yanit = istemci.get("/")
     assert yanit.status_code == 200
     metin = yanit.get_data(as_text=True)

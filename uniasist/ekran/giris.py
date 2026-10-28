@@ -42,7 +42,7 @@ def giris():
                 request.form.get("eposta", ""), request.form.get("sifre", "")
             )
             kullanici = kur_.kimlik.kullanici_deposu.idIleBul(oturum.kullanici_id)
-            hedef = "/personel/belgeler" if kullanici.rol in (Rol.PERSONEL, Rol.YONETICI) else "/"
+            hedef = "/yonetici/kullanicilar" if kullanici.rol == Rol.YONETICI else "/"
             yanit = make_response(redirect(hedef))
             yanit.set_cookie("uniasist_oturum", oturum.oturum_id, httponly=True)
             return yanit

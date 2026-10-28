@@ -153,14 +153,6 @@ def test_soru_yanit_kaydi_ve_kaynaklar(servisler):
     assert kayitlar[0].kategori == "Burs"
 
 
-def test_ik20_ziyaretci_sohbeti_kalici_degil(servisler):
-    sohbet = servisler["sohbet"].yeniSohbetBaslat(ziyaretci_oturum_id="ziyaretci-1")
-    assert sohbet.kaliciMi() is False
-    yanit = servisler["sohbet"].soruSor(sohbet, "Burs başvurusu ne zaman yapılır?")
-    assert yanit is not None
-    assert servisler["sohbet_depo"].kullaniciSohbetleri(servisler["kullanici"].kullanici_id) == []
-
-
 def test_ik21_baskasina_ait_sohbet_reddedilir(servisler):
     baska = Kullanici(ad_soyad="Ayşe", eposta="ayse@universite.edu.tr",
                       sifre_hash="x", rol=Rol.OGRENCI)
@@ -286,13 +278,10 @@ def test_uc07_silinen_kaynak_none_doner(servisler):
     assert servisler["sohbet"].kaynagiGoruntule(ref) is None
 
 
-def test_yanitlanamayan_sss_ile_cozulur(servisler):
+def test_yanitlanamayan_cozuldu_isaretlenir(servisler):
     servisler["yanitlanamayan"].kaydet("Yurt kayıt ücreti iade ediliyor mu?")
     kayit = servisler["yanitlanamayan_depo"].durumaGoreListele(KayitDurumu.ACIK)[0]
-    girdi = servisler["bilgi_tabani"].sssEkle(
-        "Yurt kayıt ücreti iade ediliyor mu?", "Evet, iade edilir.", "Yurt"
-    )
-    servisler["yanitlanamayan"].sssIleCoz(kayit.kayit_id, girdi)
+    servisler["yanitlanamayan"].cozulduIsaretle(kayit.kayit_id)
     assert servisler["yanitlanamayan_depo"].durumaGoreListele(KayitDurumu.ACIK) == []
     assert len(servisler["yanitlanamayan_depo"].durumaGoreListele(KayitDurumu.COZULDU)) == 1
 

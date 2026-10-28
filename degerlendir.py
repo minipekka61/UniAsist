@@ -59,7 +59,8 @@ def main():
 
     paket = kur(seed_yap=True)
     saglayici = type(paket.yapay_zeka).__name__
-    sohbet = paket.sohbet.yeniSohbetBaslat(ziyaretci_oturum_id="degerlendir")
+    kullanici = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
+    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=kullanici)
 
     dogru = 0
     basarisiz = []
