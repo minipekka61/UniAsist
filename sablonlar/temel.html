@@ -13,6 +13,7 @@
     <nav class="menu">
         {% if aktif_kullanici %}
             <span class="kullanici">{{ aktif_kullanici.ad_soyad }} · {{ aktif_kullanici.rol.value }}</span>
+            <a href="/belgelerim">Belgelerim</a>
             {% if aktif_kullanici.rol.value == 'YONETICI' %}
                 <a href="/yonetici/kullanicilar">Kullanıcılar</a>
                 <a href="/yonetici/rapor">Rapor</a>
@@ -28,6 +29,14 @@
     </nav>
 </header>
 <main class="icerik">
+    {% if aktif_kullanici and not aktif_kullanici.eposta_dogrulandi %}
+    <div class="mesaj mesaj-uyari">
+        E-posta adresinizi doğrulayın — belgelerinizi bölümünüzle paylaşabilmek için gereklidir.
+        <form method="post" action="/dogrulama/yeniden" class="satir-ici">
+            <button type="submit" class="buton-kucuk">Doğrulama e-postasını tekrar gönder</button>
+        </form>
+    </div>
+    {% endif %}
     {% if hata %}<div class="mesaj mesaj-hata">{{ hata }}</div>{% endif %}
     {% if bilgi %}<div class="mesaj mesaj-bilgi">{{ bilgi }}</div>{% endif %}
     {% block icerik %}{% endblock %}

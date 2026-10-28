@@ -9,10 +9,10 @@ giris_bp = Blueprint("giris", __name__)
 
 @giris_bp.route("/kayit", methods=["GET", "POST"])
 def kayit():
+    kur_ = paket_getir()
     hata = None
     if request.method == "POST":
         try:
-            kur_ = paket_getir()
             kur_.kimlik.kayitOl(
                 request.form.get("ad_soyad", ""),
                 request.form.get("eposta", ""),
@@ -29,7 +29,32 @@ def kayit():
             )
         except IsKuraliIhlaliException as e:
             hata = e.mesaj
-    return render_template("kayit.html", hata=hata)
+    return render_template(
+        "kayit.html",
+        hata=hata,
+        bolumler=kur_.universite_deposu.bolumleriListele(),
+    )
+
+
+@giris_bp.route("/dogrula/<token>")
+def dogrula(token):
+    kur_ = paket_getir()
+    try:
+        kur_.kimlik.dogrula(token)
+        return render_template("dogrulama.html", basarili=True)
+    except IsKuraliIhlaliException:
+        return render_template("dogrulama.html", basarili=False)
+
+
+@giris_bp.route("/dogrulama/yeniden", methods=["POST"])
+@giris_required()
+def dogrulama_yeniden():
+    kur_ = paket_getir()
+    kur_.kimlik.dogrulamaGonder(g.aktif_kullanici.eposta)
+    return render_template(
+        "giris.html",
+        bilgi="Doğrulama e-postası tekrar gönderildi. Gelen kutunuzu kontrol edin.",
+    )
 
 
 @giris_bp.route("/giris", methods=["GET", "POST"])

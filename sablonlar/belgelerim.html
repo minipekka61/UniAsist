@@ -1,0 +1,87 @@
+{% extends "temel.html" %}
+{% block baslik %}Belgelerim — UniAsist{% endblock %}
+{% block icerik %}
+<div class="kart kart-genis">
+    <h1>Belgelerim</h1>
+    <p class="filtre">
+        <a href="/belgelerim"{% if sekme == 'benim' %} class="etkin"{% endif %}>Belgelerim</a> ·
+        <a href="/belgelerim?sekme=bolum"{% if sekme == 'bolum' %} class="etkin"{% endif %}>Bölümün Paylaşılanları</a>
+    </p>
+
+    {% if sekme == 'benim' %}
+    <h2>Belge Yükle</h2>
+    <form method="post" action="/belgelerim/yukle" enctype="multipart/form-data" class="form-dikey">
+        <label>Başlık <input type="text" name="baslik" required></label>
+        <label>Ders / Kategori <input type="text" name="kategori" required></label>
+        <label>Dosya (PDF veya TXT, en fazla 10 MB) <input type="file" name="dosya" accept=".pdf,.txt" required></label>
+        <label class="satir-ici">
+            <input type="checkbox" name="paylas" value="1">
+            Bölümümle paylaş (aynı üniversite ve bölümden öğrenciler görebilir)
+        </label>
+        <button type="submit">Yükle</button>
+    </form>
+
+    <h2>Belgelerim</h2>
+    {% if belgeler %}
+    <table>
+        <tr><th>Başlık</th><th>Ders / Kategori</th><th>Görünürlük</th><th>Durum</th><th></th></tr>
+        {% for b in belgeler %}
+        <tr>
+            <td>{{ b.baslik }}</td>
+            <td>{{ b.kategori }}</td>
+            <td>{{ b.gorunurluk.value }}</td>
+            <td>{{ b.durum.value }}</td>
+            <td>
+                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/gorunurluk" class="satir-ici"
+                      onsubmit="return confirm('Görünürlük değiştirilecek. Devam edilsin mi?');">
+                    {% if b.gorunurluk.value == 'OZEL' %}
+                    <input type="hidden" name="gorunurluk" value="PAYLASILAN">
+                    <button type="submit" class="buton-kucuk">Bölümümle Paylaş</button>
+                    {% else %}
+                    <input type="hidden" name="gorunurluk" value="OZEL">
+                    <button type="submit" class="buton-kucuk">Paylaşmayı Bırak</button>
+                    {% endif %}
+                </form>
+                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/guncelle" enctype="multipart/form-data" class="satir-ici">
+                    <input type="text" name="baslik" value="{{ b.baslik }}" aria-label="Yeni başlık">
+                    <input type="text" name="kategori" value="{{ b.kategori }}" aria-label="Yeni kategori">
+                    <input type="file" name="dosya" accept=".pdf,.txt" aria-label="Yeni dosya">
+                    <button type="submit" class="buton-kucuk">Güncelle</button>
+                </form>
+                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/sil" class="satir-ici"
+                      onsubmit="return confirm('Bu belge ve indeksi kalıcı olarak silinecek. Devam edilsin mi?');">
+                    <button type="submit" class="buton-kucuk buton-tehlike">Sil</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Henüz belge yüklemediniz. Ders notlarınızı ve yönergel yükleyerek AI ile çalışabilirsiniz.</p>
+    {% endif %}
+
+    {% else %}
+    <h2>Bölümün Paylaşılan Belgeleri</h2>
+    {% if belgeler %}
+    <table>
+        <tr><th>Başlık</th><th>Ders / Kategori</th><th></th></tr>
+        {% for b in belgeler %}
+        <tr>
+            <td>{{ b.baslik }}</td>
+            <td>{{ b.kategori }}</td>
+            <td>
+                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/bildir" class="satir-ici"
+                      onsubmit="return confirm('Bu belge bildirilecek. Devam edilsin mi?');">
+                    <input type="text" name="neden" placeholder="Bildirme nedeniniz" aria-label="Neden" required>
+                    <button type="submit" class="buton-kucuk buton-tehlike">Bildir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Bölümünüzde henüz paylaşılan belge yok. Belgelerinizi paylaşarak bölüm arkadaşlarınıza destek olabilirsiniz.</p>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

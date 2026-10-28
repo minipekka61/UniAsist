@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import Flask, g
 
 import config
+from uniasist.ekran.belgelerim import belgelerim_bp
 from uniasist.ekran.giris import giris_bp
 from uniasist.ekran.inceleme import inceleme_bp
 from uniasist.ekran.kullaniciyonetimi import kullaniciyonetimi_bp
@@ -39,6 +40,7 @@ def uygulama_olustur(paket=None):
 
     uygulama.register_blueprint(giris_bp)
     uygulama.register_blueprint(sohbet_bp)
+    uygulama.register_blueprint(belgelerim_bp)
     uygulama.register_blueprint(inceleme_bp)
     uygulama.register_blueprint(kullaniciyonetimi_bp)
     uygulama.register_blueprint(rapor_bp)

@@ -10,6 +10,14 @@
         <label>Üniversite E-postası
             <input type="email" name="eposta" required placeholder="ad@universite.edu.tr">
         </label>
+        <label>Bölüm
+            <select name="bolum" required>
+                <option value="" disabled selected>Seçiniz</option>
+                {% for bolum in bolumler %}
+                <option value="{{ bolum }}">{{ bolum }}</option>
+                {% endfor %}
+            </select>
+        </label>
         <label>Şifre
             <input type="password" name="sifre" required minlength="8">
         </label>
