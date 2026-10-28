@@ -21,12 +21,16 @@ def ortam(paket):
         yield istemci, paket
 
 
-def kullanici_ekle(paket, ad_soyad, eposta, rol, sifre="Gizli1234"):
+def kullanici_ekle(paket, ad_soyad, eposta, rol, sifre="Gizli1234",
+                   universite_id=None, bolum="", eposta_dogrulandi=False):
     kullanici = Kullanici(
         ad_soyad=ad_soyad,
         eposta=eposta,
         sifre_hash=sifre_hashle(sifre),
         rol=rol,
+        universite_id=universite_id,
+        bolum=bolum,
+        eposta_dogrulandi=eposta_dogrulandi,
     )
     paket.kimlik.kullanici_deposu.kaydet(kullanici)
     return kullanici
@@ -199,3 +203,83 @@ def test_nfr03_ogrenci_yonetici_sayfasina_ulasamaz(ortam):
     assert istemci.get("/yonetici/kullanicilar").status_code == 403
     assert istemci.get("/yonetici/rapor").status_code == 403
     assert istemci.get("/yonetici/rapor/csv").status_code == 403
+
+
+def test_kullanicilar_universite_bolum_sutunu(ortam):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    kullanici_ekle(
+        paket, "Ali Veli", "ali@universite.edu.tr", Rol.OGRENCI,
+        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+    )
+    yanit = istemci.get("/yonetici/kullanicilar")
+    metin = yanit.get_data(as_text=True)
+    assert "Üniversite" in metin
+    assert "Bilgisayar Mühendisliği" in metin
+    assert "Doğrulanmış" in metin
+
+
+STAJ_METNI_Y = (
+    "Staj yonergesi ogrencilerin yaz stajlarini duzenler ve zorunlu kilar. "
+    "Staj basvurusu icin en az 60 gun kesintisiz calisma sarti vardir. "
+    "Staj defteri staj bitiminden sonraki 15 gun icinde teslim edilir. "
+) * 3
+
+
+def _bildirim_hazirla(paket, tmp_path):
+    from uniasist.enumlar import Gorunurluk
+
+    sahip = kullanici_ekle(
+        paket, "Belge Sahibi", "sahip@universite.edu.tr", Rol.OGRENCI,
+        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+    )
+    bildiren = kullanici_ekle(
+        paket, "Bildiren Öğrenci", "bildiren@universite.edu.tr", Rol.OGRENCI,
+        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+    )
+    dosya = tmp_path / "staj.txt"
+    dosya.write_text(STAJ_METNI_Y, encoding="utf-8")
+    belge = paket.bilgi_tabani.belgeYukle(
+        "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
+        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN,
+    )
+    paket.moderasyon.bildir(belge.kaynak_id, bildiren, "Uygunsuz içerik")
+    return belge
+
+
+def test_bildirimler_ekrani_ve_karar(ortam, tmp_path):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    belge = _bildirim_hazirla(paket, tmp_path)
+
+    yanit = istemci.get("/yonetici/bildirimler")
+    assert yanit.status_code == 200
+    metin = yanit.get_data(as_text=True)
+    assert "Staj Yönergesi" in metin
+    assert "Uygunsuz içerik" in metin
+
+    bildirim_id = paket.moderasyon.acikBildirimler()[0][0].bildirim_id
+    yanit = istemci.post(
+        f"/yonetici/bildirimler/{bildirim_id}/karar",
+        data={"sil": "1"},
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert paket.moderasyon.acikBildirimler() == []
+    assert paket.bilgi_tabani.kaynagiGetir(belge.kaynak_id) is None
+
+
+def test_bildirim_yoksay(ortam, tmp_path):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    belge = _bildirim_hazirla(paket, tmp_path)
+
+    bildirim_id = paket.moderasyon.acikBildirimler()[0][0].bildirim_id
+    yanit = istemci.post(
+        f"/yonetici/bildirimler/{bildirim_id}/karar",
+        data={},
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert paket.moderasyon.acikBildirimler() == []
+    assert paket.bilgi_tabani.kaynagiGetir(belge.kaynak_id) is not None
