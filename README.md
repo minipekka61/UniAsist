@@ -37,6 +37,10 @@ Uygulama http://127.0.0.1:5000 adresinde açılır. Boş veritabanında ilk aç�
 örnek veri otomatik yüklenir: 26 üniversite, 30 bölüm, 3 hesap ve sahipli
 örnek belgeler. Kayıtsız kullanıcılar giriş sayfasına yönlendirilir.
 
+**Önemli:** Veritabanı şeması SaaS sürümüyle değişti. Önceki (tek üniversiteli)
+sürümün `data/uniasist.db` dosyası varsa silin — uygulama ilk açılışta yeni
+şemayla ve örnek veriyle taze veritabanı kurar.
+
 ## Demo hesapları
 
 | Rol | E-posta | Şifre | Bölüm |
