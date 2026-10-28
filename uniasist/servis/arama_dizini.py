@@ -2,6 +2,7 @@ import json
 
 from uniasist.dto import AramaSonucu
 from uniasist.entity import IcerikParcasi
+from uniasist.enumlar import Gorunurluk
 
 
 class AramaDizini:
@@ -27,12 +28,16 @@ class AramaDizini:
                     bolum_bilgisi=satir["bolum_bilgisi"],
                     kategori=satir["kategori"] or "",
                     aktif=bool(satir["aktif"]),
+                    sahip_id=satir["sahip_id"],
+                    gorunurluk=Gorunurluk(satir["gorunurluk"] or "OZEL"),
+                    universite_id=satir["universite_id"],
+                    bolum=satir["bolum"] or "",
                 )
             )
 
     def parcaEkle(self, parca):
         imleç = self.db.execute(
-            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif, sahip_id, gorunurluk, universite_id, bolum) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 parca.kaynak_id,
                 parca.surum_no,
@@ -44,10 +49,23 @@ class AramaDizini:
                 parca._bolum_bilgisi,
                 parca.kategori,
                 1 if parca.aktif else 0,
+                parca.sahip_id,
+                parca.gorunurluk.value,
+                parca.universite_id,
+                parca.bolum,
             ),
         )
         parca.parca_id = imleç.lastrowid
         self.parcalar.append(parca)
+
+    def gorunurlukGuncelle(self, kaynak_id, gorunurluk):
+        self.db.execute(
+            "UPDATE icerik_parcasi SET gorunurluk = ? WHERE kaynak_id = ?",
+            (gorunurluk.value, kaynak_id),
+        )
+        for parca in self.parcalar:
+            if parca.kaynak_id == kaynak_id:
+                parca.gorunurluk = gorunurluk
 
     def kaynagaGoreSil(self, kaynak_id):
         self.db.execute("DELETE FROM icerik_parcasi WHERE kaynak_id = ?", (kaynak_id,))

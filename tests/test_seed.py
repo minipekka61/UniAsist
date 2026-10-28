@@ -23,7 +23,7 @@ def test_seed_hesaplar_ve_belgeler(paket):
     assert admin.sifreDogrula("Yonetici1234")
     assert ogrenci.sifreDogrula("Ogrenci1234")
 
-    belgeler = paket.bilgi_tabani.belgeleriListele()
+    belgeler = paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)
     assert len(belgeler) == 14
     assert all(b.aktifMi() for b in belgeler)
     parca_sayisi = paket.db.execute(
@@ -39,8 +39,9 @@ def test_seed_hesaplar_ve_belgeler(paket):
 def test_seed_idempotent(paket):
     from uniasist import seed
 
+    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
     n_kullanici = paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"]
-    n_belge = len(paket.bilgi_tabani.belgeleriListele())
+    n_belge = len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id))
     n_sss = paket.db.execute(
         "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
     ).fetchone()["n"]
@@ -48,7 +49,7 @@ def test_seed_idempotent(paket):
     seed.kos(paket)
 
     assert paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"] == n_kullanici
-    assert len(paket.bilgi_tabani.belgeleriListele()) == n_belge
+    assert len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)) == n_belge
     assert paket.db.execute(
         "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
     ).fetchone()["n"] == n_sss
@@ -67,5 +68,6 @@ def test_uygulama_olustur_bos_db_otomatik_seed(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "VERITABANI_YOLU", str(tmp_path / "seed-test.db"))
     uygulama = uygulama_olustur()
     paket = uygulama.extensions["uniasist"]
-    assert len(paket.bilgi_tabani.belgeleriListele()) == 14
+    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
+    assert len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)) == 14
     assert paket.kimlik.kullanici_deposu.epostaVarMi("admin@universite.edu.tr")

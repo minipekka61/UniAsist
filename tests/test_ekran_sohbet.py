@@ -22,9 +22,25 @@ BELGE_METNI = (
 def paket(tmp_path):
     paket = kur(db=gecici_db(), yapay_zeka=SahteYZ())
     paket.sohbet.yanit_uretme_servisi.benzerlik_esigi = config.YEREL_ESIK
+    from uniasist.entity import Kullanici
+    from uniasist.enumlar import Rol
+    from uniasist.guvenlik import sifre_hashle
+
+    ogrenci = Kullanici(
+        ad_soyad="Ali Veli",
+        eposta="ali@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.OGRENCI,
+        universite_id=1,
+        bolum="Bilgisayar Mühendisliği",
+        eposta_dogrulandi=True,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(ogrenci)
     dosya = tmp_path / "burs.txt"
     dosya.write_text(BELGE_METNI, encoding="utf-8")
-    paket.bilgi_tabani.belgeYukle("burs.txt", str(dosya), 2000, "Burs Yönergesi", "Burs")
+    paket.bilgi_tabani.belgeYukle(
+        "burs.txt", str(dosya), 2000, "Burs Yönergesi", "Burs", sahip=ogrenci
+    )
     return paket
 
 
@@ -37,7 +53,10 @@ def ortam(paket):
 
 
 def giris_yap(istemci, paket, eposta="ali@universite.edu.tr"):
-    paket.kimlik.kayitOl("Ali Veli", eposta, "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği")
+    if not paket.kimlik.kullanici_deposu.epostaVarMi(eposta):
+        paket.kimlik.kayitOl(
+            "Ali Veli", eposta, "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği"
+        )
     istemci.post("/giris", data={"eposta": eposta, "sifre": "Gizli1234"})
 
 
@@ -117,7 +136,8 @@ def test_uc07a1_silinen_kaynak_mesaji(ortam):
     sohbet = paket.sohbet.sohbetleriListele(1)[0]
     yanit_mesaji = sohbet.mesajlar[1]
     ref = yanit_mesaji.kaynaklariGetir()[0]
-    belge = paket.bilgi_tabani.belgeleriListele()[0]
+    sahibi = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
+    belge = paket.bilgi_tabani.belgeleriListele(sahibi.kullanici_id)[0]
     ref.kaynak_id = belge.kaynak_id
 
     url = f"/kaynak/{ref.kaynak_id}"
@@ -125,7 +145,7 @@ def test_uc07a1_silinen_kaynak_mesaji(ortam):
     assert acilan.status_code == 200
     assert "Burs Yönergesi" in acilan.get_data(as_text=True)
 
-    paket.bilgi_tabani.belgeSil(belge.kaynak_id)
+    paket.bilgi_tabani.belgeSil(belge.kaynak_id, sahibi.kullanici_id)
     acilan = istemci.get(url)
     assert acilan.status_code == 200
     assert "mevcut değil" in acilan.get_data(as_text=True)

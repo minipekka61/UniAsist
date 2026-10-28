@@ -6,6 +6,7 @@ from pathlib import Path
 import config
 from uniasist.enumlar import (
     GonderenTuru,
+    Gorunurluk,
     HesapDurumu,
     KayitDurumu,
     KaynakDurumu,
@@ -211,7 +212,8 @@ class BilgiKaynagi(ABC):
 
 class Belge(BilgiKaynagi):
     def __init__(self, baslik="", kategori="", dosya_adi="", dosya_turu="",
-                 boyut_byte=0, dosya_yolu="", surum_no=1, **kwargs):
+                 boyut_byte=0, dosya_yolu="", surum_no=1, sahip_id=None,
+                 gorunurluk=None, universite_id=None, bolum="", **kwargs):
         kwargs.setdefault("tur", "BELGE")
         super().__init__(baslik=baslik, kategori=kategori, **kwargs)
         self.dosya_adi = dosya_adi
@@ -219,6 +221,10 @@ class Belge(BilgiKaynagi):
         self.boyut_byte = boyut_byte
         self.dosya_yolu = dosya_yolu
         self.surum_no = surum_no
+        self.sahip_id = sahip_id
+        self.gorunurluk = gorunurluk or Gorunurluk.OZEL
+        self.universite_id = universite_id
+        self.bolum = bolum
 
     def dosyaGecerliMi(self):
         if self.dosya_turu not in ("pdf", "txt"):
@@ -249,7 +255,8 @@ class Belge(BilgiKaynagi):
 class IcerikParcasi:
     def __init__(self, kaynak_id, sira, metin, gomme=None, surum_no=1,
                  gomme_saglayici="", kaynak_adi="", bolum_bilgisi=None,
-                 kategori="", aktif=True, parca_id=None):
+                 kategori="", aktif=True, parca_id=None, sahip_id=None,
+                 gorunurluk=None, universite_id=None, bolum=""):
         self.parca_id = parca_id
         self.kaynak_id = kaynak_id
         self.surum_no = surum_no
@@ -261,6 +268,10 @@ class IcerikParcasi:
         self.kategori = kategori
         self._bolum_bilgisi = bolum_bilgisi
         self.aktif = aktif
+        self.sahip_id = sahip_id
+        self.gorunurluk = gorunurluk or Gorunurluk.OZEL
+        self.universite_id = universite_id
+        self.bolum = bolum
 
     def benzerlikHesapla(self, sorgu_gommesi):
         if not self.gomme or not sorgu_gommesi:

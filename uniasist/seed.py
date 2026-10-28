@@ -29,6 +29,7 @@ _BELGELER = [
 ]
 
 def kos(paket):
+    universite = paket.universite_deposu.alanAdindanBul("admin@universite.edu.tr")
     for ad_soyad, eposta, sifre, rol in _HESAPLAR:
         if not paket.kimlik.kullanici_deposu.epostaVarMi(eposta):
             kullanici = Kullanici(
@@ -36,12 +37,17 @@ def kos(paket):
                 eposta=eposta,
                 sifre_hash=sifre_hashle(sifre),
                 rol=rol,
+                universite_id=universite.universite_id if universite else None,
+                bolum="Bilgisayar Mühendisliği" if rol == Rol.OGRENCI else "",
+                eposta_dogrulandi=True,
             )
             paket.kimlik.kullanici_deposu.kaydet(kullanici)
 
-    if not paket.bilgi_tabani.belgeleriListele():
+    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
+    if ogrenci and not paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id):
         for dosya_adi, baslik, kategori in _BELGELER:
             yol = _KOK / dosya_adi
             paket.bilgi_tabani.belgeYukle(
-                dosya_adi, str(yol), yol.stat().st_size, baslik, kategori
+                dosya_adi, str(yol), yol.stat().st_size, baslik, kategori,
+                sahip=ogrenci,
             )

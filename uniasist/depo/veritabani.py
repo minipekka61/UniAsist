@@ -72,7 +72,11 @@ CREATE TABLE IF NOT EXISTS bilgi_kaynagi (
     dosya_turu TEXT,
     boyut_byte INTEGER,
     dosya_yolu TEXT,
-    surum_no INTEGER
+    surum_no INTEGER,
+    sahip_id INTEGER,
+    gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
+    universite_id INTEGER,
+    bolum TEXT
 );
 CREATE TABLE IF NOT EXISTS icerik_parcasi (
     parca_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +89,11 @@ CREATE TABLE IF NOT EXISTS icerik_parcasi (
     kaynak_adi TEXT,
     bolum_bilgisi TEXT,
     kategori TEXT,
-    aktif INTEGER NOT NULL DEFAULT 1
+    aktif INTEGER NOT NULL DEFAULT 1,
+    sahip_id INTEGER,
+    gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
+    universite_id INTEGER,
+    bolum TEXT
 );
 CREATE TABLE IF NOT EXISTS yanitlanamayan_soru (
     kayit_id INTEGER PRIMARY KEY AUTOINCREMENT,

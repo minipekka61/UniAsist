@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from uniasist.entity import Belge
-from uniasist.enumlar import KaynakDurumu
+from uniasist.enumlar import Gorunurluk, KaynakDurumu
 
 
 class BilgiKaynagiDeposu:
@@ -11,13 +11,13 @@ class BilgiKaynagiDeposu:
     def kaydet(self, kaynak):
         if kaynak.kaynak_id is None:
             imleç = self.db.execute(
-                "INSERT INTO bilgi_kaynagi (tur, baslik, kategori, durum, olusturma_tarihi, guncelleme_tarihi, dosya_adi, dosya_turu, boyut_byte, dosya_yolu, surum_no) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO bilgi_kaynagi (tur, baslik, kategori, durum, olusturma_tarihi, guncelleme_tarihi, dosya_adi, dosya_turu, boyut_byte, dosya_yolu, surum_no, sahip_id, gorunurluk, universite_id, bolum) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 self._degerler(kaynak),
             )
             kaynak.kaynak_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE bilgi_kaynagi SET tur=?, baslik=?, kategori=?, durum=?, olusturma_tarihi=?, guncelleme_tarihi=?, dosya_adi=?, dosya_turu=?, boyut_byte=?, dosya_yolu=?, surum_no=? WHERE kaynak_id=?",
+                "UPDATE bilgi_kaynagi SET tur=?, baslik=?, kategori=?, durum=?, olusturma_tarihi=?, guncelleme_tarihi=?, dosya_adi=?, dosya_turu=?, boyut_byte=?, dosya_yolu=?, surum_no=?, sahip_id=?, gorunurluk=?, universite_id=?, bolum=? WHERE kaynak_id=?",
                 self._degerler(kaynak) + (kaynak.kaynak_id,),
             )
 
@@ -34,6 +34,10 @@ class BilgiKaynagiDeposu:
             kaynak.boyut_byte,
             kaynak.dosya_yolu,
             kaynak.surum_no,
+            kaynak.sahip_id,
+            kaynak.gorunurluk.value,
+            kaynak.universite_id,
+            kaynak.bolum,
         )
 
     def _satirdan(self, satir):
@@ -49,6 +53,10 @@ class BilgiKaynagiDeposu:
             boyut_byte=satir["boyut_byte"] or 0,
             dosya_yolu=satir["dosya_yolu"] or "",
             surum_no=satir["surum_no"] or 1,
+            sahip_id=satir["sahip_id"],
+            gorunurluk=Gorunurluk(satir["gorunurluk"] or "OZEL"),
+            universite_id=satir["universite_id"],
+            bolum=satir["bolum"] or "",
         )
 
     def idIleBul(self, kaynak_id):
@@ -68,5 +76,19 @@ class BilgiKaynagiDeposu:
     def belgeler(self):
         satirlar = self.db.execute(
             "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' ORDER BY baslik"
+        ).fetchall()
+        return [self._satirdan(s) for s in satirlar]
+
+    def sahibinBelgeleri(self, kullanici_id):
+        satirlar = self.db.execute(
+            "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND sahip_id = ? ORDER BY olusturma_tarihi DESC",
+            (kullanici_id,),
+        ).fetchall()
+        return [self._satirdan(s) for s in satirlar]
+
+    def bolumunPaylasilanlari(self, universite_id, bolum):
+        satirlar = self.db.execute(
+            "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND gorunurluk = ? AND universite_id = ? AND bolum = ? ORDER BY baslik",
+            (Gorunurluk.PAYLASILAN.value, universite_id, bolum),
         ).fetchall()
         return [self._satirdan(s) for s in satirlar]

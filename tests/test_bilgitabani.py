@@ -3,8 +3,9 @@
 import config
 from tests.yardimci import SahteYZ, gecici_db
 from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
-from uniasist.entity import Belge, IcerikParcasi
-from uniasist.enumlar import KaynakDurumu
+from uniasist.depo.kullanici_deposu import KullaniciDeposu
+from uniasist.entity import Belge, IcerikParcasi, Kullanici
+from uniasist.enumlar import Gorunurluk, KaynakDurumu, Rol
 from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.servis.arama_dizini import AramaDizini
 from uniasist.servis.belge_isleme_servisi import BelgeIslemeServisi
@@ -67,58 +68,79 @@ def belge_dosyasi(tmp_path):
     return str(dosya)
 
 
+def ogrenci_olustur(db, eposta="ali@universite.edu.tr", bolum="Bilgisayar Mühendisliği",
+                    universite_id=1, dogrulanmis=True):
+    depo = KullaniciDeposu(db)
+    k = Kullanici(
+        ad_soyad="Öğrenci",
+        eposta=eposta,
+        sifre_hash="x",
+        rol=Rol.OGRENCI,
+        universite_id=universite_id,
+        bolum=bolum,
+        eposta_dogrulandi=dogrulanmis,
+    )
+    depo.kaydet(k)
+    return k
+
+
 def test_ik24_gecersiz_tur_ve_boyut(servisler, tmp_path):
-    bilgi_tabani, dizin, depo, _, _ = servisler
+    bilgi_tabani, dizin, depo, _, db = servisler
+    ogr = ogrenci_olustur(db)
     dosya = tmp_path / "belge.docx"
     dosya.write_text("x", encoding="utf-8")
     with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.belgeYukle("belge.docx", str(dosya), 100, "Yönetmelik", "Kayıt")
+        bilgi_tabani.belgeYukle("belge.docx", str(dosya), 100, "Yönetmelik", "Kayıt", sahip=ogr)
     assert h.value.kural_no_getir() == "IK-24"
     with pytest.raises(IsKuraliIhlaliException):
-        bilgi_tabani.belgeYukle("buyuk.txt", str(dosya), config.AZAMI_BELGE_BOYUTU + 1, "B", "K")
+        bilgi_tabani.belgeYukle("buyuk.txt", str(dosya), config.AZAMI_BELGE_BOYUTU + 1, "B", "K", sahip=ogr)
     with pytest.raises(IsKuraliIhlaliException):
-        bilgi_tabani.belgeYukle("bos-baslik.txt", str(dosya), 100, "", "Kayıt")
-    assert bilgi_tabani.belgeleriListele() == []
+        bilgi_tabani.belgeYukle("bos-baslik.txt", str(dosya), 100, "", "Kayıt", sahip=ogr)
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
 
 
 def test_ik25_bos_txt_pasif_kalir(servisler, tmp_path):
-    bilgi_tabani, dizin, depo, _, _ = servisler
+    bilgi_tabani, dizin, depo, _, db = servisler
+    ogr = ogrenci_olustur(db)
     dosya = tmp_path / "bos.txt"
     dosya.write_text("kısa", encoding="utf-8")
     with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.belgeYukle("bos.txt", str(dosya), 5, "Boş Belge", "Kayıt")
+        bilgi_tabani.belgeYukle("bos.txt", str(dosya), 5, "Boş Belge", "Kayıt", sahip=ogr)
     assert h.value.kural_no_getir() == "IK-25"
-    belgeler = bilgi_tabani.belgeleriListele()
+    belgeler = bilgi_tabani.belgeleriListele(ogr.kullanici_id)
     assert len(belgeler) == 1
     assert belgeler[0].durum == KaynakDurumu.PASIF
     assert dizin.enYakinParcalar([0.1] * 512, 5) == []
 
 
 def test_ik25_bozuk_pdf_pasif_kalir(servisler, tmp_path):
-    bilgi_tabani, _, _, _, _ = servisler
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
     dosya = tmp_path / "bozuk.pdf"
     dosya.write_bytes(b"%PDF-1.4 bozuk icerik")
     with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.belgeYukle("bozuk.pdf", str(dosya), 100, "Bozuk PDF", "Kayıt")
+        bilgi_tabani.belgeYukle("bozuk.pdf", str(dosya), 100, "Bozuk PDF", "Kayıt", sahip=ogr)
     assert h.value.kural_no_getir() == "IK-25"
-    assert bilgi_tabani.belgeleriListele()[0].durum == KaynakDurumu.PASIF
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0].durum == KaynakDurumu.PASIF
 
 
 def test_ik25_kismi_indeksleme_dizinden_temizlenir(servisler, belge_dosyasi):
-    bilgi_tabani, dizin, _, yz, _ = servisler
+    bilgi_tabani, dizin, _, yz, db = servisler
+    ogr = ogrenci_olustur(db)
     yz.gomme_hata_sonrasi = 1
     with pytest.raises(IsKuraliIhlaliException) as h:
-        bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Öğrenci Yönetmeliği", "Kayıt")
+        bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Öğrenci Yönetmeliği", "Kayıt", sahip=ogr)
     assert h.value.kural_no_getir() == "IK-25"
-    assert bilgi_tabani.belgeleriListele()[0].durum == KaynakDurumu.PASIF
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0].durum == KaynakDurumu.PASIF
     assert dizin.enYakinParcalar(SahteYZ().gommeUret("burs basvurusu ne zaman"), 5) == []
 
 
 def test_ik25_gecerli_pdf_islenir(servisler, tmp_path):
-    bilgi_tabani, dizin, _, _, _ = servisler
+    bilgi_tabani, dizin, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
     dosya = tmp_path / "gecerli.pdf"
     dosya.write_bytes(pdf_uret("Staj basvurusu icin en az 60 gun calisma sartidir. Staj defteri 15 gun icinde teslim edilir."))
-    belge = bilgi_tabani.belgeYukle("gecerli.pdf", str(dosya), dosya.stat().st_size, "Staj Yönergesi", "Staj")
+    belge = bilgi_tabani.belgeYukle("gecerli.pdf", str(dosya), dosya.stat().st_size, "Staj Yönergesi", "Staj", sahip=ogr)
     assert belge.durum == KaynakDurumu.AKTIF
     sonuclar = dizin.enYakinParcalar(SahteYZ().gommeUret("staj calisma sarti"), 5)
     assert len(sonuclar) > 0
@@ -126,11 +148,12 @@ def test_ik25_gecerli_pdf_islenir(servisler, tmp_path):
 
 
 def test_ik25_basarili_yukleme_aktif(servisler, belge_dosyasi):
-    bilgi_tabani, dizin, depo, yz, _ = servisler
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Öğrenci Yönetmeliği", "Kayıt")
+    bilgi_tabani, dizin, depo, yz, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Öğrenci Yönetmeliği", "Kayıt", sahip=ogr)
     assert belge.kaynak_id is not None
     assert belge.durum == KaynakDurumu.AKTIF
-    belgeler = bilgi_tabani.belgeleriListele()
+    belgeler = bilgi_tabani.belgeleriListele(ogr.kullanici_id)
     assert len(belgeler) == 1 and belgeler[0].baslik == "Öğrenci Yönetmeliği"
     sonuclar = dizin.enYakinParcalar(yz.gommeUret("burs basvurusu ne zaman"), 5)
     assert len(sonuclar) > 0
@@ -155,14 +178,18 @@ def test_parcalama_boyut_ve_ortusme():
 
 
 def test_ik26_guncelleme_basarili_yeni_surum(servisler, belge_dosyasi, tmp_path):
-    bilgi_tabani, dizin, _, yz, _ = servisler
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt")
+    bilgi_tabani, dizin, _, yz, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     eski_surum = belge.surum_no
     eski_parca_sayisi = len(dizin.enYakinParcalar(yz.gommeUret("kayit"), 100))
 
     yeni_dosya = tmp_path / "yeni.txt"
     yeni_dosya.write_text("Burs basvuru tarihi eylul ayinin ilk haftasidir. Basari bursu icin 3.00 ortalama gerekir. " * 5, encoding="utf-8")
-    guncel = bilgi_tabani.belgeGuncelle(belge.kaynak_id, "Yönetmelik 2027", "Burs", yeni_dosya_yolu=str(yeni_dosya), yeni_dosya_adi="yeni.txt", yeni_boyut_byte=100)
+    guncel = bilgi_tabani.belgeGuncelle(
+        belge.kaynak_id, ogr.kullanici_id, "Yönetmelik 2027", "Burs",
+        yeni_dosya_yolu=str(yeni_dosya), yeni_dosya_adi="yeni.txt", yeni_boyut_byte=100,
+    )
 
     assert guncel.surum_no == eski_surum + 1
     assert guncel.baslik == "Yönetmelik 2027" and guncel.kategori == "Burs"
@@ -174,8 +201,9 @@ def test_ik26_guncelleme_basarili_yeni_surum(servisler, belge_dosyasi, tmp_path)
 
 
 def test_ik26_guncelleme_basarisiz_eski_kalir(servisler, belge_dosyasi, tmp_path):
-    bilgi_tabani, dizin, depo, yz, _ = servisler
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt")
+    bilgi_tabani, dizin, depo, yz, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     eski_sorgu = yz.gommeUret("kayit yenileme")
     eski_sonuc = dizin.enYakinParcalar(eski_sorgu, 100)
     assert len(eski_sonuc) > 0
@@ -186,7 +214,7 @@ def test_ik26_guncelleme_basarisiz_eski_kalir(servisler, belge_dosyasi, tmp_path
     yeni_dosya.write_text("Yeni icerik burs kurallari hakkinda. " * 10, encoding="utf-8")
     with pytest.raises(IsKuraliIhlaliException) as h:
         bilgi_tabani.belgeGuncelle(
-            belge.kaynak_id, "Yönetmelik 2", "Burs",
+            belge.kaynak_id, ogr.kullanici_id, "Yönetmelik 2", "Burs",
             yeni_dosya_yolu=str(yeni_dosya), yeni_dosya_adi="yeni.txt", yeni_boyut_byte=500,
         )
     assert h.value.kural_no_getir() == "IK-25"
@@ -195,7 +223,7 @@ def test_ik26_guncelleme_basarisiz_eski_kalir(servisler, belge_dosyasi, tmp_path
     kalan = dizin.enYakinParcalar(eski_sorgu, 100)
     assert len(kalan) > 0
     assert kalan[0].parca.sira == eski_sira
-    belge_son = bilgi_tabani.belgeleriListele()[0]
+    belge_son = bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
     assert belge_son.dosya_adi == "yonetmelik.txt"
     assert belge_son.baslik == "Yönetmelik"
     assert dizin.enYakinParcalar(yz.gommeUret("yeni icerik burs"), 100) == [] or all(
@@ -204,10 +232,11 @@ def test_ik26_guncelleme_basarisiz_eski_kalir(servisler, belge_dosyasi, tmp_path
 
 
 def test_ik26_sadece_baslik_guncellenirse(servisler, belge_dosyasi):
-    bilgi_tabani, dizin, _, yz, _ = servisler
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt")
+    bilgi_tabani, dizin, _, yz, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     onceki = dizin.enYakinParcalar(yz.gommeUret("kayit"), 100)
-    guncel = bilgi_tabani.belgeGuncelle(belge.kaynak_id, "Yeni Başlık", "Yeni Kategori")
+    guncel = bilgi_tabani.belgeGuncelle(belge.kaynak_id, ogr.kullanici_id, "Yeni Başlık", "Yeni Kategori")
     assert guncel.baslik == "Yeni Başlık"
     assert guncel.surum_no == belge.surum_no
     sonraki = dizin.enYakinParcalar(yz.gommeUret("kayit"), 100)
@@ -215,10 +244,119 @@ def test_ik26_sadece_baslik_guncellenirse(servisler, belge_dosyasi):
 
 
 def test_ik27_silme_dizinden_kaldirir(servisler, belge_dosyasi):
-    bilgi_tabani, dizin, _, yz, _ = servisler
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt")
+    bilgi_tabani, dizin, _, yz, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     assert len(dizin.enYakinParcalar(yz.gommeUret("kayit"), 100)) > 0
-    bilgi_tabani.belgeSil(belge.kaynak_id)
-    assert bilgi_tabani.belgeleriListele() == []
+    bilgi_tabani.belgeSil(belge.kaynak_id, ogr.kullanici_id)
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
     assert bilgi_tabani.kaynagiGetir(belge.kaynak_id) is None
     assert dizin.enYakinParcalar(yz.gommeUret("kayit"), 100) == []
+
+
+def test_belge_sahiplik_alanlari_atanir(servisler, belge_dosyasi):
+    bilgi_tabani, dizin, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    assert belge.sahip_id == ogr.kullanici_id
+    assert belge.universite_id == ogr.universite_id
+    assert belge.bolum == ogr.bolum
+    assert belge.gorunurluk == Gorunurluk.OZEL
+    for parca in dizin.parcalar:
+        if parca.kaynak_id == belge.kaynak_id:
+            assert parca.sahip_id == ogr.kullanici_id
+            assert parca.gorunurluk == Gorunurluk.OZEL
+            assert parca.universite_id == ogr.universite_id
+            assert parca.bolum == ogr.bolum
+
+
+def test_ik29_dogrulanmamis_paylasamaz(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db, dogrulanmis=False)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.belgeYukle(
+            "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+            sahip=ogr, gorunurluk=Gorunurluk.PAYLASILAN,
+        )
+    assert h.value.kural_no_getir() == "IK-29"
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    assert belge.durum == KaynakDurumu.AKTIF
+    assert belge.gorunurluk == Gorunurluk.OZEL
+
+
+def test_ik30_baskasi_belgeyi_guncelleyemez(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    baska = ogrenci_olustur(db, eposta="baska@universite.edu.tr")
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.belgeGuncelle(belge.kaynak_id, baska.kullanici_id, "Başkası", "Burs")
+    assert h.value.kural_no_getir() == "IK-30"
+
+
+def test_ik30_baskasi_belgeyi_silemez(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    baska = ogrenci_olustur(db, eposta="baska@universite.edu.tr")
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.belgeSil(belge.kaynak_id, baska.kullanici_id)
+    assert h.value.kural_no_getir() == "IK-30"
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id) != []
+
+
+def test_gorunurluk_degisimi_parcalara_yansir(servisler, belge_dosyasi):
+    bilgi_tabani, dizin, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN)
+    assert bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0].gorunurluk == Gorunurluk.PAYLASILAN
+    taze_dizin = AramaDizini(bilgi_tabani.bilgi_kaynagi_deposu.db)
+    paylasilan = [
+        p for p in taze_dizin.parcalar if p.kaynak_id == belge.kaynak_id
+    ]
+    assert paylasilan
+    assert all(p.gorunurluk == Gorunurluk.PAYLASILAN for p in paylasilan)
+    bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.OZEL)
+    taze_dizin2 = AramaDizini(bilgi_tabani.bilgi_kaynagi_deposu.db)
+    assert all(
+        p.gorunurluk == Gorunurluk.OZEL
+        for p in taze_dizin2.parcalar if p.kaynak_id == belge.kaynak_id
+    )
+
+
+def test_ik29_dogrulanmamis_gorunurluk_degistiremez(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db, dogrulanmis=False)
+    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN)
+    assert h.value.kural_no_getir() == "IK-29"
+
+
+def test_bolumun_paylasilanlari_listeler(servisler, belge_dosyasi, tmp_path):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr_a = ogrenci_olustur(db, eposta="a@u.edu.tr", bolum="Bilgisayar Mühendisliği", universite_id=1)
+    ogr_b = ogrenci_olustur(db, eposta="b@u.edu.tr", bolum="Hukuk", universite_id=1)
+    ogr_c = ogrenci_olustur(db, eposta="c@diger.edu.tr", bolum="Bilgisayar Mühendisliği", universite_id=2)
+
+    paylasilan = bilgi_tabani.belgeYukle(
+        "p.txt", belge_dosyasi, 5000, "Paylaşılan Yönetmelik", "Kayıt",
+        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN,
+    )
+    bilgi_tabani.belgeYukle("o.txt", belge_dosyasi, 5000, "Özel Yönetmelik", "Kayıt", sahip=ogr_a)
+    baska_bolum_paylasilan = bilgi_tabani.belgeYukle(
+        "h.txt", belge_dosyasi, 5000, "Hukuk Notları", "Hukuk",
+        sahip=ogr_b, gorunurluk=Gorunurluk.PAYLASILAN,
+    )
+    baska_universite = bilgi_tabani.belgeYukle(
+        "d.txt", belge_dosyasi, 5000, "Diğer Üniversite", "Kayıt",
+        sahip=ogr_c, gorunurluk=Gorunurluk.PAYLASILAN,
+    )
+
+    liste = bilgi_tabani.bolumunPaylasilanlari(1, "Bilgisayar Mühendisliği")
+    kaynaklar = {b.kaynak_id for b in liste}
+    assert paylasilan.kaynak_id in kaynaklar
+    assert baska_bolum_paylasilan.kaynak_id not in kaynaklar
+    assert baska_universite.kaynak_id not in kaynaklar
+    assert bilgi_tabani.bolumunPaylasilanlari(2, "Hukuk") == []

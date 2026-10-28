@@ -16,6 +16,11 @@ class KaynakDurumu(Enum):
     PASIF = "PASIF"
 
 
+class Gorunurluk(Enum):
+    OZEL = "OZEL"
+    PAYLASILAN = "PAYLASILAN"
+
+
 class KayitDurumu(Enum):
     ACIK = "ACIK"
     COZULDU = "COZULDU"

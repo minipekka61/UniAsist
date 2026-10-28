@@ -45,11 +45,23 @@ def servisler(tmp_path):
     isleme = BelgeIslemeServisi(dizin, yz)
     bilgi_depo = BilgiKaynagiDeposu(db)
     bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin)
-    dosya = tmp_path / "burs.txt"
-    dosya.write_text(BELGE_METNI * 3, encoding="utf-8")
-    bilgi_tabani.belgeYukle("burs.txt", str(dosya), 1000, "Burs Yönergesi", "Burs")
 
     kullanici_depo = KullaniciDeposu(db)
+    kullanici = Kullanici(
+        ad_soyad="Ali Veli",
+        eposta="ali@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.OGRENCI,
+        universite_id=1,
+        bolum="Bilgisayar Mühendisliği",
+        eposta_dogrulandi=True,
+    )
+    kullanici_depo.kaydet(kullanici)
+
+    dosya = tmp_path / "burs.txt"
+    dosya.write_text(BELGE_METNI * 3, encoding="utf-8")
+    bilgi_tabani.belgeYukle("burs.txt", str(dosya), 1000, "Burs Yönergesi", "Burs", sahip=kullanici)
+
     sohbet_depo = SohbetDeposu(db)
     soru_kaydi_depo = SoruKaydiDeposu(db)
     yanitlanamayan_depo = YanitlanamayanSoruDeposu(db)
@@ -59,10 +71,6 @@ def servisler(tmp_path):
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_depo)
     sohbet = SohbetServisi(sohbet_depo, soru_kaydi_depo, yanit_uretme, yanitlanamayan, bilgi_depo)
     geri_bildirim = GeriBildirimServisi(sohbet_depo, geri_bildirim_depo)
-
-    kullanici = Kullanici(ad_soyad="Ali Veli", eposta="ali@universite.edu.tr",
-                          sifre_hash=sifre_hashle("Gizli1234"), rol=Rol.OGRENCI)
-    kullanici_depo.kaydet(kullanici)
 
     return {
         "db": db,
@@ -272,9 +280,11 @@ def test_uc07_silinen_kaynak_none_doner(servisler):
     s = ogrenci_sohbeti(servisler)
     yanit = servisler["sohbet"].soruSor(s, "Burs başvurusu ne zaman yapılır?")
     ref = yanit.kaynaklariGetir()[0]
-    ref.kaynak_id = servisler["bilgi_tabani"].belgeleriListele()[0].kaynak_id
+    ref.kaynak_id = servisler["bilgi_tabani"].belgeleriListele(
+        servisler["kullanici"].kullanici_id
+    )[0].kaynak_id
     assert servisler["sohbet"].kaynagiGoruntule(ref) is not None
-    servisler["bilgi_tabani"].belgeSil(ref.kaynak_id)
+    servisler["bilgi_tabani"].belgeSil(ref.kaynak_id, servisler["kullanici"].kullanici_id)
     assert servisler["sohbet"].kaynagiGoruntule(ref) is None
 
 

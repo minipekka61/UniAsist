@@ -68,6 +68,10 @@ class BelgeIslemeServisi:
             parca.kategori = belge.kategori
             parca.gomme_saglayici = self.yapay_zeka_servisi.saglayici_etiketi
             parca._bolum_bilgisi = f"{belge.baslik} — parça {parca.sira}"
+            parca.sahip_id = belge.sahip_id
+            parca.gorunurluk = belge.gorunurluk
+            parca.universite_id = belge.universite_id
+            parca.bolum = belge.bolum
             parca.gomme = self._gommeUret(parca.metin)
             self.arama_dizini.parcaEkle(parca)
         return parcalar

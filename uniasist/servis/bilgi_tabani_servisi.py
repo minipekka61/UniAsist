@@ -1,5 +1,5 @@
 from uniasist.entity import Belge
-from uniasist.enumlar import KaynakDurumu
+from uniasist.enumlar import Gorunurluk
 from uniasist.hatalar import IsKuraliIhlaliException
 
 
@@ -9,7 +9,13 @@ class BilgiTabaniServisi:
         self.belge_isleme_servisi = belge_isleme_servisi
         self.arama_dizini = arama_dizini
 
-    def belgeYukle(self, dosya_adi, dosya_yolu, boyut_byte, baslik, kategori):
+    def belgeYukle(self, dosya_adi, dosya_yolu, boyut_byte, baslik, kategori, sahip,
+                   gorunurluk=Gorunurluk.OZEL):
+        if gorunurluk == Gorunurluk.PAYLASILAN and not sahip.dogrulanmisMi():
+            raise IsKuraliIhlaliException(
+                "IK-29",
+                "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
+            )
         belge = Belge(
             baslik=baslik,
             kategori=kategori,
@@ -17,6 +23,10 @@ class BilgiTabaniServisi:
             dosya_turu=dosya_adi.rsplit(".", 1)[1].lower() if "." in dosya_adi else "",
             boyut_byte=boyut_byte,
             dosya_yolu=dosya_yolu,
+            sahip_id=sahip.kullanici_id,
+            gorunurluk=gorunurluk,
+            universite_id=sahip.universite_id,
+            bolum=sahip.bolum,
         )
         if not belge.dosyaGecerliMi():
             raise IsKuraliIhlaliException(
@@ -34,11 +44,22 @@ class BilgiTabaniServisi:
         self.bilgi_kaynagi_deposu.kaydet(belge)
         return belge
 
-    def belgeGuncelle(self, belge_id, baslik, kategori, yeni_dosya_yolu=None,
-                      yeni_dosya_adi=None, yeni_boyut_byte=None):
+    def _belgeyiGetir(self, belge_id):
         belge = self.bilgi_kaynagi_deposu.idIleBul(belge_id)
         if belge is None:
-            raise IsKuraliIhlaliException("IK-24", "Güncellenecek belge bulunamadı.")
+            raise IsKuraliIhlaliException("IK-24", "Belge bulunamadı.")
+        return belge
+
+    def _sahiplikKontrol(self, belge, kullanici_id):
+        if belge.sahip_id != kullanici_id:
+            raise IsKuraliIhlaliException(
+                "IK-30", "Bu belgeyi düzenleme yetkiniz yok."
+            )
+
+    def belgeGuncelle(self, belge_id, kullanici_id, baslik, kategori,
+                      yeni_dosya_yolu=None, yeni_dosya_adi=None, yeni_boyut_byte=None):
+        belge = self._belgeyiGetir(belge_id)
+        self._sahiplikKontrol(belge, kullanici_id)
         if yeni_dosya_yolu:
             deneme = Belge(
                 baslik=baslik,
@@ -84,15 +105,34 @@ class BilgiTabaniServisi:
         self.bilgi_kaynagi_deposu.kaydet(belge)
         return belge
 
-    def belgeSil(self, belge_id):
-        belge = self.bilgi_kaynagi_deposu.idIleBul(belge_id)
-        if belge is None:
-            raise IsKuraliIhlaliException("IK-24", "Silinecek belge bulunamadı.")
+    def belgeSilZorla(self, belge_id):
+        belge = self._belgeyiGetir(belge_id)
         self.arama_dizini.kaynagaGoreSil(belge.kaynak_id)
         self.bilgi_kaynagi_deposu.sil(belge_id)
 
-    def belgeleriListele(self):
-        return self.bilgi_kaynagi_deposu.belgeler()
+    def belgeSil(self, belge_id, kullanici_id):
+        belge = self._belgeyiGetir(belge_id)
+        self._sahiplikKontrol(belge, kullanici_id)
+        self.belgeSilZorla(belge_id)
+
+    def gorunurlukDegistir(self, belge_id, kullanici, gorunurluk):
+        belge = self._belgeyiGetir(belge_id)
+        self._sahiplikKontrol(belge, kullanici.kullanici_id)
+        if gorunurluk == Gorunurluk.PAYLASILAN and not kullanici.dogrulanmisMi():
+            raise IsKuraliIhlaliException(
+                "IK-29",
+                "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
+            )
+        belge.gorunurluk = gorunurluk
+        self.bilgi_kaynagi_deposu.kaydet(belge)
+        self.arama_dizini.gorunurlukGuncelle(belge.kaynak_id, gorunurluk)
+        return belge
+
+    def belgeleriListele(self, kullanici_id):
+        return self.bilgi_kaynagi_deposu.sahibinBelgeleri(kullanici_id)
+
+    def bolumunPaylasilanlari(self, universite_id, bolum):
+        return self.bilgi_kaynagi_deposu.bolumunPaylasilanlari(universite_id, bolum)
 
     def kaynagiGetir(self, kaynak_id):
         if kaynak_id is None:
