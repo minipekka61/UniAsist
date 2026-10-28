@@ -37,11 +37,42 @@ def test_yerel_gomme_deterministik():
     assert p.benzerlikHesapla(v1) > p.benzerlikHesapla(uzak)
 
 
+def test_yerel_gomme_surecler_arasi_kararli():
+    import json
+    import subprocess
+    import sys
+
+    yz = YerelAramaServisi()
+    beklenen = yz.gommeUret("Burs başvurusu ne zaman yapılır?")
+    kod = (
+        "import json; "
+        "from uniasist.yapayzeka.yerel_arama_servisi import YerelAramaServisi; "
+        "print(json.dumps(YerelAramaServisi().gommeUret('Burs başvurusu ne zaman yapılır?')))"
+    )
+    sonuc = subprocess.run(
+        [sys.executable, "-c", kod], capture_output=True, text=True, check=True
+    )
+    assert json.loads(sonuc.stdout) == beklenen
+
+
 def test_yerel_yanit_extractive():
     yz = YerelAramaServisi()
     p = parca("Staj başvurusu için en az 60 gün çalışma şartıdır. Başvuru öğrenci işlerine yapılır. Staj defteri teslim edilir.")
     yanit = yz.yanitUret("Staj şartı nedir?", [p], [])
     assert "60 gün" in yanit
+
+
+def test_yerel_yanit_ilgili_cumleyi_secer():
+    yz = YerelAramaServisi()
+    metin = (
+        "Bu yönerge kapsamında tüm lisans öğrencileri yararlanır. "
+        "Yönerge Senato tarafından onaylanmıştır. "
+        "Danışman onayı ile ders yükü en fazla 40 AKTS'ye kadar artırılabilir. "
+        "İtirazlar beş iş günü içinde Öğrenci İşlerine yapılır."
+    )
+    p = parca(metin)
+    yanit = yz.yanitUret("Ders yükü en fazla kaç AKTS'ye kadar artırılabilir?", [p], [])
+    assert "40 AKTS" in yanit
 
 
 def test_arama_dizini_siralama_ve_skor():

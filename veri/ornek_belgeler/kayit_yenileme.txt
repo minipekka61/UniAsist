@@ -1,0 +1,18 @@
+Kayıt Yenileme Kılavuzu
+
+Genel bilgi: Kayıt yenileme, her yarıyıl başında, akademik takvimde ilan edilen iki haftalık süre içinde yapılır. Öğrenci, kayıt yenileme süresi içinde ders kaydını yaptırmadığı takdirde o yarıyıl öğrencilik haklarından yararlanamaz; bu süre öğretim süresinden sayılır.
+
+Kayıt yenileme adımları:
+
+1. Öğrenci bilgi sistemine öğrenci numarası ve şifresi ile giriş yapılır.
+2. Danışman onayına sunulmak üzere yarıyıl ders seçimi yapılır.
+3. Katkı payı veya öğrenim ücreti, sistemde görüntülenen tutar üzerinden ödenir.
+4. Danışman, ders kaydını onaylar; onaylanmayan kayıt geçersizdir.
+
+Öğrenim ücreti ve katkı payı: Katkı payı her yıl Yükseköğretim Kurulu tarafından belirlenir ve iki taksitte ödenir; ilk taksit kayıt yenileme sırasında, ikinci taksit yarıyıl ortasında ödenir. Öğrenim ücreti ödemeleri bankanın ödeme kanalları veya kredi kartı ile yapılabilir. Ödemesini süresinde yapmayan öğrencinin ders kaydı kesinleşmez.
+
+Gecikmeli kayıt: Mazereti kabul edilen öğrenciye, ilgili yönetim kurulu kararı ile en fazla on beş gün ek süre tanınır. Sağlık raporu, askerlik ve doğum gibi zorunlu hâllerde kayıt dondurma uygulanabilir; kayıt dondurulan yarıyıl, öğretim süresinden sayılmaz.
+
+Öğrenci katkı payı iadesi: Kaydını donduran veya öğrencilikten ayrılan öğrencinin, yarıyılın ilk on günü içinde yaptığı başvuru üzerine, o yarıyıla ait ödemeleri oranında iade edilir. İade başvuruları Öğrenci İşleri Daire Başkanlığına yazılı olarak yapılır.
+
+İletişim: Kayıt yenileme ile ilgili sorular için Öğrenci İşleri Daire Başkanlığına (ogrenciisleri@universite.edu.tr, 0212 555 00 00) başvurulabilir. Sistemde yaşanan teknik sorunlar, üniversitenin bilişim birimine bildirilir.

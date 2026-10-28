@@ -22,7 +22,7 @@ def tarih_filtresi(deger, bicim="%d.%m.%Y %H:%M"):
 
 def uygulama_olustur(paket=None):
     if paket is None:
-        paket = kur()
+        paket = kur(seed_yap=True)
     uygulama = Flask(
         __name__,
         template_folder=str(_KOK / "sablonlar"),
