@@ -1,4 +1,5 @@
 ﻿import sqlite3
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -104,16 +105,39 @@ def sema_olustur(conn):
     conn.executescript(_SEMA)
 
 
+class KilitliBaglanti:
+    def __init__(self, conn):
+        self._conn = conn
+        self._kilit = threading.Lock()
+
+    def execute(self, sql, parametreler=()):
+        with self._kilit:
+            return self._conn.execute(sql, parametreler)
+
+    def executescript(self, sema):
+        with self._kilit:
+            return self._conn.executescript(sema)
+
+    def commit(self):
+        with self._kilit:
+            return self._conn.commit()
+
+    def close(self):
+        with self._kilit:
+            return self._conn.close()
+
+
 def baglan(yolu=None):
     yolu = yolu or config.VERITABANI_YOLU
     dosya = Path(yolu)
     if dosya.parent and str(dosya.parent) not in ("", "."):
         dosya.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(dosya))
+    conn = sqlite3.connect(str(dosya), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.isolation_level = None
-    sema_olustur(conn)
-    return conn
+    baglanti = KilitliBaglanti(conn)
+    sema_olustur(baglanti)
+    return baglanti
 
 
 def oturum_kaydet(db, oturum):

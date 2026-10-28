@@ -214,3 +214,52 @@ def test_oturum_kaydet_ve_bul():
     assert oturum_bul(db, "tok123").aktif
     oturum_sil(db, "tok123")
     assert oturum_bul(db, "tok123") is None
+
+
+def test_baglan_baska_is_parcacigindan_kullanilabilir(tmp_path):
+    import threading
+
+    from uniasist.depo.veritabani import baglan
+
+    db = baglan(str(tmp_path / "is-parcacigi.db"))
+    hatalar = []
+
+    def sorgula():
+        try:
+            db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()
+        except Exception as e:
+            hatalar.append(e)
+
+    is_parcacigi = threading.Thread(target=sorgula)
+    is_parcacigi.start()
+    is_parcacigi.join()
+    assert hatalar == []
+
+
+def test_baglan_es_zamanli_yazmalar_sayiyi_kaybetmez(tmp_path):
+    import threading
+
+    from uniasist.depo.veritabani import baglan
+
+    db = baglan(str(tmp_path / "es-zamanli.db"))
+    hatalar = []
+
+    def kaydet(sira):
+        try:
+            for i in range(10):
+                db.execute(
+                    "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kayit_tarihi) VALUES (?,?,?,?,?,?,?)",
+                    (f"Kisi {sira}", f"k{sira}_{i}@universite.edu.tr", "x", "OGRENCI", "AKTIF", 0, "2026-01-01T00:00:00"),
+                )
+        except Exception as e:
+            hatalar.append(e)
+
+    is_parcaciklari = [threading.Thread(target=kaydet, args=(sira,)) for sira in range(5)]
+    for is_parcacigi in is_parcaciklari:
+        is_parcacigi.start()
+    for is_parcacigi in is_parcaciklari:
+        is_parcacigi.join()
+
+    assert hatalar == []
+    satir = db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()
+    assert satir["n"] == 50
