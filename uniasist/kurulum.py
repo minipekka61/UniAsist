@@ -91,7 +91,7 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
     bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini)
     yanit_uretme = YanitUretmeServisi(arama_dizini, yapay_zeka)
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_soru_deposu)
-    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu)
+    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu)
     geri_bildirim = GeriBildirimServisi(sohbet_deposu, geri_bildirim_deposu)
     rapor = RaporServisi(soru_kaydi_deposu, geri_bildirim_deposu)
 

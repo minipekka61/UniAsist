@@ -1,8 +1,9 @@
 from datetime import datetime
 
 import config
+from uniasist.dto import Kapsam
 from uniasist.entity import Mesaj, Sohbet, SoruKaydi
-from uniasist.enumlar import GonderenTuru, SonucDurumu
+from uniasist.enumlar import GonderenTuru, Gorunurluk, SonucDurumu
 from uniasist.hatalar import IsKuraliIhlaliException
 
 KAPSAM_ANAHTAR_SOZCUKLERI = [
@@ -27,12 +28,22 @@ KARA_LISTE = [
 
 class SohbetServisi:
     def __init__(self, sohbet_deposu, soru_kaydi_deposu, yanit_uretme_servisi,
-                 yanitlanamayan_soru_servisi, bilgi_kaynagi_deposu=None):
+                 yanitlanamayan_soru_servisi, bilgi_kaynagi_deposu=None,
+                 kullanici_deposu=None):
         self.sohbet_deposu = sohbet_deposu
         self.soru_kaydi_deposu = soru_kaydi_deposu
         self.yanit_uretme_servisi = yanit_uretme_servisi
         self.yanitlanamayan_soru_servisi = yanitlanamayan_soru_servisi
         self.bilgi_kaynagi_deposu = bilgi_kaynagi_deposu
+        self.kullanici_deposu = kullanici_deposu
+
+    def _kapsamiKur(self, sohbet):
+        if self.kullanici_deposu is None or sohbet.kullanici_id is None:
+            return None
+        kullanici = self.kullanici_deposu.idIleBul(sohbet.kullanici_id)
+        if kullanici is None:
+            return None
+        return Kapsam(kullanici.kullanici_id, kullanici.universite_id, kullanici.bolum)
 
     def _soruGecerliMi(self, soru_metni):
         if not soru_metni or not soru_metni.strip():
@@ -71,7 +82,10 @@ class SohbetServisi:
             return
 
         sonuc = None
-        for olay in self.yanit_uretme_servisi.yanitUretAkis(soru_metni, baglam):
+        kapsam = self._kapsamiKur(sohbet)
+        for olay in self.yanit_uretme_servisi.yanitUretAkis(
+            soru_metni, baglam, kapsam=kapsam
+        ):
             if olay["tur"] == "parca":
                 yield {"tur": "parca", "metin": olay["metin"]}
             else:
@@ -152,7 +166,7 @@ class SohbetServisi:
     def tumSohbetleriSil(self, kullanici_id):
         self.sohbet_deposu.kullaniciSohbetleriniSil(kullanici_id)
 
-    def kaynagiGoruntule(self, referans):
+    def kaynagiGoruntule(self, referans, kullanici):
         if referans is None or referans.kaynak_id is None:
             return None
         if self.bilgi_kaynagi_deposu is None:
@@ -160,4 +174,17 @@ class SohbetServisi:
         kaynak = self.bilgi_kaynagi_deposu.idIleBul(referans.kaynak_id)
         if kaynak is None or not kaynak.aktifMi():
             return None
+        if not self._kaynakErisilebilirMi(kaynak, kullanici):
+            return None
         return kaynak
+
+    def _kaynakErisilebilirMi(self, kaynak, kullanici):
+        if kullanici is None:
+            return False
+        if kaynak.sahip_id == kullanici.kullanici_id:
+            return True
+        return (
+            kaynak.gorunurluk == Gorunurluk.PAYLASILAN
+            and kaynak.universite_id == kullanici.universite_id
+            and kaynak.bolum == kullanici.bolum
+        )

@@ -134,7 +134,7 @@ def kaynak_ac(kaynak_id):
     from uniasist.entity import KaynakReferansi
 
     referans = KaynakReferansi(kaynak_id=kaynak_id)
-    kaynak = kur_.sohbet.kaynagiGoruntule(referans)
+    kaynak = kur_.sohbet.kaynagiGoruntule(referans, g.aktif_kullanici)
     if kaynak is None:
         return render_template("kaynak.html", kaynak=None)
     return render_template(

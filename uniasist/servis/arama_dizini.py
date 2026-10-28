@@ -81,10 +81,12 @@ class AramaDizini:
             if not (p.kaynak_id == kaynak_id and p.surum_no == surum_no)
         ]
 
-    def enYakinParcalar(self, sorgu_gommesi, adet):
+    def enYakinParcalar(self, sorgu_gommesi, adet, kapsam=None):
         sonuclar = []
         for parca in self.parcalar:
             if not parca.aktif:
+                continue
+            if kapsam is not None and not kapsam.parcaErisilebilirMi(parca):
                 continue
             sonuclar.append(AramaSonucu(parca=parca, skor=parca.benzerlikHesapla(sorgu_gommesi)))
         sonuclar.sort(key=lambda s: s.skor, reverse=True)

@@ -1,4 +1,20 @@
-from uniasist.enumlar import SonucDurumu
+from uniasist.enumlar import Gorunurluk, SonucDurumu
+
+
+class Kapsam:
+    def __init__(self, kullanici_id, universite_id, bolum):
+        self.kullanici_id = kullanici_id
+        self.universite_id = universite_id
+        self.bolum = bolum
+
+    def parcaErisilebilirMi(self, parca):
+        if parca.sahip_id == self.kullanici_id:
+            return True
+        return (
+            parca.gorunurluk == Gorunurluk.PAYLASILAN
+            and parca.universite_id == self.universite_id
+            and parca.bolum == self.bolum
+        )
 
 
 class YanitSonucu:

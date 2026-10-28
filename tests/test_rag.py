@@ -23,7 +23,9 @@ def parca(metin, kaynak_id=1, sira=1, kaynak_adi="burs.txt"):
 
 def servis(yz=None, sonuclar=None, esik=None):
     yz = yz or SahteYZ()
-    dizin = type("D", (), {"enYakinParcalar": lambda self, s, a: (sonuclar or [])[:a]})()
+    dizin = type(
+        "D", (), {"enYakinParcalar": lambda self, s, a, kapsam=None: (sonuclar or [])[:a]}
+    )()
     return YanitUretmeServisi(dizin, yz, benzerlik_esigi=esik)
 
 

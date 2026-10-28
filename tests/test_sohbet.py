@@ -14,6 +14,7 @@ from uniasist.entity import Kullanici
 from uniasist.enumlar import (
     GeriBildirimTuru,
     GonderenTuru,
+    Gorunurluk,
     KayitDurumu,
     Rol,
 )
@@ -69,7 +70,7 @@ def servisler(tmp_path):
 
     yanit_uretme = YanitUretmeServisi(dizin, yz, benzerlik_esigi=config.YEREL_ESIK)
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_depo)
-    sohbet = SohbetServisi(sohbet_depo, soru_kaydi_depo, yanit_uretme, yanitlanamayan, bilgi_depo)
+    sohbet = SohbetServisi(sohbet_depo, soru_kaydi_depo, yanit_uretme, yanitlanamayan, bilgi_depo, kullanici_depo)
     geri_bildirim = GeriBildirimServisi(sohbet_depo, geri_bildirim_depo)
 
     return {
@@ -283,9 +284,9 @@ def test_uc07_silinen_kaynak_none_doner(servisler):
     ref.kaynak_id = servisler["bilgi_tabani"].belgeleriListele(
         servisler["kullanici"].kullanici_id
     )[0].kaynak_id
-    assert servisler["sohbet"].kaynagiGoruntule(ref) is not None
+    assert servisler["sohbet"].kaynagiGoruntule(ref, servisler["kullanici"]) is not None
     servisler["bilgi_tabani"].belgeSil(ref.kaynak_id, servisler["kullanici"].kullanici_id)
-    assert servisler["sohbet"].kaynagiGoruntule(ref) is None
+    assert servisler["sohbet"].kaynagiGoruntule(ref, servisler["kullanici"]) is None
 
 
 def test_yanitlanamayan_cozuldu_isaretlenir(servisler):
@@ -303,3 +304,113 @@ def test_tum_sohbetleri_sil(servisler):
     servisler["sohbet"].soruSor(s2, "Burs için ortalama şartı nedir?")
     servisler["sohbet"].tumSohbetleriSil(servisler["kullanici"].kullanici_id)
     assert servisler["sohbet"].sohbetleriListele(servisler["kullanici"].kullanici_id) == []
+
+
+STAJ_METNI = (
+    "Staj yonergesi ogrencilerin yaz stajlarini duzenler ve zorunlu kilar. "
+    "Staj basvurusu icin en az 60 gun kesintisiz calisma sarti vardir. "
+    "Staj defteri staj bitiminden sonraki 15 gun icinde teslim edilir. "
+    "Staj degerlendirme formu isyeri yetkilisi tarafindan doldurulur. "
+    "Staj sigortasi universite tarafindan yaptirilir. "
+) * 3
+
+
+def _baska_ogrenci(servisler, eposta, bolum, universite_id=1):
+    k = Kullanici(
+        ad_soyad="Başka Öğrenci",
+        eposta=eposta,
+        sifre_hash="x",
+        rol=Rol.OGRENCI,
+        universite_id=universite_id,
+        bolum=bolum,
+        eposta_dogrulandi=True,
+    )
+    servisler["kullanici_depo"].kaydet(k)
+    return k
+
+
+def _staj_belgesi_yukle(servisler, sahip, tmp_path, gorunurluk=Gorunurluk.OZEL):
+    dosya = tmp_path / f"staj-{sahip.kullanici_id}-{gorunurluk.value}.txt"
+    dosya.write_text(STAJ_METNI, encoding="utf-8")
+    return servisler["bilgi_tabani"].belgeYukle(
+        "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
+        sahip=sahip, gorunurluk=gorunurluk,
+    )
+
+
+def test_kapsam_kendi_belgesinden_yanit_alir(servisler):
+    s = ogrenci_sohbeti(servisler)
+    yanit = servisler["sohbet"].soruSor(s, "Burs başvurusu ne zaman yapılır?")
+    assert yanit is not None
+    assert len(yanit.kaynaklariGetir()) >= 1
+
+
+def test_kapsam_ayni_bolum_paylasilani_gorur(servisler, tmp_path):
+    baska = _baska_ogrenci(servisler, "ayni@universite.edu.tr", "Bilgisayar Mühendisliği")
+    paylasilan = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
+    s = ogrenci_sohbeti(servisler)
+    yanit = servisler["sohbet"].soruSor(s, "Staj defteri ne zaman teslim edilir?")
+    assert yanit is not None
+    alinti_idler = {r.kaynak_id for r in yanit.kaynaklariGetir()}
+    assert paylasilan.kaynak_id in alinti_idler
+
+
+def test_kapsam_baska_bolum_paylasilani_gormez(servisler, tmp_path):
+    baska = _baska_ogrenci(servisler, "hukuk@universite.edu.tr", "Hukuk")
+    hukuk_belgesi = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
+    s = ogrenci_sohbeti(servisler)
+    yanit = servisler["sohbet"].soruSor(s, "Staj defteri ne zaman teslim edilir?")
+    assert yanit is not None
+    alinti_idler = {r.kaynak_id for r in yanit.kaynaklariGetir()}
+    assert hukuk_belgesi.kaynak_id not in alinti_idler
+
+    kapsam = servisler["sohbet"]._kapsamiKur(s)
+    sorgu = servisler["yz"].gommeUret("staj defteri teslim")
+    dizin = servisler["sohbet"].yanit_uretme_servisi.arama_dizini
+    sonuclar = dizin.enYakinParcalar(sorgu, 100, kapsam=kapsam)
+    assert all(s.parca.kaynak_id != hukuk_belgesi.kaynak_id for s in sonuclar)
+
+
+def test_kapsam_baskasinin_ozelini_gormez(servisler, tmp_path):
+    baska = _baska_ogrenci(servisler, "ayni@universite.edu.tr", "Bilgisayar Mühendisliği")
+    ozel = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.OZEL)
+    s = ogrenci_sohbeti(servisler)
+    yanit = servisler["sohbet"].soruSor(s, "Staj defteri ne zaman teslim edilir?")
+    assert yanit is not None
+    alinti_idler = {r.kaynak_id for r in yanit.kaynaklariGetir()}
+    assert ozel.kaynak_id not in alinti_idler
+
+    kapsam = servisler["sohbet"]._kapsamiKur(s)
+    sorgu = servisler["yz"].gommeUret("staj defteri teslim")
+    dizin = servisler["sohbet"].yanit_uretme_servisi.arama_dizini
+    sonuclar = dizin.enYakinParcalar(sorgu, 100, kapsam=kapsam)
+    assert all(s.parca.kaynak_id != ozel.kaynak_id for s in sonuclar)
+
+
+def test_kaynak_rotasi_kapsam_disina_kapatilir(servisler, tmp_path):
+    from uniasist.entity import KaynakReferansi
+
+    kullanici = servisler["kullanici"]
+    kendi = servisler["bilgi_tabani"].belgeleriListele(kullanici.kullanici_id)[0]
+    ayni_bolum = _baska_ogrenci(servisler, "ayni@universite.edu.tr", "Bilgisayar Mühendisliği")
+    hukukcu = _baska_ogrenci(servisler, "hukuk@universite.edu.tr", "Hukuk")
+
+    paylasilan = _staj_belgesi_yukle(servisler, ayni_bolum, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
+    hukuk_belgesi = _staj_belgesi_yukle(servisler, hukukcu, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
+    ozel = _staj_belgesi_yukle(servisler, ayni_bolum, tmp_path, gorunurluk=Gorunurluk.OZEL)
+
+    sohbet = servisler["sohbet"]
+    assert sohbet.kaynagiGoruntule(KaynakReferansi(kaynak_id=kendi.kaynak_id), kullanici) is not None
+    assert sohbet.kaynagiGoruntule(KaynakReferansi(kaynak_id=paylasilan.kaynak_id), kullanici) is not None
+    assert sohbet.kaynagiGoruntule(KaynakReferansi(kaynak_id=hukuk_belgesi.kaynak_id), kullanici) is None
+    assert sohbet.kaynagiGoruntule(KaynakReferansi(kaynak_id=ozel.kaynak_id), kullanici) is None
+    assert sohbet.kaynagiGoruntule(KaynakReferansi(kaynak_id=kendi.kaynak_id), None) is None
+
+
+def test_kapsam_none_tum_parcalar(servisler, tmp_path):
+    hukukcu = _baska_ogrenci(servisler, "hukuk@universite.edu.tr", "Hukuk")
+    _staj_belgesi_yukle(servisler, hukukcu, tmp_path, gorunurluk=Gorunurluk.OZEL)
+    dizin = servisler["sohbet"].yanit_uretme_servisi.arama_dizini
+    sorgu = servisler["yz"].gommeUret("staj defteri teslim")
+    sonuclar = dizin.enYakinParcalar(sorgu, 10, kapsam=None)
+    assert any(s.parca.sahip_id == hukukcu.kullanici_id for s in sonuclar)

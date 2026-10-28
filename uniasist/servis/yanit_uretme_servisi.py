@@ -35,17 +35,19 @@ class YanitUretmeServisi:
             if s.parca.kaynak_adi
         ]
 
-    def yanitUret(self, soru_metni, baglam):
+    def yanitUret(self, soru_metni, baglam, kapsam=None):
         sonuc = None
-        for olay in self.yanitUretAkis(soru_metni, baglam):
+        for olay in self.yanitUretAkis(soru_metni, baglam, kapsam=kapsam):
             if olay["tur"] == "sonuc":
                 sonuc = olay["sonuc"]
         return sonuc
 
-    def yanitUretAkis(self, soru_metni, baglam):
+    def yanitUretAkis(self, soru_metni, baglam, kapsam=None):
         try:
             sorgu_gommesi = self.yapay_zeka_servisi.gommeUret(soru_metni)
-            sonuclar = self.arama_dizini.enYakinParcalar(sorgu_gommesi, self.en_fazla_parca)
+            sonuclar = self.arama_dizini.enYakinParcalar(
+                sorgu_gommesi, self.en_fazla_parca, kapsam=kapsam
+            )
         except IsKuraliIhlaliException:
             yield self._sonuc_olayi(
                 YanitSonucu(SonucDurumu.SERVIS_HATASI, config.SERVIS_HATA_METNI, [])
