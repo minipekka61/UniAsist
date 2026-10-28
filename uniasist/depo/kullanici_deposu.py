@@ -9,35 +9,31 @@ class KullaniciDeposu:
         self.db = db
 
     def kaydet(self, kullanici):
+        degerler = (
+            kullanici.ad_soyad,
+            kullanici.eposta,
+            kullanici.sifre_hash,
+            kullanici.rol.value,
+            kullanici.durum.value,
+            kullanici.basarisiz_deneme_sayisi,
+            kullanici.kilit_bitis_zamani.isoformat() if kullanici.kilit_bitis_zamani else None,
+            kullanici.kayit_tarihi.isoformat(),
+            kullanici.universite_id,
+            kullanici.bolum,
+            1 if kullanici.eposta_dogrulandi else 0,
+            kullanici.dogrulama_token,
+            kullanici.dogrulama_bitis.isoformat() if kullanici.dogrulama_bitis else None,
+        )
         if kullanici.kullanici_id is None:
             imleç = self.db.execute(
-                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi) VALUES (?,?,?,?,?,?,?,?)",
-                (
-                    kullanici.ad_soyad,
-                    kullanici.eposta,
-                    kullanici.sifre_hash,
-                    kullanici.rol.value,
-                    kullanici.durum.value,
-                    kullanici.basarisiz_deneme_sayisi,
-                    kullanici.kilit_bitis_zamani.isoformat() if kullanici.kilit_bitis_zamani else None,
-                    kullanici.kayit_tarihi.isoformat(),
-                ),
+                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi, universite_id, bolum, eposta_dogrulandi, dogrulama_token, dogrulama_bitis) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                degerler,
             )
             kullanici.kullanici_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=? WHERE kullanici_id=?",
-                (
-                    kullanici.ad_soyad,
-                    kullanici.eposta,
-                    kullanici.sifre_hash,
-                    kullanici.rol.value,
-                    kullanici.durum.value,
-                    kullanici.basarisiz_deneme_sayisi,
-                    kullanici.kilit_bitis_zamani.isoformat() if kullanici.kilit_bitis_zamani else None,
-                    kullanici.kayit_tarihi.isoformat(),
-                    kullanici.kullanici_id,
-                ),
+                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=?, universite_id=?, bolum=?, eposta_dogrulandi=?, dogrulama_token=?, dogrulama_bitis=? WHERE kullanici_id=?",
+                degerler + (kullanici.kullanici_id,),
             )
 
     def _satirdan(self, satir):
@@ -51,6 +47,11 @@ class KullaniciDeposu:
             basarisiz_deneme_sayisi=satir["basarisiz_deneme_sayisi"],
             kilit_bitis_zamani=datetime.fromisoformat(satir["kilit_bitis_zamani"]) if satir["kilit_bitis_zamani"] else None,
             kayit_tarihi=datetime.fromisoformat(satir["kayit_tarihi"]),
+            universite_id=satir["universite_id"],
+            bolum=satir["bolum"] or "",
+            eposta_dogrulandi=bool(satir["eposta_dogrulandi"]),
+            dogrulama_token=satir["dogrulama_token"],
+            dogrulama_bitis=datetime.fromisoformat(satir["dogrulama_bitis"]) if satir["dogrulama_bitis"] else None,
         )
 
     def idIleBul(self, kullanici_id):
@@ -64,6 +65,14 @@ class KullaniciDeposu:
     def epostaVarMi(self, eposta):
         satir = self.db.execute("SELECT 1 FROM kullanici WHERE eposta = ?", (eposta,)).fetchone()
         return satir is not None
+
+    def tokenIleBul(self, token):
+        if not token:
+            return None
+        satir = self.db.execute(
+            "SELECT * FROM kullanici WHERE dogrulama_token = ?", (token,)
+        ).fetchone()
+        return self._satirdan(satir) if satir else None
 
     def ara(self, arama):
         arama = f"%{arama.strip().lower()}%"

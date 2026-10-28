@@ -238,7 +238,7 @@ def test_uc19_yararsizlar_listelenir(ortam):
     dosya.write_text(BELGE_METNI, encoding="utf-8")
     paket.bilgi_tabani.belgeYukle("burs.txt", str(dosya), 2000, "Burs Yönergesi", "Burs")
 
-    ogrenci = paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
+    ogrenci = paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği")
     sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=ogrenci)
     mesaj = paket.sohbet.soruSor(sohbet, "Burs başvurusu ne zaman yapılır?")
     paket.geri_bildirim.geriBildirimVer(
@@ -260,7 +260,7 @@ def test_nfr03_ogrenci_personel_sayfasina_ulasamaz(ortam):
     istemci, paket, _ = ortam
     assert istemci.get("/personel/belgeler").status_code == 302
 
-    paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
+    paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği")
     istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
     for yol in (
         "/personel/belgeler",

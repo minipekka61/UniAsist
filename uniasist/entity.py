@@ -16,7 +16,9 @@ from uniasist.guvenlik import sifre_dogrula
 class Kullanici:
     def __init__(self, ad_soyad, eposta, sifre_hash, rol, kullanici_id=None,
                  durum=HesapDurumu.AKTIF, basarisiz_deneme_sayisi=0,
-                 kilit_bitis_zamani=None, kayit_tarihi=None):
+                 kilit_bitis_zamani=None, kayit_tarihi=None,
+                 universite_id=None, bolum="", eposta_dogrulandi=False,
+                 dogrulama_token=None, dogrulama_bitis=None):
         self.kullanici_id = kullanici_id
         self.ad_soyad = ad_soyad
         self.eposta = eposta
@@ -26,6 +28,23 @@ class Kullanici:
         self.basarisiz_deneme_sayisi = basarisiz_deneme_sayisi
         self.kilit_bitis_zamani = kilit_bitis_zamani
         self.kayit_tarihi = kayit_tarihi or datetime.now()
+        self.universite_id = universite_id
+        self.bolum = bolum
+        self.eposta_dogrulandi = bool(eposta_dogrulandi)
+        self.dogrulama_token = dogrulama_token
+        self.dogrulama_bitis = dogrulama_bitis
+
+    def dogrulanmisMi(self):
+        return self.eposta_dogrulandi
+
+    def epostaDogrula(self):
+        self.eposta_dogrulandi = True
+        self.dogrulama_token = None
+        self.dogrulama_bitis = None
+
+    def dogrulamaTokenAta(self, token, bitis):
+        self.dogrulama_token = token
+        self.dogrulama_bitis = bitis
 
     def sifreDogrula(self, sifre):
         return sifre_dogrula(sifre, self.sifre_hash)

@@ -37,7 +37,7 @@ def ortam(paket):
 
 
 def giris_yap(istemci, paket, eposta="ali@universite.edu.tr"):
-    paket.kimlik.kayitOl("Ali Veli", eposta, "Gizli1234", "Gizli1234")
+    paket.kimlik.kayitOl("Ali Veli", eposta, "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği")
     istemci.post("/giris", data={"eposta": eposta, "sifre": "Gizli1234"})
 
 

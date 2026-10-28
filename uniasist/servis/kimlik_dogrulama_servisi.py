@@ -1,6 +1,6 @@
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import config
 from uniasist.depo.veritabani import (
@@ -16,15 +16,29 @@ from uniasist.hatalar import IsKuraliIhlaliException
 
 
 class KimlikDogrulamaServisi:
-    def __init__(self, kullanici_deposu):
+    def __init__(self, kullanici_deposu, universite_deposu, eposta_servisi):
         self.kullanici_deposu = kullanici_deposu
+        self.universite_deposu = universite_deposu
+        self.eposta_servisi = eposta_servisi
 
-    def _epostaAlanAdiGecerliMi(self, eposta):
+    def _epostaGecerliMi(self, eposta):
         return bool(
             isinstance(eposta, str)
             and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", eposta)
-            and eposta.lower().endswith("@" + config.UNIVERSITE_ALAN_ADI)
         )
+
+    def _dogrulamaBaglantisi(self, token):
+        return f"/dogrula/{token}"
+
+    def _dogrulamaDuzenle(self, kullanici):
+        token = uuid.uuid4().hex
+        bitis = datetime.now() + timedelta(hours=config.DOGRULAMA_SURESI_SAAT)
+        kullanici.dogrulamaTokenAta(token, bitis)
+        self.kullanici_deposu.kaydet(kullanici)
+        self.eposta_servisi.dogrulamaEpostasiGonder(
+            kullanici.eposta, kullanici.ad_soyad, self._dogrulamaBaglantisi(token)
+        )
+        return kullanici
 
     def _sifreKuralinaUygunMu(self, sifre):
         return (
@@ -34,14 +48,24 @@ class KimlikDogrulamaServisi:
             and any(k.isdigit() for k in sifre)
         )
 
-    def kayitOl(self, adSoyad, eposta, sifre, sifreTekrar):
+    def kayitOl(self, adSoyad, eposta, sifre, sifreTekrar, bolum):
         if not adSoyad or not adSoyad.strip():
             raise IsKuraliIhlaliException("IK-01", "Ad soyad zorunludur.")
-        if not self._epostaAlanAdiGecerliMi(eposta):
+        if not self._epostaGecerliMi(eposta):
             raise IsKuraliIhlaliException(
                 "IK-01",
-                "Yalnızca üniversite e-posta adresiyle kayıt olunabilir "
-                f"(@{config.UNIVERSITE_ALAN_ADI}).",
+                "Geçerli bir üniversite e-posta adresi girmelisiniz.",
+            )
+        universite = self.universite_deposu.alanAdindanBul(eposta.strip())
+        if universite is None:
+            raise IsKuraliIhlaliException(
+                "IK-01",
+                "Üniversiteniz henüz desteklenmiyor. "
+                "Desteklenen üniversitelerin e-posta adresiyle kayıt olabilirsiniz.",
+            )
+        if not bolum or bolum not in self.universite_deposu.bolumleriListele():
+            raise IsKuraliIhlaliException(
+                "IK-01", "Bölüm seçimi zorunludur ve listeden yapılmalıdır."
             )
         if self.kullanici_deposu.epostaVarMi(eposta):
             raise IsKuraliIhlaliException(
@@ -59,7 +83,32 @@ class KimlikDogrulamaServisi:
             eposta=eposta.strip(),
             sifre_hash=sifre_hashle(sifre),
             rol=Rol.OGRENCI,
+            universite_id=universite.universite_id,
+            bolum=bolum,
         )
+        self.kullanici_deposu.kaydet(kullanici)
+        return self._dogrulamaDuzenle(kullanici)
+
+    def dogrulamaGonder(self, eposta):
+        kullanici = self.kullanici_deposu.epostaIleBul(eposta) if eposta else None
+        if kullanici is None or kullanici.dogrulanmisMi():
+            return None
+        return self._dogrulamaDuzenle(kullanici)
+
+    def dogrula(self, token):
+        kullanici = self.kullanici_deposu.tokenIleBul(token)
+        if (
+            kullanici is None
+            or kullanici.dogrulanmisMi()
+            or kullanici.dogrulama_bitis is None
+            or kullanici.dogrulama_bitis <= datetime.now()
+        ):
+            raise IsKuraliIhlaliException(
+                "IK-29",
+                "Doğrulama bağlantısı geçersiz veya süresi dolmuş. "
+                "Yeni bir bağlantı isteyin.",
+            )
+        kullanici.epostaDogrula()
         self.kullanici_deposu.kaydet(kullanici)
         return kullanici
 

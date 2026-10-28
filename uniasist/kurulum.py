@@ -4,8 +4,10 @@ from uniasist.depo.geri_bildirim_deposu import GeriBildirimDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.depo.soru_kaydi_deposu import SoruKaydiDeposu
 from uniasist.depo.sohbet_deposu import SohbetDeposu
+from uniasist.depo.universite_deposu import UniversiteDeposu
 from uniasist.depo.veritabani import baglan
 from uniasist.depo.yanitlanamayan_soru_deposu import YanitlanamayanSoruDeposu
+from uniasist.eposta import KonsolEpostaServisi, SmtpEpostaServisi
 from uniasist.servis.arama_dizini import AramaDizini
 from uniasist.servis.belge_isleme_servisi import BelgeIslemeServisi
 from uniasist.servis.bilgi_tabani_servisi import BilgiTabaniServisi
@@ -16,13 +18,16 @@ from uniasist.servis.rapor_servisi import RaporServisi
 from uniasist.servis.sohbet_servisi import SohbetServisi
 from uniasist.servis.yanit_uretme_servisi import YanitUretmeServisi
 from uniasist.servis.yanitlanamayan_soru_servisi import YanitlanamayanSoruServisi
+from uniasist.veri.bolumler import BOLUMLER
+from uniasist.veri.universiteler import UNIVERSITELER
 from uniasist.yapayzeka.hazir_llm_servisi import HazirLLMServisi
 from uniasist.yapayzeka.yerel_arama_servisi import YerelAramaServisi
 
 
 class KurulumPaketi:
     def __init__(self, db, yapay_zeka, arama_dizini, kimlik, kullanici_yonetimi,
-                 bilgi_tabani, sohbet, yanitlanamayan, geri_bildirim, rapor):
+                 bilgi_tabani, sohbet, yanitlanamayan, geri_bildirim, rapor,
+                 universite_deposu, eposta_servisi):
         self.db = db
         self.yapay_zeka = yapay_zeka
         self.arama_dizini = arama_dizini
@@ -33,7 +38,28 @@ class KurulumPaketi:
         self.yanitlanamayan = yanitlanamayan
         self.geri_bildirim = geri_bildirim
         self.rapor = rapor
+        self.universite_deposu = universite_deposu
+        self.eposta_servisi = eposta_servisi
         self.kullanici_deposu = kimlik.kullanici_deposu
+
+
+def temel_verileri_ekle(db):
+    universite_deposu = UniversiteDeposu(db)
+    if not universite_deposu.hepsiniListele():
+        from uniasist.entity import Universite
+
+        for ad, alan_adi in UNIVERSITELER:
+            universite_deposu.kaydet(Universite(ad=ad, eposta_alan_adi=alan_adi))
+    if not universite_deposu.bolumleriListele():
+        for bolum in BOLUMLER:
+            universite_deposu.bolumEkle(bolum)
+    return universite_deposu
+
+
+def eposta_servisi_olustur():
+    if config.MAILGONDER and config.SMTP_KULLANICI:
+        return SmtpEpostaServisi()
+    return KonsolEpostaServisi()
 
 
 def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
@@ -44,6 +70,9 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
             yapay_zeka = YerelAramaServisi()
     if db is None:
         db = baglan(db_yolu)
+
+    universite_deposu = temel_verileri_ekle(db)
+    eposta_servisi = eposta_servisi_olustur()
 
     kullanici_deposu = KullaniciDeposu(db)
     sohbet_deposu = SohbetDeposu(db)
@@ -56,7 +85,7 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
     if not arama_dizini.saglayiciUyumlu(yapay_zeka.saglayici_etiketi):
         arama_dizini.yenidenGomme(yapay_zeka)
 
-    kimlik = KimlikDogrulamaServisi(kullanici_deposu)
+    kimlik = KimlikDogrulamaServisi(kullanici_deposu, universite_deposu, eposta_servisi)
     kullanici_yonetimi = KullaniciYonetimServisi(kullanici_deposu, kimlik)
     belge_isleme = BelgeIslemeServisi(arama_dizini, yapay_zeka)
     bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini)
@@ -77,6 +106,8 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
         yanitlanamayan=yanitlanamayan,
         geri_bildirim=geri_bildirim,
         rapor=rapor,
+        universite_deposu=universite_deposu,
+        eposta_servisi=eposta_servisi,
     )
     if seed_yap:
         from uniasist import seed

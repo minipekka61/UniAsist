@@ -18,8 +18,15 @@ def kayit():
                 request.form.get("eposta", ""),
                 request.form.get("sifre", ""),
                 request.form.get("sifre_tekrar", ""),
+                request.form.get("bolum", ""),
             )
-            return render_template("giris.html", bilgi="Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.")
+            return render_template(
+                "giris.html",
+                bilgi=(
+                    "Hesabınız oluşturuldu. E-postanıza gönderilen doğrulama "
+                    "bağlantısına tıklayarak hesabınızı aktifleştirebilirsiniz."
+                ),
+            )
         except IsKuraliIhlaliException as e:
             hata = e.mesaj
     return render_template("kayit.html", hata=hata)

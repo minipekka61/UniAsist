@@ -7,7 +7,13 @@ EMBEDDING_MODEL = os.environ.get("UNIASIST_EMBEDDING_MODEL", "text-embedding-3-s
 VERITABANI_YOLU = os.environ.get("UNIASIST_DB", "data/uniasist.db")
 SECRET_KEY = os.environ.get("UNIASIST_SECRET_KEY", "uniasist-gelistirme-anahtari")
 
-UNIVERSITE_ALAN_ADI = "universite.edu.tr"
+DOGRULAMA_SURESI_SAAT = 24
+MAILGONDER = os.environ.get("UNIASIST_MAILGONDER", "0") == "1"
+SMTP_SUNUCU = os.environ.get("UNIASIST_SMTP_SUNUCU", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("UNIASIST_SMTP_PORT", "587"))
+SMTP_KULLANICI = os.environ.get("UNIASIST_SMTP_KULLANICI", "")
+SMTP_SIFRE = os.environ.get("UNIASIST_SMTP_SIFRE", "")
+SMTP_GONDEREN = os.environ.get("UNIASIST_SMTP_GONDEREN", "uniasist@example.com")
 BENZERLIK_ESIGI = 0.60
 YEREL_ESIK = 0.20
 EN_FAZLA_PARCA = 5

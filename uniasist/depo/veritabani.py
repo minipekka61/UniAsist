@@ -16,7 +16,12 @@ CREATE TABLE IF NOT EXISTS kullanici (
     durum TEXT NOT NULL DEFAULT 'AKTIF',
     basarisiz_deneme_sayisi INTEGER NOT NULL DEFAULT 0,
     kilit_bitis_zamani TEXT,
-    kayit_tarihi TEXT NOT NULL
+    kayit_tarihi TEXT NOT NULL,
+    universite_id INTEGER,
+    bolum TEXT,
+    eposta_dogrulandi INTEGER NOT NULL DEFAULT 0,
+    dogrulama_token TEXT,
+    dogrulama_bitis TEXT
 );
 CREATE TABLE IF NOT EXISTS oturum (
     oturum_id TEXT PRIMARY KEY,
