@@ -306,3 +306,10 @@ class SoruKaydi:
         self.zaman = zaman
         self.kategori = kategori
         self.yanitlandi = yanitlandi
+
+
+class Universite:
+    def __init__(self, ad, eposta_alan_adi, universite_id=None):
+        self.universite_id = universite_id
+        self.ad = ad
+        self.eposta_alan_adi = eposta_alan_adi

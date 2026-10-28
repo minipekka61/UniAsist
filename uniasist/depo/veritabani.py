@@ -98,6 +98,15 @@ CREATE TABLE IF NOT EXISTS soru_kaydi (
     kategori TEXT,
     yanitlandi INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS universite (
+    universite_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ad TEXT NOT NULL,
+    eposta_alan_adi TEXT NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS bolum (
+    bolum_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ad TEXT NOT NULL UNIQUE
+);
 """
 
 
