@@ -5,7 +5,7 @@
     var form = document.getElementById("soru-formu");
     var soruKutusu = document.getElementById("soru");
     var yeniSohbetDugmesi = document.getElementById("yeni-sohbet");
-    var aktifSohbetId = null;
+    var aktifSohbetId = window.uniasistSohbetId || null;
     var girisli = window.uniasistGirisli === true;
 
     function balonEkle(gonderen, metin) {

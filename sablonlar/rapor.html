@@ -7,7 +7,7 @@
         <label>Başlangıç <input type="date" name="baslangic" value="{{ rapor.baslangic | tarih('%Y-%m-%d') }}"></label>
         <label>Bitiş <input type="date" name="bitis" value="{{ rapor.bitis | tarih('%Y-%m-%d') }}"></label>
         <button type="submit" class="buton-kucuk">Raporla</button>
-        <a href="/yonetici/rapor/csv" class="buton-kucuk">CSV İndir</a>
+        <a href="/yonetici/rapor/csv?baslangic={{ rapor.baslangic | tarih('%Y-%m-%d') }}&bitis={{ rapor.bitis | tarih('%Y-%m-%d') }}" class="buton-kucuk">CSV İndir</a>
     </form>
 
     <h2>Metrikler</h2>

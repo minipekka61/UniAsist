@@ -104,6 +104,16 @@ def test_ik25_bozuk_pdf_pasif_kalir(servisler, tmp_path):
     assert bilgi_tabani.belgeleriListele()[0].durum == KaynakDurumu.PASIF
 
 
+def test_ik25_kismi_indeksleme_dizinden_temizlenir(servisler, belge_dosyasi):
+    bilgi_tabani, dizin, _, yz, _ = servisler
+    yz.gomme_hata_sonrasi = 1
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Öğrenci Yönetmeliği", "Kayıt")
+    assert h.value.kural_no_getir() == "IK-25"
+    assert bilgi_tabani.belgeleriListele()[0].durum == KaynakDurumu.PASIF
+    assert dizin.enYakinParcalar(SahteYZ().gommeUret("burs basvurusu ne zaman"), 5) == []
+
+
 def test_ik25_gecerli_pdf_islenir(servisler, tmp_path):
     bilgi_tabani, dizin, _, _, _ = servisler
     dosya = tmp_path / "gecerli.pdf"

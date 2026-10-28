@@ -45,6 +45,6 @@
     <p class="ipucu">Lütfen öğrenci no, T.C. kimlik no gibi kişisel veri paylaşmayın.</p>
     {% endif %}
 </div>
-<script>window.uniasistGirisli = {{ 'true' if aktif_kullanici else 'false' }};</script>
+<script>window.uniasistGirisli = {{ 'true' if aktif_kullanici else 'false' }}; window.uniasistSohbetId = {{ sohbet_id or 'null' }};</script>
 <script src="{{ url_for('static', filename='sohbet.js') }}"></script>
 {% endblock %}

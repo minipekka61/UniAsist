@@ -40,12 +40,13 @@ class Kullanici:
         return self.durum == HesapDurumu.AKTIF
 
     def basarisizDenemeKaydet(self):
+        simdi = datetime.now()
+        if self.kilit_bitis_zamani is not None and self.kilit_bitis_zamani <= simdi:
+            self.basarisiz_deneme_sayisi = 0
+            self.kilit_bitis_zamani = None
         self.basarisiz_deneme_sayisi += 1
-        if (
-            self.basarisiz_deneme_sayisi >= config.AZAMI_HATALI_DENEME
-            and self.kilit_bitis_zamani is None
-        ):
-            self.kilit_bitis_zamani = datetime.now() + timedelta(
+        if self.basarisiz_deneme_sayisi >= config.AZAMI_HATALI_DENEME:
+            self.kilit_bitis_zamani = simdi + timedelta(
                 minutes=config.KILIT_SURESI_DK
             )
 

@@ -172,6 +172,17 @@ def test_uc24_csv_indirme(ortam):
     assert ";" in icerik
 
 
+def test_uc24_csv_baglantisi_filtre_tarihlerini_tasir(ortam):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    yanit = istemci.get("/yonetici/rapor?baslangic=2026-01-01&bitis=2026-10-31")
+    assert yanit.status_code == 200
+    metin = yanit.get_data(as_text=True)
+    assert (
+        'href="/yonetici/rapor/csv?baslangic=2026-01-01&bitis=2026-10-31"' in metin
+    )
+
+
 def test_nfr03_personel_yonetici_sayfasina_ulasamaz(ortam):
     istemci, paket = ortam
     assert istemci.get("/yonetici/kullanicilar").status_code == 302

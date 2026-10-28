@@ -25,7 +25,11 @@ class BilgiTabaniServisi:
                 "başlık ve kategori zorunludur.",
             )
         self.bilgi_kaynagi_deposu.kaydet(belge)
-        self.belge_isleme_servisi.isleVeIndeksle(belge)
+        try:
+            self.belge_isleme_servisi.isleVeIndeksle(belge)
+        except IsKuraliIhlaliException:
+            self.arama_dizini.kaynagaGoreSil(belge.kaynak_id)
+            raise
         belge.aktifYap()
         self.bilgi_kaynagi_deposu.kaydet(belge)
         return belge

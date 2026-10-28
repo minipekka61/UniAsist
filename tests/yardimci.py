@@ -30,8 +30,10 @@ def yerel_gomme(metin, boyut=512):
 
 
 class SahteYZ(IYapayZekaServisi):
-    def __init__(self, mod="yanit"):
+    def __init__(self, mod="yanit", gomme_hata_sonrasi=None):
         self.mod = mod
+        self.gomme_hata_sonrasi = gomme_hata_sonrasi
+        self.gomme_cagri_sayisi = 0
         self.cagri_sayisi = 0
         self.gorunen_baglam = None
         self.gorunen_parcalar = None
@@ -42,6 +44,12 @@ class SahteYZ(IYapayZekaServisi):
 
     def gommeUret(self, metin):
         if self.mod == "gomme_hata":
+            raise IsKuraliIhlaliException("IK-19", "test gomme hatası")
+        self.gomme_cagri_sayisi += 1
+        if (
+            self.gomme_hata_sonrasi is not None
+            and self.gomme_cagri_sayisi > self.gomme_hata_sonrasi
+        ):
             raise IsKuraliIhlaliException("IK-19", "test gomme hatası")
         return yerel_gomme(metin)
 

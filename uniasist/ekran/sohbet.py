@@ -18,6 +18,7 @@ def _ziyaretci_kimligi():
 def sohbet_sayfasi():
     kur_ = paket_getir()
     mesajlar = []
+    gosterilen_sohbet_id = None
     if g.aktif_kullanici:
         sohbet_id = request.args.get("sohbet_id", type=int)
         if request.args.get("yeni") is None and not sohbet_id:
@@ -28,13 +29,16 @@ def sohbet_sayfasi():
             try:
                 sohbet = kur_.sohbet.sohbetGetir(sohbet_id, g.aktif_kullanici.kullanici_id)
                 mesajlar = sohbet.mesajlar
+                gosterilen_sohbet_id = sohbet.sohbet_id
             except IsKuraliIhlaliException:
                 mesajlar = []
     else:
         ziyaretci_id = _ziyaretci_kimligi()
         if ziyaretci_id and ziyaretci_id in kur_.sohbet.ziyaretci_sohbetleri:
             mesajlar = kur_.sohbet.ziyaretci_sohbetleri[ziyaretci_id].mesajlar
-    return render_template("sohbet.html", mesajlar=mesajlar)
+    return render_template(
+        "sohbet.html", mesajlar=mesajlar, sohbet_id=gosterilen_sohbet_id
+    )
 
 
 def _ogrenci_sohbeti(kur_):
@@ -125,7 +129,12 @@ def gecmis_ac(sohbet_id):
         sohbet = kur_.sohbet.sohbetGetir(sohbet_id, g.aktif_kullanici.kullanici_id)
     except IsKuraliIhlaliException:
         abort(403)
-    return render_template("sohbet.html", mesajlar=sohbet.mesajlar, sadece_okuma=True)
+    return render_template(
+        "sohbet.html",
+        mesajlar=sohbet.mesajlar,
+        sadece_okuma=True,
+        sohbet_id=sohbet.sohbet_id,
+    )
 
 
 @sohbet_bp.route("/gecmis/<int:sohbet_id>/sil", methods=["POST"])

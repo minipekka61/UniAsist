@@ -44,6 +44,19 @@ def test_ik04_bes_denemede_kilitlenme():
     assert timedelta(0) < kalan <= timedelta(minutes=config.KILIT_SURESI_DK)
 
 
+def test_ik04_kilit_suresi_gecince_yeniden_kilitlenir():
+    k = kullanici()
+    for _ in range(config.AZAMI_HATALI_DENEME):
+        k.basarisizDenemeKaydet()
+    assert k.kilitliMi()
+    k.kilit_bitis_zamani = datetime.now() - timedelta(minutes=1)
+    assert not k.kilitliMi()
+    for _ in range(config.AZAMI_HATALI_DENEME):
+        k.basarisizDenemeKaydet()
+    assert k.kilitliMi()
+    assert k.basarisiz_deneme_sayisi == config.AZAMI_HATALI_DENEME
+
+
 def test_ik04_dort_denemede_kilitlenmez():
     k = kullanici()
     for _ in range(config.AZAMI_HATALI_DENEME - 1):

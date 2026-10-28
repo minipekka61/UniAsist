@@ -78,6 +78,24 @@ def test_ogrenci_sohbeti_kalici(ortam):
     assert "Burs başvurusu" in metin
 
 
+def test_ik16_anasayfa_son_sohbetle_devam_eder(ortam):
+    istemci, paket, uygulama = ortam
+    giris_yap(istemci, paket)
+    istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
+    sohbet_id = paket.sohbet.sohbetleriListele(1)[0].sohbet_id
+
+    yanit = istemci.get("/")
+    assert yanit.status_code == 200
+    metin = yanit.get_data(as_text=True)
+    assert f"window.uniasistSohbetId = {sohbet_id}" in metin
+
+    import pathlib
+
+    js = pathlib.Path(uygulama.static_folder) / "sohbet.js"
+    icerik = js.read_text(encoding="utf-8")
+    assert "uniasistSohbetId" in icerik
+
+
 def test_ik21_baskasi_gecmisine_url_ile_ulasamaz(ortam):
     istemci, paket, _ = ortam
     giris_yap(istemci, paket, "ali@universite.edu.tr")
