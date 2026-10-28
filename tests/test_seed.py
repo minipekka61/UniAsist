@@ -15,50 +15,79 @@ def paket():
     return paket
 
 
-def test_seed_hesaplar_ve_belgeler(paket):
-    admin = paket.kimlik.kullanici_deposu.epostaIleBul("admin@universite.edu.tr")
-    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
-    assert admin is not None and admin.rol.value == "YONETICI"
-    assert ogrenci is not None and ogrenci.rol.value == "OGRENCI"
-    assert admin.sifreDogrula("Yonetici1234")
-    assert ogrenci.sifreDogrula("Ogrenci1234")
+def _ogrenci(paket, eposta):
+    return paket.kimlik.kullanici_deposu.epostaIleBul(eposta)
 
-    belgeler = paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)
-    assert len(belgeler) == 14
-    assert all(b.aktifMi() for b in belgeler)
+
+def test_seed_hesaplar_ve_belgeler(paket):
+    admin = _ogrenci(paket, "admin@universite.edu.tr")
+    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
+    elektrik = _ogrenci(paket, "elektrik@universite.edu.tr")
+    assert admin is not None and admin.rol.value == "YONETICI"
+    assert bilgisayar is not None and bilgisayar.rol.value == "OGRENCI"
+    assert elektrik is not None and elektrik.rol.value == "OGRENCI"
+    assert admin.sifreDogrula("Yonetici1234")
+    assert bilgisayar.sifreDogrula("Ogrenci1234")
+    assert elektrik.sifreDogrula("Ogrenci1234")
+    assert bilgisayar.bolum == "Bilgisayar Mühendisliği"
+    assert elektrik.bolum == "Elektrik-Elektronik Mühendisliği"
+    assert bilgisayar.universite_id == elektrik.universite_id
+    assert bilgisayar.dogrulanmisMi() and elektrik.dogrulanmisMi()
+
+    bilgisayar_belgeleri = paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)
+    elektrik_belgeleri = paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id)
+    assert len(bilgisayar_belgeleri) == 14
+    assert len(elektrik_belgeleri) == 2
+    assert all(b.aktifMi() for b in bilgisayar_belgeleri + elektrik_belgeleri)
+    from uniasist.enumlar import Gorunurluk
+
+    assert any(b.gorunurluk == Gorunurluk.OZEL for b in bilgisayar_belgeleri)
+    assert any(b.gorunurluk == Gorunurluk.PAYLASILAN for b in bilgisayar_belgeleri)
+    assert any(b.gorunurluk == Gorunurluk.OZEL for b in elektrik_belgeleri)
+    assert any(b.gorunurluk == Gorunurluk.PAYLASILAN for b in elektrik_belgeleri)
+
     parca_sayisi = paket.db.execute(
         "SELECT COUNT(*) AS n FROM icerik_parcasi"
     ).fetchone()["n"]
-    assert parca_sayisi >= 14
-    sss_sayisi = paket.db.execute(
-        "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
-    ).fetchone()["n"]
-    assert sss_sayisi == 0
+    assert parca_sayisi >= 16
+
+    universite_id = bilgisayar.universite_id
+    bilgisayar_paylasilanlari = paket.bilgi_tabani.bolumunPaylasilanlari(
+        universite_id, "Bilgisayar Mühendisliği"
+    )
+    elektrik_paylasilanlari = paket.bilgi_tabani.bolumunPaylasilanlari(
+        universite_id, "Elektrik-Elektronik Mühendisliği"
+    )
+    assert all(b.sahip_id == bilgisayar.kullanici_id for b in bilgisayar_paylasilanlari)
+    assert len(bilgisayar_paylasilanlari) >= 1
+    assert all(b.sahip_id == elektrik.kullanici_id for b in elektrik_paylasilanlari)
+    assert len(elektrik_paylasilanlari) >= 1
 
 
 def test_seed_idempotent(paket):
     from uniasist import seed
 
-    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
+    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
+    elektrik = _ogrenci(paket, "elektrik@universite.edu.tr")
     n_kullanici = paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"]
-    n_belge = len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id))
-    n_sss = paket.db.execute(
-        "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
-    ).fetchone()["n"]
+    n_belge = len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)) + len(
+        paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id)
+    )
 
     seed.kos(paket)
 
     assert paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"] == n_kullanici
-    assert len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)) == n_belge
-    assert paket.db.execute(
-        "SELECT COUNT(*) AS n FROM bilgi_kaynagi WHERE tur='SSS'"
-    ).fetchone()["n"] == n_sss
+    assert (
+        len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id))
+        + len(paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id))
+        == n_belge
+    )
 
 
 def test_seed_soru_yanitlanabilir(paket):
     paket.sohbet.yanit_uretme_servisi.benzerlik_esigi = config.YEREL_ESIK
-    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
-    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=ogrenci)
+    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
+    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=bilgisayar)
     mesaj = paket.sohbet.soruSor(sohbet, "Staj başvurusu için en az kaç gün çalışma gerekir?")
     assert "60" in mesaj.metin
     assert len(mesaj.kaynaklariGetir()) >= 1
@@ -68,6 +97,6 @@ def test_uygulama_olustur_bos_db_otomatik_seed(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "VERITABANI_YOLU", str(tmp_path / "seed-test.db"))
     uygulama = uygulama_olustur()
     paket = uygulama.extensions["uniasist"]
-    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
-    assert len(paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id)) == 14
+    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
+    assert len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)) == 14
     assert paket.kimlik.kullanici_deposu.epostaVarMi("admin@universite.edu.tr")

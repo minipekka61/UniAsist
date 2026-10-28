@@ -1,7 +1,22 @@
 # UniAsist
 
-Üniversite öğrenci destek asistanı: belge tabanlı soru yanıtlama (RAG), sohbet geçmişi,
-bilgi tabanı yönetimi, kullanıcı yönetimi ve kullanım raporlama içeren Flask uygulaması.
+Üniversite öğrencileri için ders çalışma asistanı SaaS'ı: öğrenciler kendi
+belgeleriyle (PDF/TXT) AI üzerinden ders çalışır, istediklerinde belgelerini
+aynı üniversite ve aynı bölümden arkadaşlarıyla paylaşır. Bölümün ortak belge
+havuzu büyüdükçe yanıtlar zenginleşir (RAG). Sohbet geçmişi, geri bildirim,
+bildiri/moderasyon, kullanıcı yönetimi ve kullanım raporlama içerir.
+
+## Kayıt akışı
+
+1. Üniversite e-postanızla kayıt olun (üniversite, e-posta alan adından otomatik
+   belirlenir; desteklenen alan adları `uniasist/veri/universiteler.py` içindedir).
+2. Bölümünüzü listeden seçin.
+3. E-postanıza gönderilen doğrulama bağlantısıyla hesabınızı aktifleştirin
+   (geliştirme modunda bağlantı konsol kaydına yazılır — `uniasist.eposta` log'u).
+   Doğrulama yapılmadan belge **paylaşılamaz**; kişisel kullanım açıktır.
+
+Belgeler varsayılan olarak özeldir; yalnız siz (ve AI asistanınız) erişir.
+"Paylaş" ile belgeniz aynı üniversite + aynı bölümden öğrencilere açılır.
 
 ## Kurulum
 
@@ -18,25 +33,27 @@ Gereksinimler: Python 3.13, Flask, pypdf, requests, pytest.
 .venv\Scripts\python app.py
 ```
 
-Uygulama http://127.0.0.1:5000 adresinde açılır. Boş veritabanında ilk açılışta örnek
-veri (3 hesap, 14 belge, 10 SSS girdisi) otomatik yüklenir.
+Uygulama http://127.0.0.1:5000 adresinde açılır. Boş veritabanında ilk açılışta
+örnek veri otomatik yüklenir: 26 üniversite, 30 bölüm, 3 hesap ve sahipli
+örnek belgeler. Kayıtsız kullanıcılar giriş sayfasına yönlendirilir.
 
 ## Demo hesapları
 
-| Rol | E-posta | Şifre |
-| --- | --- | --- |
-| Yönetici | admin@universite.edu.tr | Yonetici1234 |
-| Personel | personel@universite.edu.tr | Personel1234 |
-| Öğrenci | ogrenci@universite.edu.tr | Ogrenci1234 |
+| Rol | E-posta | Şifre | Bölüm |
+| --- | --- | --- | --- |
+| Yönetici | admin@universite.edu.tr | Yonetici1234 | — |
+| Öğrenci | bilgisayar@universite.edu.tr | Ogrenci1234 | Bilgisayar Mühendisliği |
+| Öğrenci | elektrik@universite.edu.tr | Ogrenci1234 | Elektrik-Elektronik Mühendisliği |
 
-Giriş yapmadan (ziyaretçi olarak) da sohbet edilebilir; ziyaretçi sohbetleri kalıcı
-olarak saklanmaz.
+Bilgisayar öğrencisi 14 örnek belgenin sahibidir (2'si bölüme paylaşılmış);
+elektrik öğrencisinin 2 belgesi vardır (1'i paylaşılmış). Farklı bölümler
+birbirinin paylaşılan belgelerini göremez — kapsam izolasyonu testlidir.
 
 ## Yapay zekâ sağlayıcısı
 
-API anahtarı tanımlı değilse uygulama yerel arama modunda çalışır (TF-IDF benzeri
-gömme vektörleriyle belge arama; yanıtlar belge metninden derlenir). Sağlayıcı olarak
-OpenAI uyumlu bir REST API kullanmak için aşağıdaki ortam değişkenlerini tanımlayın:
+API anahtarı tanımlı değilse uygulama yerel arama modunda çalışır (TF-IDF
+benzeri gömme vektörleriyle belge arama; yanıtlar belge metninden derlenir).
+OpenAI uyumlu bir REST API kullanmak için:
 
 ```
 set UNIASIST_API_KEY=...                (zorunlu)
@@ -48,6 +65,19 @@ set UNIASIST_SECRET_KEY=...             (üretime alırken zorunlu önerilir)
 ```
 
 Sağlayıcı değiştiğinde indeksli parçalar açılışta otomatik olarak yeniden gömülür.
+
+## E-posta gönderimi (SMTP)
+
+Geliştirmede doğrulama e-postaları konsola/log'a yazılır. Gerçek SMTP gönderimi için:
+
+```
+set UNIASIST_MAILGONDER=1
+set UNIASIST_SMTP_SUNUCU=smtp.example.com
+set UNIASIST_SMTP_PORT=587
+set UNIASIST_SMTP_KULLANICI=...
+set UNIASIST_SMTP_SIFRE=...
+set UNIASIST_SMTP_GONDEREN=uniasist@example.com
+```
 
 ## Test
 
@@ -61,16 +91,20 @@ Sağlayıcı değiştiğinde indeksli parçalar açılışta otomatik olarak yen
 .venv\Scripts\python degerlendir.py
 ```
 
-Betik, 50 örnek soruyu gerçek servis üzerinden işler ve doğru yanıt oranını raporlar
-(hedef %80). API anahtarı tanımlıysa hazır LLM, tanımlı değilse yerel arama kullanılır
-ve hangi sağlayıcının kullanıldığı raporun ilk satırında yazar.
+Betik, 50 örnek soruyu doğrulanmış demo öğrencisinin kapsamıyla (kendi
+belgeleri + bölümün paylaşılanları) gerçek servis üzerinden işler ve doğru
+yanıt oranını raporlar (hedef %80). API anahtarı tanımlıysa hazır LLM,
+tanımlı değilse yerel arama kullanılır.
 
 ## Katmanlar
 
-- `uniasist/entity.py` — varlık sınıfları (Kullanici, Sohbet, Belge, ...)
+- `uniasist/entity.py` — varlık sınıfları (Kullanici, Sohbet, Belge, Bildirim, ...)
 - `uniasist/depo/` — SQLite depoları
-- `uniasist/servis/` — iş kuralları (kimlik doğrulama, RAG, bilgi tabanı, rapor, ...)
+- `uniasist/servis/` — iş kuralları (kimlik doğrulama, e-posta, RAG, bilgi
+  tabanı, moderasyon, rapor, ...)
 - `uniasist/yapayzeka/` — LLM arayüzü, hazır servis ve yerel arama gerçeklemeleri
-- `uniasist/ekran/` — Flask blueprint'leri
+- `uniasist/ekran/` — Flask blueprint'leri (öğrenci belgeleri, sohbet, inceleme,
+  kullanıcı yönetimi, rapor)
+- `uniasist/veri/` — üniversite ve bölüm seed listeleri
 - `sablonlar/`, `statik/` — arayüz
 - `veri/ornek_belgeler/` — seed belgeleri

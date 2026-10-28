@@ -1,36 +1,59 @@
 from pathlib import Path
 
 from uniasist.entity import Kullanici
-from uniasist.enumlar import Rol
+from uniasist.enumlar import Gorunurluk, Rol
 from uniasist.guvenlik import sifre_hashle
 
 _KOK = Path(__file__).resolve().parent.parent / "veri" / "ornek_belgeler"
 
+# (eposta, sifre, ad_soyad, rol, bolum)
 _HESAPLAR = [
-    ("Sistem Yöneticisi", "admin@universite.edu.tr", "Yonetici1234", Rol.YONETICI),
-    ("Örnek Öğrenci", "ogrenci@universite.edu.tr", "Ogrenci1234", Rol.OGRENCI),
+    ("admin@universite.edu.tr", "Yonetici1234", "Sistem Yöneticisi", Rol.YONETICI, ""),
+    ("bilgisayar@universite.edu.tr", "Ogrenci1234", "Bilgisayar Öğrencisi", Rol.OGRENCI, "Bilgisayar Mühendisliği"),
+    ("elektrik@universite.edu.tr", "Ogrenci1234", "Elektrik Öğrencisi", Rol.OGRENCI, "Elektrik-Elektronik Mühendisliği"),
 ]
 
-_BELGELER = [
-    ("lisans_egitim_ogretim_yonetmeligi.txt", "Lisans Eğitim-Öğretim Yönetmeliği", "Kayıt"),
-    ("akademik_takvim.txt", "2026-2027 Akademik Takvim", "Akademik Takvim"),
-    ("ders_ekle_birak.txt", "Ders Ekleme-Bırakma Yönergesi", "Ders İşlemleri"),
-    ("burs_yonergesi.txt", "Burs Yönergesi", "Burs"),
-    ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu", "Yurt"),
-    ("staj_yonergesi.txt", "Staj Yönergesi", "Staj"),
-    ("mezuniyet_kosullari.txt", "Mezuniyet Koşulları", "Mezuniyet"),
-    ("cift_anadal.txt", "Çift Anadal Yönergesi", "Çift Anadal"),
-    ("yatay_gecis.txt", "Yatay Geçiş Koşulları", "Yatay Geçiş"),
-    ("kayit_yenileme.txt", "Kayıt Yenileme Kılavuzu", "Kayıt"),
-    ("yaz_okulu.txt", "Yaz Okulu Kuralları", "Ders İşlemleri"),
-    ("diploma_islemleri.txt", "Diploma ve Çıkış İşlemleri", "Mezuniyet"),
-    ("danismanlik.txt", "Öğrenci Danışmanlık Hizmetleri", "Öğrenci Hizmetleri"),
-    ("engelli_destek.txt", "Engelli Öğrenci Destek Birimi", "Öğrenci Hizmetleri"),
+# (dosya, başlık, kategori, görünürlük)
+_BILGISAYAR_BELGELERI = [
+    ("lisans_egitim_ogretim_yonetmeligi.txt", "Lisans Eğitim-Öğretim Yönetmeliği", "Kayıt", Gorunurluk.OZEL),
+    ("akademik_takvim.txt", "2026-2027 Akademik Takvim", "Akademik Takvim", Gorunurluk.OZEL),
+    ("ders_ekle_birak.txt", "Ders Ekleme-Bırakma Yönergesi", "Ders İşlemleri", Gorunurluk.OZEL),
+    ("burs_yonergesi.txt", "Burs Yönergesi", "Burs", Gorunurluk.PAYLASILAN),
+    ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu", "Yurt", Gorunurluk.OZEL),
+    ("staj_yonergesi.txt", "Staj Yönergesi", "Staj", Gorunurluk.PAYLASILAN),
+    ("mezuniyet_kosullari.txt", "Mezuniyet Koşulları", "Mezuniyet", Gorunurluk.OZEL),
+    ("cift_anadal.txt", "Çift Anadal Yönergesi", "Çift Anadal", Gorunurluk.OZEL),
+    ("yatay_gecis.txt", "Yatay Geçiş Koşulları", "Yatay Geçiş", Gorunurluk.OZEL),
+    ("kayit_yenileme.txt", "Kayıt Yenileme Kılavuzu", "Kayıt", Gorunurluk.OZEL),
+    ("yaz_okulu.txt", "Yaz Okulu Kuralları", "Ders İşlemleri", Gorunurluk.OZEL),
+    ("diploma_islemleri.txt", "Diploma ve Çıkış İşlemleri", "Mezuniyet", Gorunurluk.OZEL),
+    ("danismanlik.txt", "Öğrenci Danışmanlık Hizmetleri", "Öğrenci Hizmetleri", Gorunurluk.OZEL),
+    ("engelli_destek.txt", "Engelli Öğrenci Destek Birimi", "Öğrenci Hizmetleri", Gorunurluk.OZEL),
 ]
+
+_ELEKTRIK_BELGELERI = [
+    ("yaz_okulu.txt", "Yaz Okulu Kuralları (Elektrik)", "Ders İşlemleri", Gorunurluk.OZEL),
+    ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu (Elektrik)", "Yurt", Gorunurluk.PAYLASILAN),
+]
+
+
+def _belgeleri_yukle(paket, sahip, belgeler):
+    for dosya_adi, baslik, kategori, gorunurluk in belgeler:
+        yol = _KOK / dosya_adi
+        if not any(
+            b.dosya_yolu == str(yol) and b.sahip_id == sahip.kullanici_id
+            for b in paket.bilgi_tabani.belgeleriListele(sahip.kullanici_id)
+        ):
+            paket.bilgi_tabani.belgeYukle(
+                dosya_adi, str(yol), yol.stat().st_size, baslik, kategori,
+                sahip=sahip, gorunurluk=gorunurluk,
+            )
+
 
 def kos(paket):
     universite = paket.universite_deposu.alanAdindanBul("admin@universite.edu.tr")
-    for ad_soyad, eposta, sifre, rol in _HESAPLAR:
+    kullanicilar = {}
+    for eposta, sifre, ad_soyad, rol, bolum in _HESAPLAR:
         if not paket.kimlik.kullanici_deposu.epostaVarMi(eposta):
             kullanici = Kullanici(
                 ad_soyad=ad_soyad,
@@ -38,16 +61,15 @@ def kos(paket):
                 sifre_hash=sifre_hashle(sifre),
                 rol=rol,
                 universite_id=universite.universite_id if universite else None,
-                bolum="Bilgisayar Mühendisliği" if rol == Rol.OGRENCI else "",
+                bolum=bolum,
                 eposta_dogrulandi=True,
             )
             paket.kimlik.kullanici_deposu.kaydet(kullanici)
+        kullanicilar[eposta] = paket.kimlik.kullanici_deposu.epostaIleBul(eposta)
 
-    ogrenci = paket.kimlik.kullanici_deposu.epostaIleBul("ogrenci@universite.edu.tr")
-    if ogrenci and not paket.bilgi_tabani.belgeleriListele(ogrenci.kullanici_id):
-        for dosya_adi, baslik, kategori in _BELGELER:
-            yol = _KOK / dosya_adi
-            paket.bilgi_tabani.belgeYukle(
-                dosya_adi, str(yol), yol.stat().st_size, baslik, kategori,
-                sahip=ogrenci,
-            )
+    _belgeleri_yukle(
+        paket, kullanicilar["bilgisayar@universite.edu.tr"], _BILGISAYAR_BELGELERI
+    )
+    _belgeleri_yukle(
+        paket, kullanicilar["elektrik@universite.edu.tr"], _ELEKTRIK_BELGELERI
+    )
