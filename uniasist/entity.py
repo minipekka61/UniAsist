@@ -320,3 +320,17 @@ class Universite:
         self.universite_id = universite_id
         self.ad = ad
         self.eposta_alan_adi = eposta_alan_adi
+
+
+class Bildirim:
+    def __init__(self, belge_id, bildiren_id, neden, tarih,
+                 bildirim_id=None, durum=KayitDurumu.ACIK):
+        self.bildirim_id = bildirim_id
+        self.belge_id = belge_id
+        self.bildiren_id = bildiren_id
+        self.neden = neden
+        self.tarih = tarih
+        self.durum = durum
+
+    def degerlendirildiIsaretle(self):
+        self.durum = KayitDurumu.DEGERLENDIRILDI

@@ -24,6 +24,7 @@ class Gorunurluk(Enum):
 class KayitDurumu(Enum):
     ACIK = "ACIK"
     COZULDU = "COZULDU"
+    DEGERLENDIRILDI = "DEGERLENDIRILDI"
 
 
 class GeriBildirimTuru(Enum):

@@ -117,6 +117,15 @@ CREATE TABLE IF NOT EXISTS bolum (
     bolum_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ad TEXT NOT NULL UNIQUE
 );
+CREATE TABLE IF NOT EXISTS bildirim (
+    bildirim_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    belge_id INTEGER NOT NULL,
+    bildiren_id INTEGER NOT NULL,
+    neden TEXT,
+    durum TEXT NOT NULL DEFAULT 'ACIK',
+    tarih TEXT NOT NULL,
+    UNIQUE(belge_id, bildiren_id)
+);
 """
 
 
