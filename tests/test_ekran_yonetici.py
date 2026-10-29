@@ -283,3 +283,24 @@ def test_bildirim_yoksay(ortam, tmp_path):
     assert yanit.status_code == 200
     assert paket.moderasyon.acikBildirimler() == []
     assert paket.bilgi_tabani.kaynagiGetir(belge.kaynak_id) is not None
+
+
+def test_bildirim_karar_tekrari_hata_gosterir(ortam, tmp_path):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    belge = _bildirim_hazirla(paket, tmp_path)
+
+    bildirim_id = paket.moderasyon.acikBildirimler()[0][0].bildirim_id
+    istemci.post(
+        f"/yonetici/bildirimler/{bildirim_id}/karar",
+        data={},
+        follow_redirects=True,
+    )
+    yanit = istemci.post(
+        f"/yonetici/bildirimler/{bildirim_id}/karar",
+        data={"sil": "1"},
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert "zaten değerlendirilmiş" in yanit.get_data(as_text=True)
+    assert paket.bilgi_tabani.kaynagiGetir(belge.kaynak_id) is not None

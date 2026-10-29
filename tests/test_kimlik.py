@@ -1,3 +1,5 @@
+import logging
+import re
 from datetime import datetime, timedelta
 
 import pytest
@@ -293,3 +295,16 @@ def test_dogrulama_gonder_yeniden(servisler):
     with pytest.raises(IsKuraliIhlaliException):
         kimlik.dogrula(eski_token)
     assert kimlik.dogrula(taze.dogrulama_token).dogrulanmisMi()
+
+
+def test_dogrulama_epostasi_mutlak_baglanti(servisler, caplog):
+    kimlik, _, _ = servisler
+    with caplog.at_level(logging.INFO, logger="uniasist.eposta"):
+        kimlik.kayitOl(
+            "Mutlak Url", "mutlak@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM
+        )
+    eslesme = re.search(r"bağlantı: (\S+)", caplog.text)
+    assert eslesme is not None
+    baglanti = eslesme.group(1)
+    assert baglanti.startswith("http://")
+    assert "/dogrula/" in baglanti

@@ -23,6 +23,13 @@ def _dosya_kaydet(dosya):
     return guvenli_ad, yol, boyut
 
 
+def _dosya_temizle(yol):
+    try:
+        os.remove(yol)
+    except OSError:
+        pass
+
+
 def _sayfa(kur_, kullanici, sekme="benim", hata=None, bilgi=None):
     if sekme == "bolum":
         belgeler = kur_.bilgi_tabani.bolumunPaylasilanlari(
@@ -60,13 +67,14 @@ def belge_yukle():
     )
     if dosya is None or not dosya.filename:
         return _sayfa(kur_, kullanici, hata="Dosya seçilmedi.")
+    ad, yol, boyut = _dosya_kaydet(dosya)
     try:
-        ad, yol, boyut = _dosya_kaydet(dosya)
         belge = kur_.bilgi_tabani.belgeYukle(
             ad, yol, boyut, baslik, kategori,
             sahip=kullanici, gorunurluk=gorunurluk,
         )
     except IsKuraliIhlaliException as e:
+        _dosya_temizle(yol)
         return _sayfa(kur_, kullanici, hata=e.mesaj)
     return _sayfa(
         kur_, kullanici,
@@ -120,6 +128,8 @@ def belge_guncelle(belge_id):
                 belge_id, kullanici.kullanici_id, baslik, kategori
             )
     except IsKuraliIhlaliException as e:
+        if dosya is not None and dosya.filename:
+            _dosya_temizle(yol)
         return _sayfa(kur_, kullanici, hata=e.mesaj)
     return _sayfa(kur_, kullanici, bilgi="Belge güncellendi.")
 

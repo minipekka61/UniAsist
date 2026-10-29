@@ -67,7 +67,7 @@
         <tr><th>Başlık</th><th>Ders / Kategori</th><th></th></tr>
         {% for b in belgeler %}
         <tr>
-            <td>{{ b.baslik }}</td>
+            <td><a href="/kaynak/{{ b.kaynak_id }}">{{ b.baslik }}</a></td>
             <td>{{ b.kategori }}</td>
             <td>
                 <form method="post" action="/belgelerim/{{ b.kaynak_id }}/bildir" class="satir-ici"

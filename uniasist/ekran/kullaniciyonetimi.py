@@ -68,12 +68,12 @@ def bildirim_karar(bildirim_id):
     silinsin = request.form.get("sil") == "1"
     try:
         kur_.moderasyon.bildirimiDegerlendir(bildirim_id, silinsin=silinsin)
-    except IsKuraliIhlaliException:
-        pass
-    return _bildirimler_sayfasi(kur_)
+    except IsKuraliIhlaliException as e:
+        return _bildirimler_sayfasi(kur_, hata=e.mesaj)
+    return _bildirimler_sayfasi(kur_, bilgi="Bildirim değerlendirildi.")
 
 
-def _bildirimler_sayfasi(kur_):
+def _bildirimler_sayfasi(kur_, hata=None, bilgi=None):
     kayitlar = []
     for bildirim, belge in kur_.moderasyon.acikBildirimler():
         sahip = kur_.kimlik.kullanici_deposu.idIleBul(belge.sahip_id)
@@ -84,4 +84,9 @@ def _bildirimler_sayfasi(kur_):
             "sahip_adi": sahip.ad_soyad if sahip else "—",
             "bildiren_adi": bildiren.ad_soyad if bildiren else "—",
         })
-    return render_template("bildirimler.html", kayitlar=kayitlar)
+    return render_template(
+        "bildirimler.html",
+        kayitlar=kayitlar,
+        hata=hata,
+        bilgi=bilgi,
+    )

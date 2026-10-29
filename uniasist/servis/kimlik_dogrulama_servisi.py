@@ -28,7 +28,7 @@ class KimlikDogrulamaServisi:
         )
 
     def _dogrulamaBaglantisi(self, token):
-        return f"/dogrula/{token}"
+        return f"{config.TEMEL_URL.rstrip('/')}/dogrula/{token}"
 
     def _dogrulamaDuzenle(self, kullanici):
         token = uuid.uuid4().hex

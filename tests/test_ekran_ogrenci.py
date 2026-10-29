@@ -183,3 +183,60 @@ def test_bolum_belgesi_bildir(ortam):
     assert len(aciklar) == 1
     assert aciklar[0][0].bildiren_id == baska.kullanici_id
     assert aciklar[0][0].belge_id == belge.kaynak_id
+
+
+def test_bolum_paylasilanina_kaynak_baglantisi(ortam):
+    istemci, paket = ortam
+    ogr = dogrulanmis_ogrenci(paket)
+    giris_yap(istemci)
+    istemci.post("/belgelerim/yukle", data={
+        "baslik": "Burs Yönergesi",
+        "kategori": "Burs",
+        "dosya": (io.BytesIO(BELGE_METNI.encode("utf-8")), "burs.txt"),
+    }, content_type="multipart/form-data", follow_redirects=True)
+    belge = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
+    istemci.post(
+        f"/belgelerim/{belge.kaynak_id}/gorunurluk",
+        data={"gorunurluk": "PAYLASILAN"},
+    )
+
+    dogrulanmis_ogrenci(paket, eposta="baska@universite.edu.tr")
+    giris_yap(istemci, eposta="baska@universite.edu.tr")
+    yanit = istemci.get("/belgelerim?sekme=bolum")
+    assert f'href="/kaynak/{belge.kaynak_id}"' in yanit.get_data(as_text=True)
+
+    yanit = istemci.get(f"/kaynak/{belge.kaynak_id}")
+    assert yanit.status_code == 200
+    assert "Burs Yönergesi" in yanit.get_data(as_text=True)
+
+
+def test_asiri_buyuk_yukleme_413(ortam):
+    istemci, paket = ortam
+    ogr = dogrulanmis_ogrenci(paket)
+    giris_yap(istemci)
+    icerik = b"x" * (config.AZAMI_BELGE_BOYUTU + 2 * 1024 * 1024)
+    yanit = istemci.post("/belgelerim/yukle", data={
+        "baslik": "Devasa Belge",
+        "kategori": "Staj",
+        "dosya": (io.BytesIO(icerik), "devasa.txt"),
+    }, content_type="multipart/form-data")
+    assert yanit.status_code == 413
+    assert paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
+
+
+def test_reddedilen_yukleme_artik_dosya_birakmaz(ortam):
+    import os
+
+    istemci, paket = ortam
+    ogr = dogrulanmis_ogrenci(paket)
+    giris_yap(istemci)
+    icerik = b"x" * (config.AZAMI_BELGE_BOYUTU + 512 * 1024)
+    yanit = istemci.post("/belgelerim/yukle", data={
+        "baslik": "Büyük Belge",
+        "kategori": "Staj",
+        "dosya": (io.BytesIO(icerik), "buyuk.txt"),
+    }, content_type="multipart/form-data", follow_redirects=True)
+    assert yanit.status_code == 200
+    assert "Belge yüklenemedi" in yanit.get_data(as_text=True)
+    assert paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
+    assert os.listdir(config.DOSYA_KLASORU) == []

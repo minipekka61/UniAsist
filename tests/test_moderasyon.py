@@ -122,3 +122,36 @@ def test_degerlendir_yoksay(ortam):
     assert ortam["moderasyon"].acikBildirimler() == []
     assert ortam["bilgi_tabani"].kaynagiGetir(ortam["paylasilan"].kaynak_id) is not None
     assert ortam["bildirim_depo"].idIleBul(bildirim.bildirim_id).durum == KayitDurumu.DEGERLENDIRILDI
+
+
+def test_ik31_baska_bolum_belgeyi_bildiremez(ortam):
+    baska_bolum = ogrenci_olustur(ortam["db"], "hukuk@universite.edu.tr", bolum="Hukuk")
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        ortam["moderasyon"].bildir(
+            ortam["paylasilan"].kaynak_id, baska_bolum, "Deneme"
+        )
+    assert h.value.kural_no_getir() == "IK-31"
+    assert h.value.mesaj == "Belge bulunamadı."
+
+
+def test_ik31_baska_universite_belgeyi_bildiremez(ortam):
+    baska_universite = ogrenci_olustur(
+        ortam["db"], "baska@itu.edu.tr", universite_id=2
+    )
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        ortam["moderasyon"].bildir(
+            ortam["paylasilan"].kaynak_id, baska_universite, "Deneme"
+        )
+    assert h.value.kural_no_getir() == "IK-31"
+    assert h.value.mesaj == "Belge bulunamadı."
+
+
+def test_ik32_karar_verilen_bildirim_tekrar_degerlendirilemez(ortam):
+    bildirim = ortam["moderasyon"].bildir(
+        ortam["paylasilan"].kaynak_id, ortam["baska"], "Uygunsuz"
+    )
+    ortam["moderasyon"].bildirimiDegerlendir(bildirim.bildirim_id, silinsin=False)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        ortam["moderasyon"].bildirimiDegerlendir(bildirim.bildirim_id, silinsin=True)
+    assert h.value.kural_no_getir() == "IK-32"
+    assert ortam["bilgi_tabani"].kaynagiGetir(ortam["paylasilan"].kaynak_id) is not None

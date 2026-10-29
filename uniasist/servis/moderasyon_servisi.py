@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from uniasist.entity import Bildirim
-from uniasist.enumlar import Gorunurluk
+from uniasist.enumlar import Gorunurluk, KayitDurumu
 from uniasist.hatalar import IsKuraliIhlaliException
 
 
@@ -10,14 +10,19 @@ class ModerasyonServisi:
         self.bildirim_deposu = bildirim_deposu
         self.bilgi_tabani_servisi = bilgi_tabani_servisi
 
+    def _bildirilebilirMi(self, belge, bildiren):
+        if belge.sahip_id == bildiren.kullanici_id:
+            return True
+        return (
+            belge.gorunurluk == Gorunurluk.PAYLASILAN
+            and belge.universite_id == bildiren.universite_id
+            and belge.bolum == bildiren.bolum
+        )
+
     def bildir(self, belge_id, bildiren, neden):
         belge = self.bilgi_tabani_servisi.kaynagiGetir(belge_id)
-        if belge is None:
+        if belge is None or not self._bildirilebilirMi(belge, bildiren):
             raise IsKuraliIhlaliException("IK-31", "Belge bulunamadı.")
-        if belge.gorunurluk != Gorunurluk.PAYLASILAN:
-            raise IsKuraliIhlaliException(
-                "IK-31", "Yalnızca paylaşıma açılmış belgeler bildirilebilir."
-            )
         if belge.sahip_id == bildiren.kullanici_id:
             raise IsKuraliIhlaliException(
                 "IK-31", "Kendi belgenizi bildiremezsiniz."
@@ -48,6 +53,10 @@ class ModerasyonServisi:
         bildirim = self.bildirim_deposu.idIleBul(bildirim_id)
         if bildirim is None:
             raise IsKuraliIhlaliException("IK-32", "Bildirim bulunamadı.")
+        if bildirim.durum != KayitDurumu.ACIK:
+            raise IsKuraliIhlaliException(
+                "IK-32", "Bu bildirim zaten değerlendirilmiş."
+            )
         if silinsin:
             self.bilgi_tabani_servisi.belgeSilZorla(bildirim.belge_id)
         self.bildirim_deposu.degerlendirildiIsaretle(bildirim.bildirim_id)

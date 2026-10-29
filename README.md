@@ -81,7 +81,12 @@ set UNIASIST_SMTP_PORT=587
 set UNIASIST_SMTP_KULLANICI=...
 set UNIASIST_SMTP_SIFRE=...
 set UNIASIST_SMTP_GONDEREN=uniasist@example.com
+set UNIASIST_TEMEL_URL=https://uniasist.example.com
 ```
+
+`UNIASIST_TEMEL_URL` doğrulama bağlantısının başına yazılan temel adrestir
+(varsayılan `http://127.0.0.1:5000`); SMTP açıkken uygulamanın erişilebildiği
+adresi verecek şekilde ayarlayın.
 
 ## Test
 
