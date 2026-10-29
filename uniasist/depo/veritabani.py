@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS bilgi_kaynagi (
     sahip_id INTEGER,
     gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
     universite_id INTEGER,
-    bolum TEXT
+    bolum TEXT,
+    ders_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS icerik_parcasi (
     parca_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +95,8 @@ CREATE TABLE IF NOT EXISTS icerik_parcasi (
     sahip_id INTEGER,
     gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
     universite_id INTEGER,
-    bolum TEXT
+    bolum TEXT,
+    ders_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS yanitlanamayan_soru (
     kayit_id INTEGER PRIMARY KEY AUTOINCREMENT,

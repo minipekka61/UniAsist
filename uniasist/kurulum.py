@@ -1,6 +1,7 @@
 ﻿import config
 from uniasist.depo.bildirim_deposu import BildirimDeposu
 from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
+from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.geri_bildirim_deposu import GeriBildirimDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.depo.soru_kaydi_deposu import SoruKaydiDeposu
@@ -88,10 +89,11 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
     if not arama_dizini.saglayiciUyumlu(yapay_zeka.saglayici_etiketi):
         arama_dizini.yenidenGomme(yapay_zeka)
 
+    ders_deposu = DersDeposu(db)
     kimlik = KimlikDogrulamaServisi(kullanici_deposu, universite_deposu, eposta_servisi)
     kullanici_yonetimi = KullaniciYonetimServisi(kullanici_deposu, kimlik)
     belge_isleme = BelgeIslemeServisi(arama_dizini, yapay_zeka)
-    bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini)
+    bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini, ders_deposu)
     yanit_uretme = YanitUretmeServisi(arama_dizini, yapay_zeka)
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_soru_deposu)
     sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu)

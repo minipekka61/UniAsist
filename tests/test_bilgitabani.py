@@ -3,6 +3,7 @@
 import config
 from tests.yardimci import SahteYZ, gecici_db
 from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
+from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.entity import Belge, IcerikParcasi, Kullanici
 from uniasist.enumlar import Gorunurluk, KaynakDurumu, Rol
@@ -57,7 +58,7 @@ def servisler():
     dizin = AramaDizini(db)
     isleme = BelgeIslemeServisi(dizin, yz)
     depo = BilgiKaynagiDeposu(db)
-    bilgi_tabani = BilgiTabaniServisi(depo, isleme, dizin)
+    bilgi_tabani = BilgiTabaniServisi(depo, isleme, dizin, DersDeposu(db))
     return bilgi_tabani, dizin, depo, yz, db
 
 
@@ -342,16 +343,16 @@ def test_bolumun_paylasilanlari_listeler(servisler, belge_dosyasi, tmp_path):
 
     paylasilan = bilgi_tabani.belgeYukle(
         "p.txt", belge_dosyasi, 5000, "Paylaşılan Yönetmelik", "Kayıt",
-        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN,
+        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
     )
     bilgi_tabani.belgeYukle("o.txt", belge_dosyasi, 5000, "Özel Yönetmelik", "Kayıt", sahip=ogr_a)
     baska_bolum_paylasilan = bilgi_tabani.belgeYukle(
         "h.txt", belge_dosyasi, 5000, "Hukuk Notları", "Hukuk",
-        sahip=ogr_b, gorunurluk=Gorunurluk.PAYLASILAN,
+        sahip=ogr_b, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Hukuka Giriş",
     )
     baska_universite = bilgi_tabani.belgeYukle(
         "d.txt", belge_dosyasi, 5000, "Diğer Üniversite", "Kayıt",
-        sahip=ogr_c, gorunurluk=Gorunurluk.PAYLASILAN,
+        sahip=ogr_c, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
     )
 
     liste = bilgi_tabani.bolumunPaylasilanlari(1, "Bilgisayar Mühendisliği")
@@ -360,3 +361,77 @@ def test_bolumun_paylasilanlari_listeler(servisler, belge_dosyasi, tmp_path):
     assert baska_bolum_paylasilan.kaynak_id not in kaynaklar
     assert baska_universite.kaynak_id not in kaynaklar
     assert bilgi_tabani.bolumunPaylasilanlari(2, "Hukuk") == []
+
+
+def test_belge_ders_etiketi_atanir(servisler, belge_dosyasi):
+    bilgi_tabani, dizin, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle(
+        "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+        sahip=ogr, ders_adi="Matematik I",
+    )
+    ders = DersDeposu(db).adIleBul("matematik i")
+    assert ders is not None
+    assert belge.ders_id == ders.ders_id
+    parcalar = [p for p in dizin.parcalar if p.kaynak_id == belge.kaynak_id]
+    assert parcalar
+    assert all(p.ders_id == ders.ders_id for p in parcalar)
+
+
+def test_paylasilan_belge_ders_ister(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    with pytest.raises(IsKuraliIhlaliException) as h:
+        bilgi_tabani.belgeYukle(
+            "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+            sahip=ogr, gorunurluk=Gorunurluk.PAYLASILAN,
+        )
+    assert h.value.kural_no_getir() == "IK-24"
+
+
+def test_belge_ders_degistirilebilir(servisler, belge_dosyasi):
+    bilgi_tabani, dizin, _, _, db = servisler
+    ogr = ogrenci_olustur(db)
+    belge = bilgi_tabani.belgeYukle(
+        "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+        sahip=ogr, ders_adi="Matematik I",
+    )
+    bilgi_tabani.belgeGuncelle(
+        belge.kaynak_id, ogr.kullanici_id, "Yönetmelik", "Kayıt",
+        yeni_ders_adi="Fizik I",
+    )
+    ders_depo = DersDeposu(db)
+    fizik = ders_depo.adIleBul("Fizik I")
+    assert fizik is not None
+    taze = bilgi_tabani.kaynagiGetir(belge.kaynak_id)
+    assert taze.ders_id == fizik.ders_id
+    parcalar = [p for p in AramaDizini(db).parcalar if p.kaynak_id == belge.kaynak_id]
+    assert parcalar
+    assert all(p.ders_id == fizik.ders_id for p in parcalar)
+
+
+def test_dersin_paylasilanlari_listeler(servisler, belge_dosyasi):
+    bilgi_tabani, _, _, _, db = servisler
+    ogr_a = ogrenci_olustur(db, eposta="a@u.edu.tr")
+    ogr_b = ogrenci_olustur(db, eposta="b@u.edu.tr")
+
+    mat_paylasilan = bilgi_tabani.belgeYukle(
+        "p.txt", belge_dosyasi, 5000, "Mat Paylaşılan", "Kayıt",
+        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
+    )
+    fizik_paylasilan = bilgi_tabani.belgeYukle(
+        "f.txt", belge_dosyasi, 5000, "Fizik Paylaşılan", "Kayıt",
+        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Fizik I",
+    )
+    mat_ozel = bilgi_tabani.belgeYukle(
+        "o.txt", belge_dosyasi, 5000, "Mat Özel", "Kayıt",
+        sahip=ogr_b, ders_adi="Matematik I",
+    )
+
+    ders_depo = DersDeposu(db)
+    mat = ders_depo.adIleBul("Matematik I")
+    liste = bilgi_tabani.dersinPaylasilanlari(mat.ders_id)
+    kaynaklar = {b.kaynak_id for b in liste}
+    assert mat_paylasilan.kaynak_id in kaynaklar
+    assert fizik_paylasilan.kaynak_id not in kaynaklar
+    assert mat_ozel.kaynak_id not in kaynaklar

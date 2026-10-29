@@ -5,6 +5,7 @@ import pytest
 import config
 from tests.yardimci import SahteYZ, gecici_db
 from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
+from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.geri_bildirim_deposu import GeriBildirimDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.depo.soru_kaydi_deposu import SoruKaydiDeposu
@@ -44,10 +45,9 @@ def servisler(tmp_path):
     yz = SahteYZ()
     dizin = AramaDizini(db)
     isleme = BelgeIslemeServisi(dizin, yz)
-    bilgi_depo = BilgiKaynagiDeposu(db)
-    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin)
-
     kullanici_depo = KullaniciDeposu(db)
+    bilgi_depo = BilgiKaynagiDeposu(db)
+    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin, DersDeposu(db))
     kullanici = Kullanici(
         ad_soyad="Ali Veli",
         eposta="ali@universite.edu.tr",
@@ -335,6 +335,7 @@ def _staj_belgesi_yukle(servisler, sahip, tmp_path, gorunurluk=Gorunurluk.OZEL):
     return servisler["bilgi_tabani"].belgeYukle(
         "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
         sahip=sahip, gorunurluk=gorunurluk,
+        ders_adi="Staj Dersi" if gorunurluk == Gorunurluk.PAYLASILAN else "",
     )
 
 

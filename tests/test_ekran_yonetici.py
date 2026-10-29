@@ -241,7 +241,7 @@ def _bildirim_hazirla(paket, tmp_path):
     dosya.write_text(STAJ_METNI_Y, encoding="utf-8")
     belge = paket.bilgi_tabani.belgeYukle(
         "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
-        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN,
+        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Staj Dersi",
     )
     paket.moderasyon.bildir(belge.kaynak_id, bildiren, "Uygunsuz içerik")
     return belge

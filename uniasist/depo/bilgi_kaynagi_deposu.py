@@ -11,13 +11,13 @@ class BilgiKaynagiDeposu:
     def kaydet(self, kaynak):
         if kaynak.kaynak_id is None:
             imleç = self.db.execute(
-                "INSERT INTO bilgi_kaynagi (tur, baslik, kategori, durum, olusturma_tarihi, guncelleme_tarihi, dosya_adi, dosya_turu, boyut_byte, dosya_yolu, surum_no, sahip_id, gorunurluk, universite_id, bolum) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO bilgi_kaynagi (tur, baslik, kategori, durum, olusturma_tarihi, guncelleme_tarihi, dosya_adi, dosya_turu, boyut_byte, dosya_yolu, surum_no, sahip_id, gorunurluk, universite_id, bolum, ders_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 self._degerler(kaynak),
             )
             kaynak.kaynak_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE bilgi_kaynagi SET tur=?, baslik=?, kategori=?, durum=?, olusturma_tarihi=?, guncelleme_tarihi=?, dosya_adi=?, dosya_turu=?, boyut_byte=?, dosya_yolu=?, surum_no=?, sahip_id=?, gorunurluk=?, universite_id=?, bolum=? WHERE kaynak_id=?",
+                "UPDATE bilgi_kaynagi SET tur=?, baslik=?, kategori=?, durum=?, olusturma_tarihi=?, guncelleme_tarihi=?, dosya_adi=?, dosya_turu=?, boyut_byte=?, dosya_yolu=?, surum_no=?, sahip_id=?, gorunurluk=?, universite_id=?, bolum=?, ders_id=? WHERE kaynak_id=?",
                 self._degerler(kaynak) + (kaynak.kaynak_id,),
             )
 
@@ -38,6 +38,7 @@ class BilgiKaynagiDeposu:
             kaynak.gorunurluk.value,
             kaynak.universite_id,
             kaynak.bolum,
+            kaynak.ders_id,
         )
 
     def _satirdan(self, satir):
@@ -57,6 +58,7 @@ class BilgiKaynagiDeposu:
             gorunurluk=Gorunurluk(satir["gorunurluk"] or "OZEL"),
             universite_id=satir["universite_id"],
             bolum=satir["bolum"] or "",
+            ders_id=satir["ders_id"],
         )
 
     def idIleBul(self, kaynak_id):
@@ -90,5 +92,12 @@ class BilgiKaynagiDeposu:
         satirlar = self.db.execute(
             "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND gorunurluk = ? AND universite_id = ? AND bolum = ? ORDER BY baslik",
             (Gorunurluk.PAYLASILAN.value, universite_id, bolum),
+        ).fetchall()
+        return [self._satirdan(s) for s in satirlar]
+
+    def dersinPaylasilanlari(self, ders_id):
+        satirlar = self.db.execute(
+            "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND gorunurluk = ? AND ders_id = ? ORDER BY baslik",
+            (Gorunurluk.PAYLASILAN.value, ders_id),
         ).fetchall()
         return [self._satirdan(s) for s in satirlar]

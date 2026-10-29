@@ -72,6 +72,7 @@ class BelgeIslemeServisi:
             parca.gorunurluk = belge.gorunurluk
             parca.universite_id = belge.universite_id
             parca.bolum = belge.bolum
+            parca.ders_id = belge.ders_id
             parca.gomme = self._gommeUret(parca.metin)
             self.arama_dizini.parcaEkle(parca)
         return parcalar

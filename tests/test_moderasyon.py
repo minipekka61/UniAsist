@@ -3,6 +3,7 @@ import pytest
 from tests.yardimci import SahteYZ, gecici_db
 from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
 from uniasist.depo.bildirim_deposu import BildirimDeposu
+from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.entity import Kullanici
 from uniasist.enumlar import Gorunurluk, KayitDurumu, Rol
@@ -42,7 +43,7 @@ def ortam(tmp_path):
     dizin = AramaDizini(db)
     isleme = BelgeIslemeServisi(dizin, yz)
     bilgi_depo = BilgiKaynagiDeposu(db)
-    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin)
+    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin, DersDeposu(db))
     bildirim_depo = BildirimDeposu(db)
     moderasyon = ModerasyonServisi(bildirim_depo, bilgi_tabani)
 
@@ -53,7 +54,7 @@ def ortam(tmp_path):
     dosya.write_text(STAJ_METNI, encoding="utf-8")
     paylasilan = bilgi_tabani.belgeYukle(
         "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
-        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN,
+        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Staj Dersi",
     )
     return {
         "db": db,

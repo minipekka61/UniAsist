@@ -32,12 +32,13 @@ class AramaDizini:
                     gorunurluk=Gorunurluk(satir["gorunurluk"] or "OZEL"),
                     universite_id=satir["universite_id"],
                     bolum=satir["bolum"] or "",
+                    ders_id=satir["ders_id"],
                 )
             )
 
     def parcaEkle(self, parca):
         imleç = self.db.execute(
-            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif, sahip_id, gorunurluk, universite_id, bolum) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif, sahip_id, gorunurluk, universite_id, bolum, ders_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 parca.kaynak_id,
                 parca.surum_no,
@@ -53,10 +54,20 @@ class AramaDizini:
                 parca.gorunurluk.value,
                 parca.universite_id,
                 parca.bolum,
+                parca.ders_id,
             ),
         )
         parca.parca_id = imleç.lastrowid
         self.parcalar.append(parca)
+
+    def dersGuncelle(self, kaynak_id, ders_id):
+        self.db.execute(
+            "UPDATE icerik_parcasi SET ders_id = ? WHERE kaynak_id = ?",
+            (ders_id, kaynak_id),
+        )
+        for parca in self.parcalar:
+            if parca.kaynak_id == kaynak_id:
+                parca.ders_id = ders_id
 
     def gorunurlukGuncelle(self, kaynak_id, gorunurluk):
         self.db.execute(

@@ -4,17 +4,26 @@ from uniasist.hatalar import IsKuraliIhlaliException
 
 
 class BilgiTabaniServisi:
-    def __init__(self, bilgi_kaynagi_deposu, belge_isleme_servisi, arama_dizini):
+    def __init__(self, bilgi_kaynagi_deposu, belge_isleme_servisi, arama_dizini,
+                 ders_deposu=None):
         self.bilgi_kaynagi_deposu = bilgi_kaynagi_deposu
         self.belge_isleme_servisi = belge_isleme_servisi
         self.arama_dizini = arama_dizini
+        self.ders_deposu = ders_deposu
 
     def belgeYukle(self, dosya_adi, dosya_yolu, boyut_byte, baslik, kategori, sahip,
-                   gorunurluk=Gorunurluk.OZEL):
+                   gorunurluk=Gorunurluk.OZEL, ders_adi=""):
         if gorunurluk == Gorunurluk.PAYLASILAN and not sahip.dogrulanmisMi():
             raise IsKuraliIhlaliException(
                 "IK-29",
                 "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
+            )
+        ders = None
+        if ders_adi and self.ders_deposu is not None:
+            ders = self.ders_deposu.bulVeYaOlustur(ders_adi)
+        if gorunurluk == Gorunurluk.PAYLASILAN and ders is None:
+            raise IsKuraliIhlaliException(
+                "IK-24", "Paylaşmak için bir ders seçmelisiniz."
             )
         belge = Belge(
             baslik=baslik,
@@ -27,6 +36,7 @@ class BilgiTabaniServisi:
             gorunurluk=gorunurluk,
             universite_id=sahip.universite_id,
             bolum=sahip.bolum,
+            ders_id=ders.ders_id if ders else None,
         )
         if not belge.dosyaGecerliMi():
             raise IsKuraliIhlaliException(
@@ -57,9 +67,20 @@ class BilgiTabaniServisi:
             )
 
     def belgeGuncelle(self, belge_id, kullanici_id, baslik, kategori,
-                      yeni_dosya_yolu=None, yeni_dosya_adi=None, yeni_boyut_byte=None):
+                      yeni_dosya_yolu=None, yeni_dosya_adi=None, yeni_boyut_byte=None,
+                      yeni_ders_adi=None):
         belge = self._belgeyiGetir(belge_id)
         self._sahiplikKontrol(belge, kullanici_id)
+        if yeni_ders_adi is not None:
+            yeni_ders = None
+            if yeni_ders_adi.strip() and self.ders_deposu is not None:
+                yeni_ders = self.ders_deposu.bulVeYaOlustur(yeni_ders_adi)
+            if belge.gorunurluk == Gorunurluk.PAYLASILAN and yeni_ders is None:
+                raise IsKuraliIhlaliException(
+                    "IK-24", "Paylaşmak için bir ders seçmelisiniz."
+                )
+            belge.ders_id = yeni_ders.ders_id if yeni_ders else None
+            self.arama_dizini.dersGuncelle(belge.kaynak_id, belge.ders_id)
         if yeni_dosya_yolu:
             deneme = Belge(
                 baslik=baslik,
@@ -133,6 +154,9 @@ class BilgiTabaniServisi:
 
     def bolumunPaylasilanlari(self, universite_id, bolum):
         return self.bilgi_kaynagi_deposu.bolumunPaylasilanlari(universite_id, bolum)
+
+    def dersinPaylasilanlari(self, ders_id):
+        return self.bilgi_kaynagi_deposu.dersinPaylasilanlari(ders_id)
 
     def kaynagiGetir(self, kaynak_id):
         if kaynak_id is None:
