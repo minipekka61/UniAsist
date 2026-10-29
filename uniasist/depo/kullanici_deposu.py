@@ -18,22 +18,22 @@ class KullaniciDeposu:
             kullanici.basarisiz_deneme_sayisi,
             kullanici.kilit_bitis_zamani.isoformat() if kullanici.kilit_bitis_zamani else None,
             kullanici.kayit_tarihi.isoformat(),
-            kullanici.universite_id,
             kullanici.bolum,
             1 if kullanici.eposta_dogrulandi else 0,
             kullanici.dogrulama_token,
             kullanici.dogrulama_bitis.isoformat() if kullanici.dogrulama_bitis else None,
             kullanici.plan.value,
+            kullanici.universite,
         )
         if kullanici.kullanici_id is None:
             imleç = self.db.execute(
-                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi, universite_id, bolum, eposta_dogrulandi, dogrulama_token, dogrulama_bitis, plan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi, bolum, eposta_dogrulandi, dogrulama_token, dogrulama_bitis, plan, universite) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 degerler,
             )
             kullanici.kullanici_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=?, universite_id=?, bolum=?, eposta_dogrulandi=?, dogrulama_token=?, dogrulama_bitis=?, plan=? WHERE kullanici_id=?",
+                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=?, bolum=?, eposta_dogrulandi=?, dogrulama_token=?, dogrulama_bitis=?, plan=?, universite=? WHERE kullanici_id=?",
                 degerler + (kullanici.kullanici_id,),
             )
 
@@ -48,12 +48,12 @@ class KullaniciDeposu:
             basarisiz_deneme_sayisi=satir["basarisiz_deneme_sayisi"],
             kilit_bitis_zamani=datetime.fromisoformat(satir["kilit_bitis_zamani"]) if satir["kilit_bitis_zamani"] else None,
             kayit_tarihi=datetime.fromisoformat(satir["kayit_tarihi"]),
-            universite_id=satir["universite_id"],
             bolum=satir["bolum"] or "",
             eposta_dogrulandi=bool(satir["eposta_dogrulandi"]),
             dogrulama_token=satir["dogrulama_token"],
             dogrulama_bitis=datetime.fromisoformat(satir["dogrulama_bitis"]) if satir["dogrulama_bitis"] else None,
             plan=Plan(satir["plan"] or "UCRETSIZ"),
+            universite=satir["universite"] or "",
         )
 
     def idIleBul(self, kullanici_id):
@@ -61,11 +61,15 @@ class KullaniciDeposu:
         return self._satirdan(satir) if satir else None
 
     def epostaIleBul(self, eposta):
-        satir = self.db.execute("SELECT * FROM kullanici WHERE eposta = ?", (eposta,)).fetchone()
+        satir = self.db.execute(
+            "SELECT * FROM kullanici WHERE LOWER(eposta) = LOWER(?)", (eposta,)
+        ).fetchone()
         return self._satirdan(satir) if satir else None
 
     def epostaVarMi(self, eposta):
-        satir = self.db.execute("SELECT 1 FROM kullanici WHERE eposta = ?", (eposta,)).fetchone()
+        satir = self.db.execute(
+            "SELECT 1 FROM kullanici WHERE LOWER(eposta) = LOWER(?)", (eposta,)
+        ).fetchone()
         return satir is not None
 
     def tokenIleBul(self, token):

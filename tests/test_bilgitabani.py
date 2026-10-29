@@ -70,14 +70,13 @@ def belge_dosyasi(tmp_path):
 
 
 def ogrenci_olustur(db, eposta="ali@universite.edu.tr", bolum="Bilgisayar Mühendisliği",
-                    universite_id=1, dogrulanmis=True):
+                    dogrulanmis=True):
     depo = KullaniciDeposu(db)
     k = Kullanici(
         ad_soyad="Öğrenci",
         eposta=eposta,
         sifre_hash="x",
         rol=Rol.OGRENCI,
-        universite_id=universite_id,
         bolum=bolum,
         eposta_dogrulandi=dogrulanmis,
     )
@@ -258,17 +257,18 @@ def test_ik27_silme_dizinden_kaldirir(servisler, belge_dosyasi):
 def test_belge_sahiplik_alanlari_atanir(servisler, belge_dosyasi):
     bilgi_tabani, dizin, _, _, db = servisler
     ogr = ogrenci_olustur(db)
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    belge = bilgi_tabani.belgeYukle(
+        "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+        sahip=ogr, ders_adi="Matematik I",
+    )
     assert belge.sahip_id == ogr.kullanici_id
-    assert belge.universite_id == ogr.universite_id
-    assert belge.bolum == ogr.bolum
     assert belge.gorunurluk == Gorunurluk.OZEL
+    assert belge.ders_id is not None
     for parca in dizin.parcalar:
         if parca.kaynak_id == belge.kaynak_id:
             assert parca.sahip_id == ogr.kullanici_id
             assert parca.gorunurluk == Gorunurluk.OZEL
-            assert parca.universite_id == ogr.universite_id
-            assert parca.bolum == ogr.bolum
+            assert parca.ders_id == belge.ders_id
 
 
 def test_ik29_dogrulanmamis_paylasamaz(servisler, belge_dosyasi):

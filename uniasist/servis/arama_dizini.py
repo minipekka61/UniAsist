@@ -30,15 +30,13 @@ class AramaDizini:
                     aktif=bool(satir["aktif"]),
                     sahip_id=satir["sahip_id"],
                     gorunurluk=Gorunurluk(satir["gorunurluk"] or "OZEL"),
-                    universite_id=satir["universite_id"],
-                    bolum=satir["bolum"] or "",
                     ders_id=satir["ders_id"],
                 )
             )
 
     def parcaEkle(self, parca):
         imleç = self.db.execute(
-            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif, sahip_id, gorunurluk, universite_id, bolum, ders_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO icerik_parcasi (kaynak_id, surum_no, sira, metin, gomme, gomme_saglayici, kaynak_adi, bolum_bilgisi, kategori, aktif, sahip_id, gorunurluk, ders_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 parca.kaynak_id,
                 parca.surum_no,
@@ -52,8 +50,6 @@ class AramaDizini:
                 1 if parca.aktif else 0,
                 parca.sahip_id,
                 parca.gorunurluk.value,
-                parca.universite_id,
-                parca.bolum,
                 parca.ders_id,
             ),
         )

@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS kullanici (
     basarisiz_deneme_sayisi INTEGER NOT NULL DEFAULT 0,
     kilit_bitis_zamani TEXT,
     kayit_tarihi TEXT NOT NULL,
-    universite_id INTEGER,
-    bolum TEXT,
     eposta_dogrulandi INTEGER NOT NULL DEFAULT 0,
     dogrulama_token TEXT,
     dogrulama_bitis TEXT,
-    plan TEXT NOT NULL DEFAULT 'UCRETSIZ'
+    plan TEXT NOT NULL DEFAULT 'UCRETSIZ',
+    universite TEXT NOT NULL DEFAULT '',
+    bolum TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS oturum (
     oturum_id TEXT PRIMARY KEY,
@@ -76,8 +76,6 @@ CREATE TABLE IF NOT EXISTS bilgi_kaynagi (
     surum_no INTEGER,
     sahip_id INTEGER,
     gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
-    universite_id INTEGER,
-    bolum TEXT,
     ders_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS icerik_parcasi (
@@ -94,8 +92,6 @@ CREATE TABLE IF NOT EXISTS icerik_parcasi (
     aktif INTEGER NOT NULL DEFAULT 1,
     sahip_id INTEGER,
     gorunurluk TEXT NOT NULL DEFAULT 'OZEL',
-    universite_id INTEGER,
-    bolum TEXT,
     ders_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS yanitlanamayan_soru (

@@ -7,33 +7,20 @@ import pytest
 import config
 from tests.yardimci import gecici_db
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
-from uniasist.depo.universite_deposu import UniversiteDeposu
 from uniasist.depo.veritabani import oturum_bul
-from uniasist.entity import Universite
 from uniasist.enumlar import HesapDurumu, Rol
 from uniasist.eposta import KonsolEpostaServisi
 from uniasist.guvenlik import sifre_hashle
 from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.servis.kimlik_dogrulama_servisi import KimlikDogrulamaServisi
 from uniasist.servis.kullanici_yonetim_servisi import KullaniciYonetimServisi
-from uniasist.veri.bolumler import BOLUMLER
-from uniasist.veri.universiteler import UNIVERSITELER
-
-BOLUM = "Bilgisayar Mühendisliği"
 
 
 @pytest.fixture
 def servisler():
     db = gecici_db()
     kullanici_deposu = KullaniciDeposu(db)
-    universite_deposu = UniversiteDeposu(db)
-    for ad, alan_adi in UNIVERSITELER:
-        universite_deposu.kaydet(Universite(ad=ad, eposta_alan_adi=alan_adi))
-    for bolum in BOLUMLER:
-        universite_deposu.bolumEkle(bolum)
-    kimlik = KimlikDogrulamaServisi(
-        kullanici_deposu, universite_deposu, KonsolEpostaServisi()
-    )
+    kimlik = KimlikDogrulamaServisi(kullanici_deposu, KonsolEpostaServisi())
     yonetim = KullaniciYonetimServisi(kullanici_deposu, kimlik)
     return kimlik, yonetim, kullanici_deposu
 
@@ -41,15 +28,15 @@ def servisler():
 def test_ik01_alan_adi_kontrolu(servisler):
     kimlik, _, _ = servisler
     with pytest.raises(IsKuraliIhlaliException) as h:
-        kimlik.kayitOl("Ali Veli", "ali@gmail.com", "Gizli1234", "Gizli1234", BOLUM)
+        kimlik.kayitOl("Ali Veli", "ali@gmail.com", "Gizli1234", "Gizli1234")
     assert h.value.kural_no_getir() == "IK-01"
 
 
 def test_ik02_eposta_benzersiz(servisler):
     kimlik, _, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     with pytest.raises(IsKuraliIhlaliException) as h:
-        kimlik.kayitOl("Başka", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+        kimlik.kayitOl("Başka", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     assert h.value.kural_no_getir() == "IK-02"
 
 
@@ -63,7 +50,7 @@ def test_ik03_sifre_kurallari(servisler):
 
 def test_ik06_kayit_rolu_ogrenci(servisler):
     kimlik, _, _ = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     assert k.rol == Rol.OGRENCI
     assert k.aktifMi()
     assert k.sifreDogrula("Gizli1234")
@@ -71,7 +58,7 @@ def test_ik06_kayit_rolu_ogrenci(servisler):
 
 def test_ik04_5_denemede_kilit_ve_mesaj(servisler):
     kimlik, _, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     for i in range(config.AZAMI_HATALI_DENEME - 1):
         with pytest.raises(IsKuraliIhlaliException) as h:
             kimlik.girisYap("ali@universite.edu.tr", "yanlis")
@@ -87,7 +74,7 @@ def test_ik04_5_denemede_kilit_ve_mesaj(servisler):
 
 def test_ik04_4_denemeden_sonra_dogru_giris(servisler):
     kimlik, _, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     for _ in range(config.AZAMI_HATALI_DENEME - 1):
         with pytest.raises(IsKuraliIhlaliException):
             kimlik.girisYap("ali@universite.edu.tr", "yanlis")
@@ -104,7 +91,7 @@ def test_ik04_olmayan_eposta_ayni_mesaj(servisler):
 
 def test_ik05_devre_disi_giris_engellenir(servisler):
     kimlik, yonetim, depo = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     k.devreDisiBirak()
     depo.kaydet(k)
     with pytest.raises(IsKuraliIhlaliException) as h:
@@ -114,7 +101,7 @@ def test_ik05_devre_disi_giris_engellenir(servisler):
 
 def test_ik07_sifre_degistirme_kurallari(servisler):
     kimlik, _, _ = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     with pytest.raises(IsKuraliIhlaliException):
         kimlik.sifreDegistir(k.kullanici_id, "yanlis", "Yeni1234", "Yeni1234")
     with pytest.raises(IsKuraliIhlaliException):
@@ -130,7 +117,7 @@ def test_ik07_sifre_degistirme_kurallari(servisler):
 
 def test_ik08_oturum_30_dk_sure_doldu(servisler):
     kimlik, _, _ = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     oturum = kimlik.girisYap("ali@universite.edu.tr", "Gizli1234")
     oturum.son_etkinlik_zamani = datetime.now() - timedelta(minutes=config.OTURUM_SURESI_DK + 1)
     from uniasist.depo.veritabani import oturum_kaydet
@@ -142,7 +129,7 @@ def test_ik08_oturum_30_dk_sure_doldu(servisler):
 
 def test_ik08_etkinlikte_sure_uzar(servisler):
     kimlik, _, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     oturum = kimlik.girisYap("ali@universite.edu.tr", "Gizli1234")
     bulunan = kimlik.oturumDogrula(oturum.oturum_id)
     assert bulunan is not None
@@ -151,7 +138,7 @@ def test_ik08_etkinlikte_sure_uzar(servisler):
 
 def test_cikis_yap(servisler):
     kimlik, _, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     oturum = kimlik.girisYap("ali@universite.edu.tr", "Gizli1234")
     kimlik.cikisYap(oturum.oturum_id)
     assert kimlik.oturumDogrula(oturum.oturum_id) is None
@@ -159,7 +146,7 @@ def test_cikis_yap(servisler):
 
 def test_ik10_kendi_rolunu_degistiremez(servisler):
     kimlik, yonetim, _ = servisler
-    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234")
     yonetici.rolDegistir(Rol.YONETICI)
     kimlik.kullanici_deposu.kaydet(yonetici)
     with pytest.raises(IsKuraliIhlaliException) as h:
@@ -169,13 +156,13 @@ def test_ik10_kendi_rolunu_degistiremez(servisler):
 
 def test_ik10_son_aktif_yonetici_korunur(servisler):
     kimlik, yonetim, depo = servisler
-    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234")
     yonetici.rolDegistir(Rol.YONETICI)
     depo.kaydet(yonetici)
     with pytest.raises(IsKuraliIhlaliException) as h:
         yonetim.hesapDevreDisiBirak(yonetici.kullanici_id, yonetici.kullanici_id)
     assert h.value.kural_no_getir() == "IK-10"
-    hedef = kimlik.kayitOl("Hedef Kullanıcı", "hedef@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    hedef = kimlik.kayitOl("Hedef Kullanıcı", "hedef@universite.edu.tr", "Gizli1234", "Gizli1234")
     hedef.rolDegistir(Rol.YONETICI)
     depo.kaydet(hedef)
     yonetim.hesapDevreDisiBirak(yonetici.kullanici_id, hedef.kullanici_id)
@@ -184,10 +171,10 @@ def test_ik10_son_aktif_yonetici_korunur(servisler):
 
 def test_ik32_yonetici_hedefin_rolu_degistirilemez(servisler):
     kimlik, yonetim, depo = servisler
-    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234")
     yonetici.rolDegistir(Rol.YONETICI)
     depo.kaydet(yonetici)
-    ikinci = kimlik.kayitOl("Ayse", "ayse@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    ikinci = kimlik.kayitOl("Ayse", "ayse@universite.edu.tr", "Gizli1234", "Gizli1234")
     ikinci.rolDegistir(Rol.YONETICI)
     depo.kaydet(ikinci)
     with pytest.raises(IsKuraliIhlaliException) as h:
@@ -198,20 +185,20 @@ def test_ik32_yonetici_hedefin_rolu_degistirilemez(servisler):
 
 def test_ik32_yonetici_rolu_verilemez(servisler):
     kimlik, yonetim, depo = servisler
-    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234")
     yonetici.rolDegistir(Rol.YONETICI)
     depo.kaydet(yonetici)
-    ogrenci = kimlik.kayitOl("Ali", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    ogrenci = kimlik.kayitOl("Ali", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     with pytest.raises(IsKuraliIhlaliException):
         yonetim.rolDegistir(yonetici.kullanici_id, ogrenci.kullanici_id, Rol.YONETICI)
 
 
 def test_ik31_devre_disi_oturumlar_sonlanir(servisler):
     kimlik, yonetim, depo = servisler
-    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    yonetici = kimlik.kayitOl("Admin", "admin@universite.edu.tr", "Gizli1234", "Gizli1234")
     yonetici.rolDegistir(Rol.YONETICI)
     depo.kaydet(yonetici)
-    hedef = kimlik.kayitOl("Ali", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    hedef = kimlik.kayitOl("Ali", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     oturum = kimlik.girisYap("ali@universite.edu.tr", "Gizli1234")
     yonetim.hesapDevreDisiBirak(yonetici.kullanici_id, hedef.kullanici_id)
     assert kimlik.oturumDogrula(oturum.oturum_id) is None
@@ -219,45 +206,62 @@ def test_ik31_devre_disi_oturumlar_sonlanir(servisler):
 
 def test_kullanicilari_listele_ve_ara(servisler):
     kimlik, yonetim, _ = servisler
-    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
-    kimlik.kayitOl("Ayşe Can", "ayse@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM)
+    kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
+    kimlik.kayitOl("Ayşe Can", "ayse@universite.edu.tr", "Gizli1234", "Gizli1234")
     assert len(yonetim.kullanicilariListele("")) == 2
     assert len(yonetim.kullanicilariListele("ali")) == 1
     assert yonetim.kullanicilariListele("ali")[0].ad_soyad == "Ali Veli"
 
 
-def test_kayit_bolum_ve_universite_atanir(servisler):
+def test_kayit_universite_bolum_opsiyonel(servisler):
     kimlik, _, depo = servisler
     k = kimlik.kayitOl(
-        "Ali Veli", "ali@ogrenci.istanbul.edu.tr", "Gizli1234", "Gizli1234", BOLUM
+        "Ali Veli", "ali@ogrenci.istanbul.edu.tr", "Gizli1234", "Gizli1234"
     )
-    assert k.universite_id is not None
-    assert k.bolum == BOLUM
+    assert k.universite == ""
+    assert k.bolum == ""
     assert not k.eposta_dogrulandi
     assert k.dogrulama_token
     assert k.dogrulama_bitis > datetime.now()
-    u = UniversiteDeposu(depo.db).idIleBul(k.universite_id)
-    assert u.ad == "İstanbul Üniversitesi"
+
+    k2 = kimlik.kayitOl(
+        "Ayşe Can", "ayse@itu.edu.tr", "Gizli1234", "Gizli1234",
+        universite="İTÜ", bolum="Bilgisayar Mühendisliği",
+    )
+    assert k2.universite == "İTÜ"
+    assert k2.bolum == "Bilgisayar Mühendisliği"
+    assert depo.idIleBul(k2.kullanici_id).universite == "İTÜ"
 
 
-def test_kayit_bilinmeyen_alan_adi_reddedilir(servisler):
+def test_kayit_gmail_reddedilir(servisler):
     kimlik, _, _ = servisler
     with pytest.raises(IsKuraliIhlaliException) as h:
-        kimlik.kayitOl("Ali Veli", "ali@bilinmeyen.edu.tr", "Gizli1234", "Gizli1234", "Hukuk")
+        kimlik.kayitOl("Ali Veli", "ali@gmail.com", "Gizli1234", "Gizli1234")
     assert h.value.kural_no_getir() == "IK-01"
-    assert "henüz desteklenmiyor" in h.value.mesaj
+    assert "öğrenci e-posta" in h.value.mesaj
 
 
-def test_kayit_gecersiz_bolum_reddedilir(servisler):
+def test_kayit_akademik_alan_kabul(servisler):
+    kimlik, _, depo = servisler
+    for eposta in ("ali@ogr.istanbul.edu.tr", "ali@harvard.edu", "ali@ox.ac.uk"):
+        k = kimlik.kayitOl("Ali Veli", eposta, "Gizli1234", "Gizli1234")
+        assert k.kullanici_id is not None
+    assert depo.epostaVarMi("ali@ogr.istanbul.edu.tr")
+
+
+def test_kayit_eposta_harf_duyarsiz_benzersiz(servisler):
     kimlik, _, _ = servisler
+    kimlik.kayitOl("Ali Veli", "Buyuk@X.edu.tr", "Gizli1234", "Gizli1234")
     with pytest.raises(IsKuraliIhlaliException) as h:
-        kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Uzay Mühendisliği")
-    assert h.value.kural_no_getir() == "IK-01"
+        kimlik.kayitOl("Başka", "buyuk@x.edu.tr", "Gizli1234", "Gizli1234")
+    assert h.value.kural_no_getir() == "IK-02"
+    oturum = kimlik.girisYap("BUYUK@x.edu.tr", "Gizli1234")
+    assert oturum is not None
 
 
 def test_dogrula_token_ile_hesap_aktifleşir(servisler):
     kimlik, _, depo = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Hukuk")
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     dogrulanmis = kimlik.dogrula(k.dogrulama_token)
     assert dogrulanmis.eposta_dogrulandi
     assert dogrulanmis.dogrulama_token is None
@@ -267,7 +271,7 @@ def test_dogrula_token_ile_hesap_aktifleşir(servisler):
 
 def test_dogrulama_sure_dolmus_token_red(servisler):
     kimlik, _, depo = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Hukuk")
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     k.dogrulama_bitis = datetime.now() - timedelta(hours=1)
     depo.kaydet(k)
     with pytest.raises(IsKuraliIhlaliException) as h:
@@ -278,7 +282,7 @@ def test_dogrulama_sure_dolmus_token_red(servisler):
 
 def test_dogrulama_token_tek_kullanim(servisler):
     kimlik, _, _ = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Hukuk")
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     kimlik.dogrula(k.dogrulama_token)
     with pytest.raises(IsKuraliIhlaliException) as h:
         kimlik.dogrula(k.dogrulama_token)
@@ -287,7 +291,7 @@ def test_dogrulama_token_tek_kullanim(servisler):
 
 def test_dogrulama_gonder_yeniden(servisler):
     kimlik, _, depo = servisler
-    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234", "Hukuk")
+    k = kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     eski_token = k.dogrulama_token
     kimlik.dogrulamaGonder("ali@universite.edu.tr")
     taze = depo.epostaIleBul("ali@universite.edu.tr")
@@ -301,7 +305,7 @@ def test_dogrulama_epostasi_mutlak_baglanti(servisler, caplog):
     kimlik, _, _ = servisler
     with caplog.at_level(logging.INFO, logger="uniasist.eposta"):
         kimlik.kayitOl(
-            "Mutlak Url", "mutlak@universite.edu.tr", "Gizli1234", "Gizli1234", BOLUM
+            "Mutlak Url", "mutlak@universite.edu.tr", "Gizli1234", "Gizli1234"
         )
     eslesme = re.search(r"bağlantı: (\S+)", caplog.text)
     assert eslesme is not None

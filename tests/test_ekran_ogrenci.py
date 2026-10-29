@@ -49,7 +49,7 @@ def dogrulanmis_ogrenci(paket, eposta="ali@universite.edu.tr",
         eposta=eposta,
         sifre_hash=sifre_hashle("Gizli1234"),
         rol=Rol.OGRENCI,
-        universite_id=1,
+        universite="Üniversite",
         bolum=bolum,
         eposta_dogrulandi=dogrulanmis,
     )

@@ -31,7 +31,7 @@ def paket(tmp_path):
         eposta="ali@universite.edu.tr",
         sifre_hash=sifre_hashle("Gizli1234"),
         rol=Rol.OGRENCI,
-        universite_id=1,
+        universite="Üniversite",
         bolum="Bilgisayar Mühendisliği",
         eposta_dogrulandi=True,
     )

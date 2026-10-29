@@ -10,12 +10,12 @@
     {% if satirlar %}
     <table>
         <tr><th>Ad Soyad</th><th>E-posta</th><th>Üniversite</th><th>Bölüm</th><th>Rol</th><th>E-posta Doğrulaması</th><th>Durum</th><th>Kayıt Tarihi</th><th>İşlemler</th></tr>
-        {% for k, universite_adi in satirlar %}
+        {% for k, universite_adi, bolum_adi in satirlar %}
         <tr>
             <td>{{ k.ad_soyad }}</td>
             <td>{{ k.eposta }}</td>
             <td>{{ universite_adi }}</td>
-            <td>{{ k.bolum or '—' }}</td>
+            <td>{{ bolum_adi }}</td>
             <td>{{ k.rol.value }}</td>
             <td>{% if k.eposta_dogrulandi %}Doğrulanmış{% else %}Bekliyor{% endif %}</td>
             <td>{{ k.durum.value }}</td>

@@ -34,8 +34,6 @@ class BilgiTabaniServisi:
             dosya_yolu=dosya_yolu,
             sahip_id=sahip.kullanici_id,
             gorunurluk=gorunurluk,
-            universite_id=sahip.universite_id,
-            bolum=sahip.bolum,
             ders_id=ders.ders_id if ders else None,
         )
         if not belge.dosyaGecerliMi():

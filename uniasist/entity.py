@@ -19,7 +19,7 @@ class Kullanici:
     def __init__(self, ad_soyad, eposta, sifre_hash, rol, kullanici_id=None,
                  durum=HesapDurumu.AKTIF, basarisiz_deneme_sayisi=0,
                  kilit_bitis_zamani=None, kayit_tarihi=None,
-                 universite_id=None, bolum="", eposta_dogrulandi=False,
+                 universite="", bolum="", eposta_dogrulandi=False,
                  dogrulama_token=None, dogrulama_bitis=None, plan=None):
         self.kullanici_id = kullanici_id
         self.ad_soyad = ad_soyad
@@ -30,8 +30,8 @@ class Kullanici:
         self.basarisiz_deneme_sayisi = basarisiz_deneme_sayisi
         self.kilit_bitis_zamani = kilit_bitis_zamani
         self.kayit_tarihi = kayit_tarihi or datetime.now()
-        self.universite_id = universite_id
-        self.bolum = bolum
+        self.universite = universite or ""
+        self.bolum = bolum or ""
         self.eposta_dogrulandi = bool(eposta_dogrulandi)
         self.dogrulama_token = dogrulama_token
         self.dogrulama_bitis = dogrulama_bitis
@@ -218,8 +218,7 @@ class BilgiKaynagi(ABC):
 class Belge(BilgiKaynagi):
     def __init__(self, baslik="", kategori="", dosya_adi="", dosya_turu="",
                  boyut_byte=0, dosya_yolu="", surum_no=1, sahip_id=None,
-                 gorunurluk=None, universite_id=None, bolum="", ders_id=None,
-                 **kwargs):
+                 gorunurluk=None, ders_id=None, **kwargs):
         kwargs.setdefault("tur", "BELGE")
         super().__init__(baslik=baslik, kategori=kategori, **kwargs)
         self.dosya_adi = dosya_adi
@@ -229,8 +228,6 @@ class Belge(BilgiKaynagi):
         self.surum_no = surum_no
         self.sahip_id = sahip_id
         self.gorunurluk = gorunurluk or Gorunurluk.OZEL
-        self.universite_id = universite_id
-        self.bolum = bolum
         self.ders_id = ders_id
 
     def dosyaGecerliMi(self):
@@ -263,7 +260,7 @@ class IcerikParcasi:
     def __init__(self, kaynak_id, sira, metin, gomme=None, surum_no=1,
                  gomme_saglayici="", kaynak_adi="", bolum_bilgisi=None,
                  kategori="", aktif=True, parca_id=None, sahip_id=None,
-                 gorunurluk=None, universite_id=None, bolum="", ders_id=None):
+                 gorunurluk=None, ders_id=None):
         self.parca_id = parca_id
         self.kaynak_id = kaynak_id
         self.surum_no = surum_no
@@ -277,8 +274,6 @@ class IcerikParcasi:
         self.aktif = aktif
         self.sahip_id = sahip_id
         self.gorunurluk = gorunurluk or Gorunurluk.OZEL
-        self.universite_id = universite_id
-        self.bolum = bolum
         self.ders_id = ders_id
 
     def benzerlikHesapla(self, sorgu_gommesi):

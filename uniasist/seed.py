@@ -51,7 +51,6 @@ def _belgeleri_yukle(paket, sahip, belgeler):
 
 
 def kos(paket):
-    universite = paket.universite_deposu.alanAdindanBul("admin@universite.edu.tr")
     kullanicilar = {}
     for eposta, sifre, ad_soyad, rol, bolum in _HESAPLAR:
         if not paket.kimlik.kullanici_deposu.epostaVarMi(eposta):
@@ -60,7 +59,7 @@ def kos(paket):
                 eposta=eposta,
                 sifre_hash=sifre_hashle(sifre),
                 rol=rol,
-                universite_id=universite.universite_id if universite else None,
+                universite="Üniversite",
                 bolum=bolum,
                 eposta_dogrulandi=True,
             )

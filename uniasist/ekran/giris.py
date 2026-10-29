@@ -3,6 +3,7 @@ from flask import Blueprint, g, make_response, redirect, render_template, reques
 from uniasist.ekran.yardimcilar import giris_required, paket_getir
 from uniasist.enumlar import Rol
 from uniasist.hatalar import IsKuraliIhlaliException
+from uniasist.veri.bolumler import BOLUMLER
 
 giris_bp = Blueprint("giris", __name__)
 
@@ -18,7 +19,8 @@ def kayit():
                 request.form.get("eposta", ""),
                 request.form.get("sifre", ""),
                 request.form.get("sifre_tekrar", ""),
-                request.form.get("bolum", ""),
+                universite=request.form.get("universite", ""),
+                bolum=request.form.get("bolum", ""),
             )
             return render_template(
                 "giris.html",
@@ -32,7 +34,7 @@ def kayit():
     return render_template(
         "kayit.html",
         hata=hata,
-        bolumler=kur_.universite_deposu.bolumleriListele(),
+        bolumler=BOLUMLER,
     )
 
 

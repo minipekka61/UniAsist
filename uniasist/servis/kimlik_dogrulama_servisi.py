@@ -16,9 +16,8 @@ from uniasist.hatalar import IsKuraliIhlaliException
 
 
 class KimlikDogrulamaServisi:
-    def __init__(self, kullanici_deposu, universite_deposu, eposta_servisi):
+    def __init__(self, kullanici_deposu, eposta_servisi):
         self.kullanici_deposu = kullanici_deposu
-        self.universite_deposu = universite_deposu
         self.eposta_servisi = eposta_servisi
 
     def _epostaGecerliMi(self, eposta):
@@ -26,6 +25,10 @@ class KimlikDogrulamaServisi:
             isinstance(eposta, str)
             and re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", eposta)
         )
+
+    def _akademikMi(self, eposta):
+        alan = eposta.strip().rsplit("@", 1)[-1].lower()
+        return any(alan.endswith(sonek) for sonek in config.AKADEMIK_ALAN_ADLARI)
 
     def _dogrulamaBaglantisi(self, token):
         return f"{config.TEMEL_URL.rstrip('/')}/dogrula/{token}"
@@ -48,24 +51,20 @@ class KimlikDogrulamaServisi:
             and any(k.isdigit() for k in sifre)
         )
 
-    def kayitOl(self, adSoyad, eposta, sifre, sifreTekrar, bolum):
+    def kayitOl(self, adSoyad, eposta, sifre, sifreTekrar, universite="", bolum=""):
         if not adSoyad or not adSoyad.strip():
             raise IsKuraliIhlaliException("IK-01", "Ad soyad zorunludur.")
         if not self._epostaGecerliMi(eposta):
             raise IsKuraliIhlaliException(
                 "IK-01",
-                "Geçerli bir üniversite e-posta adresi girmelisiniz.",
+                "Geçerli bir e-posta adresi girmelisiniz.",
             )
-        universite = self.universite_deposu.alanAdindanBul(eposta.strip())
-        if universite is None:
+        eposta = eposta.strip()
+        if not self._akademikMi(eposta):
             raise IsKuraliIhlaliException(
                 "IK-01",
-                "Üniversiteniz henüz desteklenmiyor. "
-                "Desteklenen üniversitelerin e-posta adresiyle kayıt olabilirsiniz.",
-            )
-        if not bolum or bolum not in self.universite_deposu.bolumleriListele():
-            raise IsKuraliIhlaliException(
-                "IK-01", "Bölüm seçimi zorunludur ve listeden yapılmalıdır."
+                "Kayıt yalnızca öğrenci e-posta adresleriyle yapılabilir "
+                "(örn. .edu.tr uzantılı adresiniz).",
             )
         if self.kullanici_deposu.epostaVarMi(eposta):
             raise IsKuraliIhlaliException(
@@ -80,11 +79,11 @@ class KimlikDogrulamaServisi:
             raise IsKuraliIhlaliException("IK-03", "Şifre tekrarı ile eşleşmiyor.")
         kullanici = Kullanici(
             ad_soyad=adSoyad.strip(),
-            eposta=eposta.strip(),
+            eposta=eposta,
             sifre_hash=sifre_hashle(sifre),
             rol=Rol.OGRENCI,
-            universite_id=universite.universite_id,
-            bolum=bolum,
+            universite=(universite or "").strip(),
+            bolum=(bolum or "").strip(),
         )
         self.kullanici_deposu.kaydet(kullanici)
         return self._dogrulamaDuzenle(kullanici)

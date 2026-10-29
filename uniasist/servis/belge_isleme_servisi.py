@@ -70,8 +70,6 @@ class BelgeIslemeServisi:
             parca._bolum_bilgisi = f"{belge.baslik} — parça {parca.sira}"
             parca.sahip_id = belge.sahip_id
             parca.gorunurluk = belge.gorunurluk
-            parca.universite_id = belge.universite_id
-            parca.bolum = belge.bolum
             parca.ders_id = belge.ders_id
             parca.gomme = self._gommeUret(parca.metin)
             self.arama_dizini.parcaEkle(parca)

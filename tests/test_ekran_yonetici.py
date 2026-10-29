@@ -22,13 +22,13 @@ def ortam(paket):
 
 
 def kullanici_ekle(paket, ad_soyad, eposta, rol, sifre="Gizli1234",
-                   universite_id=None, bolum="", eposta_dogrulandi=False):
+                   universite="", bolum="", eposta_dogrulandi=False):
     kullanici = Kullanici(
         ad_soyad=ad_soyad,
         eposta=eposta,
         sifre_hash=sifre_hashle(sifre),
         rol=rol,
-        universite_id=universite_id,
+        universite=universite,
         bolum=bolum,
         eposta_dogrulandi=eposta_dogrulandi,
     )
@@ -210,7 +210,7 @@ def test_kullanicilar_universite_bolum_sutunu(ortam):
     yonetici_giris_yap(istemci, paket)
     kullanici_ekle(
         paket, "Ali Veli", "ali@universite.edu.tr", Rol.OGRENCI,
-        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+        universite="İstanbul Üniversitesi", bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
     )
     yanit = istemci.get("/yonetici/kullanicilar")
     metin = yanit.get_data(as_text=True)
@@ -231,11 +231,11 @@ def _bildirim_hazirla(paket, tmp_path):
 
     sahip = kullanici_ekle(
         paket, "Belge Sahibi", "sahip@universite.edu.tr", Rol.OGRENCI,
-        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+        bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
     )
     bildiren = kullanici_ekle(
         paket, "Bildiren Öğrenci", "bildiren@universite.edu.tr", Rol.OGRENCI,
-        universite_id=1, bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+        bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
     )
     dosya = tmp_path / "staj.txt"
     dosya.write_text(STAJ_METNI_Y, encoding="utf-8")

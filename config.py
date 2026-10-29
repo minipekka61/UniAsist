@@ -8,6 +8,13 @@ VERITABANI_YOLU = os.environ.get("UNIASIST_DB", "data/uniasist.db")
 SECRET_KEY = os.environ.get("UNIASIST_SECRET_KEY", "uniasist-gelistirme-anahtari")
 
 DOGRULAMA_SURESI_SAAT = 24
+AKADEMIK_ALAN_ADLARI = [
+    s.strip().lower()
+    for s in os.environ.get(
+        "UNIASIST_AKADEMIK_ALANLAR", ".edu.tr,.edu,.ac.uk,.edu.au"
+    ).split(",")
+    if s.strip()
+]
 TEMEL_URL = os.environ.get("UNIASIST_TEMEL_URL", "http://127.0.0.1:5000")
 MAILGONDER = os.environ.get("UNIASIST_MAILGONDER", "0") == "1"
 SMTP_SUNUCU = os.environ.get("UNIASIST_SMTP_SUNUCU", "smtp.gmail.com")
