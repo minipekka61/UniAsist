@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS kullanici (
     bolum TEXT,
     eposta_dogrulandi INTEGER NOT NULL DEFAULT 0,
     dogrulama_token TEXT,
-    dogrulama_bitis TEXT
+    dogrulama_bitis TEXT,
+    plan TEXT NOT NULL DEFAULT 'UCRETSIZ'
 );
 CREATE TABLE IF NOT EXISTS oturum (
     oturum_id TEXT PRIMARY KEY,
@@ -106,7 +107,8 @@ CREATE TABLE IF NOT EXISTS soru_kaydi (
     kayit_id INTEGER PRIMARY KEY AUTOINCREMENT,
     zaman TEXT NOT NULL,
     kategori TEXT,
-    yanitlandi INTEGER NOT NULL
+    yanitlandi INTEGER NOT NULL,
+    kullanici_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS universite (
     universite_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,6 +118,15 @@ CREATE TABLE IF NOT EXISTS universite (
 CREATE TABLE IF NOT EXISTS bolum (
     bolum_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ad TEXT NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS ders (
+    ders_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ad TEXT NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS kullanici_ders (
+    kullanici_id INTEGER NOT NULL,
+    ders_id INTEGER NOT NULL,
+    UNIQUE(kullanici_id, ders_id)
 );
 CREATE TABLE IF NOT EXISTS bildirim (
     bildirim_id INTEGER PRIMARY KEY AUTOINCREMENT,

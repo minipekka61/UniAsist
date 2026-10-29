@@ -10,6 +10,7 @@ from uniasist.enumlar import (
     HesapDurumu,
     KayitDurumu,
     KaynakDurumu,
+    Plan,
 )
 from uniasist.guvenlik import sifre_dogrula
 
@@ -19,7 +20,7 @@ class Kullanici:
                  durum=HesapDurumu.AKTIF, basarisiz_deneme_sayisi=0,
                  kilit_bitis_zamani=None, kayit_tarihi=None,
                  universite_id=None, bolum="", eposta_dogrulandi=False,
-                 dogrulama_token=None, dogrulama_bitis=None):
+                 dogrulama_token=None, dogrulama_bitis=None, plan=None):
         self.kullanici_id = kullanici_id
         self.ad_soyad = ad_soyad
         self.eposta = eposta
@@ -34,6 +35,10 @@ class Kullanici:
         self.eposta_dogrulandi = bool(eposta_dogrulandi)
         self.dogrulama_token = dogrulama_token
         self.dogrulama_bitis = dogrulama_bitis
+        self.plan = plan or Plan.UCRETSIZ
+
+    def proMu(self):
+        return self.plan == Plan.PRO
 
     def dogrulanmisMi(self):
         return self.eposta_dogrulandi
@@ -308,11 +313,13 @@ class YanitlanamayanSoru:
 
 
 class SoruKaydi:
-    def __init__(self, zaman, kategori=None, yanitlandi=False, kayit_id=None):
+    def __init__(self, zaman, kategori=None, yanitlandi=False, kullanici_id=None,
+                 kayit_id=None):
         self.kayit_id = kayit_id
         self.zaman = zaman
         self.kategori = kategori
         self.yanitlandi = yanitlandi
+        self.kullanici_id = kullanici_id
 
 
 class Universite:
@@ -320,6 +327,12 @@ class Universite:
         self.universite_id = universite_id
         self.ad = ad
         self.eposta_alan_adi = eposta_alan_adi
+
+
+class Ders:
+    def __init__(self, ders_id=None, ad=""):
+        self.ders_id = ders_id
+        self.ad = ad
 
 
 class Bildirim:

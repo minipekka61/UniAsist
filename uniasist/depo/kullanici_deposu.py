@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from uniasist.entity import Kullanici
-from uniasist.enumlar import HesapDurumu, Rol
+from uniasist.enumlar import HesapDurumu, Plan, Rol
 
 
 class KullaniciDeposu:
@@ -23,16 +23,17 @@ class KullaniciDeposu:
             1 if kullanici.eposta_dogrulandi else 0,
             kullanici.dogrulama_token,
             kullanici.dogrulama_bitis.isoformat() if kullanici.dogrulama_bitis else None,
+            kullanici.plan.value,
         )
         if kullanici.kullanici_id is None:
             imleç = self.db.execute(
-                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi, universite_id, bolum, eposta_dogrulandi, dogrulama_token, dogrulama_bitis) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO kullanici (ad_soyad, eposta, sifre_hash, rol, durum, basarisiz_deneme_sayisi, kilit_bitis_zamani, kayit_tarihi, universite_id, bolum, eposta_dogrulandi, dogrulama_token, dogrulama_bitis, plan) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 degerler,
             )
             kullanici.kullanici_id = imleç.lastrowid
         else:
             self.db.execute(
-                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=?, universite_id=?, bolum=?, eposta_dogrulandi=?, dogrulama_token=?, dogrulama_bitis=? WHERE kullanici_id=?",
+                "UPDATE kullanici SET ad_soyad=?, eposta=?, sifre_hash=?, rol=?, durum=?, basarisiz_deneme_sayisi=?, kilit_bitis_zamani=?, kayit_tarihi=?, universite_id=?, bolum=?, eposta_dogrulandi=?, dogrulama_token=?, dogrulama_bitis=?, plan=? WHERE kullanici_id=?",
                 degerler + (kullanici.kullanici_id,),
             )
 
@@ -52,6 +53,7 @@ class KullaniciDeposu:
             eposta_dogrulandi=bool(satir["eposta_dogrulandi"]),
             dogrulama_token=satir["dogrulama_token"],
             dogrulama_bitis=datetime.fromisoformat(satir["dogrulama_bitis"]) if satir["dogrulama_bitis"] else None,
+            plan=Plan(satir["plan"] or "UCRETSIZ"),
         )
 
     def idIleBul(self, kullanici_id):

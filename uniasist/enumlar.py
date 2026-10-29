@@ -41,3 +41,8 @@ class SonucDurumu(Enum):
     YANIT = "YANIT"
     ICERIK_BULUNAMADI = "ICERIK_BULUNAMADI"
     SERVIS_HATASI = "SERVIS_HATASI"
+
+
+class Plan(Enum):
+    UCRETSIZ = "UCRETSIZ"
+    PRO = "PRO"
