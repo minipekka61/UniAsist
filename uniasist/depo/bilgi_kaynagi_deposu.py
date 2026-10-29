@@ -88,13 +88,6 @@ class BilgiKaynagiDeposu:
         ).fetchall()
         return [self._satirdan(s) for s in satirlar]
 
-    def bolumunPaylasilanlari(self, universite_id, bolum):
-        satirlar = self.db.execute(
-            "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND gorunurluk = ? AND universite_id = ? AND bolum = ? ORDER BY baslik",
-            (Gorunurluk.PAYLASILAN.value, universite_id, bolum),
-        ).fetchall()
-        return [self._satirdan(s) for s in satirlar]
-
     def dersinPaylasilanlari(self, ders_id):
         satirlar = self.db.execute(
             "SELECT * FROM bilgi_kaynagi WHERE tur = 'BELGE' AND gorunurluk = ? AND ders_id = ? ORDER BY baslik",

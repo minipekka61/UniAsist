@@ -75,35 +75,37 @@ def test_ogrenci_belge_yukler_ve_gorur(ortam):
     metin = yanit.get_data(as_text=True)
     assert "Burs Yönergesi" in metin
 
-    yanit = istemci.get("/belgelerim?sekme=bolum")
-    bolum_metni = yanit.get_data(as_text=True)
-    assert "Burs Yönergesi" not in bolum_metni
+    yanit = istemci.get("/belgelerim?sekme=ders")
+    ders_metni = yanit.get_data(as_text=True)
+    assert "Burs Yönergesi" not in ders_metni
 
     belgeler = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)
     assert len(belgeler) == 1
     assert belgeler[0].gorunurluk == Gorunurluk.OZEL
 
 
-def test_ogrenci_paylasir_bolum_gorur(ortam):
+def test_ogrenci_paylasir_ders_gorur(ortam):
     istemci, paket = ortam
     ogr = dogrulanmis_ogrenci(paket)
     giris_yap(istemci)
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Burs Yönergesi",
         "kategori": "Burs",
+        "ders": "Matematik I",
         "dosya": (io.BytesIO(BELGE_METNI.encode("utf-8")), "burs.txt"),
     }, content_type="multipart/form-data", follow_redirects=True)
     belge = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
 
     yanit = istemci.post(
         f"/belgelerim/{belge.kaynak_id}/gorunurluk",
-        data={"gorunurluk": "PAYLASILAN"},
+        data={"gorunurluk": "PAYLASILAN", "ders": "Matematik I"},
         follow_redirects=True,
     )
     assert yanit.status_code == 200
     assert paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0].gorunurluk == Gorunurluk.PAYLASILAN
 
-    yanit = istemci.get("/belgelerim?sekme=bolum")
+    ders = paket.ders_deposu.adIleBul("Matematik I")
+    yanit = istemci.get(f"/belgelerim?sekme=ders&ders_id={ders.ders_id}")
     assert "Burs Yönergesi" in yanit.get_data(as_text=True)
 
 
@@ -163,15 +165,17 @@ def test_bolum_belgesi_bildir(ortam):
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Staj Yönergesi",
         "kategori": "Staj",
+        "ders": "Staj Dersi",
         "dosya": (io.BytesIO(STAJ_METNI.encode("utf-8")), "staj.txt"),
     }, content_type="multipart/form-data", follow_redirects=True)
     belge = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
     istemci.post(
         f"/belgelerim/{belge.kaynak_id}/gorunurluk",
-        data={"gorunurluk": "PAYLASILAN"},
+        data={"gorunurluk": "PAYLASILAN", "ders": "Staj Dersi"},
     )
 
     baska = dogrulanmis_ogrenci(paket, eposta="baska@universite.edu.tr")
+    paket.ders_deposu.takipEt(baska.kullanici_id, belge.ders_id)
     giris_yap(istemci, eposta="baska@universite.edu.tr")
     yanit = istemci.post(
         f"/belgelerim/{belge.kaynak_id}/bildir",
@@ -192,17 +196,19 @@ def test_bolum_paylasilanina_kaynak_baglantisi(ortam):
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Burs Yönergesi",
         "kategori": "Burs",
+        "ders": "Matematik I",
         "dosya": (io.BytesIO(BELGE_METNI.encode("utf-8")), "burs.txt"),
     }, content_type="multipart/form-data", follow_redirects=True)
     belge = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
     istemci.post(
         f"/belgelerim/{belge.kaynak_id}/gorunurluk",
-        data={"gorunurluk": "PAYLASILAN"},
+        data={"gorunurluk": "PAYLASILAN", "ders": "Matematik I"},
     )
 
-    dogrulanmis_ogrenci(paket, eposta="baska@universite.edu.tr")
+    baska = dogrulanmis_ogrenci(paket, eposta="baska@universite.edu.tr")
+    paket.ders_deposu.takipEt(baska.kullanici_id, belge.ders_id)
     giris_yap(istemci, eposta="baska@universite.edu.tr")
-    yanit = istemci.get("/belgelerim?sekme=bolum")
+    yanit = istemci.get(f"/belgelerim?sekme=ders&ders_id={belge.ders_id}")
     assert f'href="/kaynak/{belge.kaynak_id}"' in yanit.get_data(as_text=True)
 
     yanit = istemci.get(f"/kaynak/{belge.kaynak_id}")

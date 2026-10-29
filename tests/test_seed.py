@@ -52,12 +52,16 @@ def test_seed_hesaplar_ve_belgeler(paket):
     assert parca_sayisi >= 16
 
     universite_id = bilgisayar.universite_id
-    bilgisayar_paylasilanlari = paket.bilgi_tabani.bolumunPaylasilanlari(
-        universite_id, "Bilgisayar Mühendisliği"
+    ders_depo = paket.ders_deposu
+    burs_dersi = ders_depo.adIleBul("Burs")
+    staj_dersi = ders_depo.adIleBul("Staj")
+    yurt_dersi = ders_depo.adIleBul("Yurt")
+    assert burs_dersi is not None and staj_dersi is not None and yurt_dersi is not None
+    bilgisayar_paylasilanlari = (
+        paket.bilgi_tabani.dersinPaylasilanlari(burs_dersi.ders_id)
+        + paket.bilgi_tabani.dersinPaylasilanlari(staj_dersi.ders_id)
     )
-    elektrik_paylasilanlari = paket.bilgi_tabani.bolumunPaylasilanlari(
-        universite_id, "Elektrik-Elektronik Mühendisliği"
-    )
+    elektrik_paylasilanlari = paket.bilgi_tabani.dersinPaylasilanlari(yurt_dersi.ders_id)
     assert all(b.sahip_id == bilgisayar.kullanici_id for b in bilgisayar_paylasilanlari)
     assert len(bilgisayar_paylasilanlari) >= 1
     assert all(b.sahip_id == elektrik.kullanici_id for b in elektrik_paylasilanlari)

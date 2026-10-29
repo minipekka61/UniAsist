@@ -310,7 +310,9 @@ def test_gorunurluk_degisimi_parcalara_yansir(servisler, belge_dosyasi):
     bilgi_tabani, dizin, _, _, db = servisler
     ogr = ogrenci_olustur(db)
     belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
-    bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN)
+    bilgi_tabani.gorunurlukDegistir(
+        belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN, ders_adi="Matematik I"
+    )
     assert bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0].gorunurluk == Gorunurluk.PAYLASILAN
     taze_dizin = AramaDizini(bilgi_tabani.bilgi_kaynagi_deposu.db)
     paylasilan = [
@@ -333,34 +335,6 @@ def test_ik29_dogrulanmamis_gorunurluk_degistiremez(servisler, belge_dosyasi):
     with pytest.raises(IsKuraliIhlaliException) as h:
         bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN)
     assert h.value.kural_no_getir() == "IK-29"
-
-
-def test_bolumun_paylasilanlari_listeler(servisler, belge_dosyasi, tmp_path):
-    bilgi_tabani, _, _, _, db = servisler
-    ogr_a = ogrenci_olustur(db, eposta="a@u.edu.tr", bolum="Bilgisayar Mühendisliği", universite_id=1)
-    ogr_b = ogrenci_olustur(db, eposta="b@u.edu.tr", bolum="Hukuk", universite_id=1)
-    ogr_c = ogrenci_olustur(db, eposta="c@diger.edu.tr", bolum="Bilgisayar Mühendisliği", universite_id=2)
-
-    paylasilan = bilgi_tabani.belgeYukle(
-        "p.txt", belge_dosyasi, 5000, "Paylaşılan Yönetmelik", "Kayıt",
-        sahip=ogr_a, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
-    )
-    bilgi_tabani.belgeYukle("o.txt", belge_dosyasi, 5000, "Özel Yönetmelik", "Kayıt", sahip=ogr_a)
-    baska_bolum_paylasilan = bilgi_tabani.belgeYukle(
-        "h.txt", belge_dosyasi, 5000, "Hukuk Notları", "Hukuk",
-        sahip=ogr_b, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Hukuka Giriş",
-    )
-    baska_universite = bilgi_tabani.belgeYukle(
-        "d.txt", belge_dosyasi, 5000, "Diğer Üniversite", "Kayıt",
-        sahip=ogr_c, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
-    )
-
-    liste = bilgi_tabani.bolumunPaylasilanlari(1, "Bilgisayar Mühendisliği")
-    kaynaklar = {b.kaynak_id for b in liste}
-    assert paylasilan.kaynak_id in kaynaklar
-    assert baska_bolum_paylasilan.kaynak_id not in kaynaklar
-    assert baska_universite.kaynak_id not in kaynaklar
-    assert bilgi_tabani.bolumunPaylasilanlari(2, "Hukuk") == []
 
 
 def test_belge_ders_etiketi_atanir(servisler, belge_dosyasi):

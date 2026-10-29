@@ -2,18 +2,16 @@ from uniasist.enumlar import Gorunurluk, SonucDurumu
 
 
 class Kapsam:
-    def __init__(self, kullanici_id, universite_id, bolum):
+    def __init__(self, kullanici_id, ders_ids):
         self.kullanici_id = kullanici_id
-        self.universite_id = universite_id
-        self.bolum = bolum
+        self.ders_ids = ders_ids if ders_ids is not None else set()
 
     def parcaErisilebilirMi(self, parca):
         if parca.sahip_id == self.kullanici_id:
             return True
         return (
             parca.gorunurluk == Gorunurluk.PAYLASILAN
-            and parca.universite_id == self.universite_id
-            and parca.bolum == self.bolum
+            and parca.ders_id in self.ders_ids
         )
 
 

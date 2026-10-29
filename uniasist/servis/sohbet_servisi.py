@@ -29,13 +29,14 @@ KARA_LISTE = [
 class SohbetServisi:
     def __init__(self, sohbet_deposu, soru_kaydi_deposu, yanit_uretme_servisi,
                  yanitlanamayan_soru_servisi, bilgi_kaynagi_deposu=None,
-                 kullanici_deposu=None):
+                 kullanici_deposu=None, ders_deposu=None):
         self.sohbet_deposu = sohbet_deposu
         self.soru_kaydi_deposu = soru_kaydi_deposu
         self.yanit_uretme_servisi = yanit_uretme_servisi
         self.yanitlanamayan_soru_servisi = yanitlanamayan_soru_servisi
         self.bilgi_kaynagi_deposu = bilgi_kaynagi_deposu
         self.kullanici_deposu = kullanici_deposu
+        self.ders_deposu = ders_deposu
 
     def _kapsamiKur(self, sohbet):
         if self.kullanici_deposu is None or sohbet.kullanici_id is None:
@@ -43,7 +44,10 @@ class SohbetServisi:
         kullanici = self.kullanici_deposu.idIleBul(sohbet.kullanici_id)
         if kullanici is None:
             return None
-        return Kapsam(kullanici.kullanici_id, kullanici.universite_id, kullanici.bolum)
+        ders_idler = set()
+        if self.ders_deposu is not None:
+            ders_idler = self.ders_deposu.kullanicininDersIdleri(kullanici.kullanici_id)
+        return Kapsam(kullanici.kullanici_id, ders_idler)
 
     def _soruGecerliMi(self, soru_metni):
         if not soru_metni or not soru_metni.strip():
@@ -183,8 +187,10 @@ class SohbetServisi:
             return False
         if kaynak.sahip_id == kullanici.kullanici_id:
             return True
-        return (
-            kaynak.gorunurluk == Gorunurluk.PAYLASILAN
-            and kaynak.universite_id == kullanici.universite_id
-            and kaynak.bolum == kullanici.bolum
+        if kaynak.gorunurluk != Gorunurluk.PAYLASILAN:
+            return False
+        if self.ders_deposu is None:
+            return False
+        return kaynak.ders_id in self.ders_deposu.kullanicininDersIdleri(
+            kullanici.kullanici_id
         )

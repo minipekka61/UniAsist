@@ -136,7 +136,7 @@ class BilgiTabaniServisi:
         self._sahiplikKontrol(belge, kullanici_id)
         self.belgeSilZorla(belge_id)
 
-    def gorunurlukDegistir(self, belge_id, kullanici, gorunurluk):
+    def gorunurlukDegistir(self, belge_id, kullanici, gorunurluk, ders_adi=None):
         belge = self._belgeyiGetir(belge_id)
         self._sahiplikKontrol(belge, kullanici.kullanici_id)
         if gorunurluk == Gorunurluk.PAYLASILAN and not kullanici.dogrulanmisMi():
@@ -144,16 +144,22 @@ class BilgiTabaniServisi:
                 "IK-29",
                 "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
             )
+        if gorunurluk == Gorunurluk.PAYLASILAN:
+            if ders_adi and ders_adi.strip() and self.ders_deposu is not None:
+                ders = self.ders_deposu.bulVeYaOlustur(ders_adi)
+                belge.ders_id = ders.ders_id
+            if belge.ders_id is None:
+                raise IsKuraliIhlaliException(
+                    "IK-24", "Paylaşmak için bir ders seçmelisiniz."
+                )
         belge.gorunurluk = gorunurluk
         self.bilgi_kaynagi_deposu.kaydet(belge)
         self.arama_dizini.gorunurlukGuncelle(belge.kaynak_id, gorunurluk)
+        self.arama_dizini.dersGuncelle(belge.kaynak_id, belge.ders_id)
         return belge
 
     def belgeleriListele(self, kullanici_id):
         return self.bilgi_kaynagi_deposu.sahibinBelgeleri(kullanici_id)
-
-    def bolumunPaylasilanlari(self, universite_id, bolum):
-        return self.bilgi_kaynagi_deposu.bolumunPaylasilanlari(universite_id, bolum)
 
     def dersinPaylasilanlari(self, ders_id):
         return self.bilgi_kaynagi_deposu.dersinPaylasilanlari(ders_id)

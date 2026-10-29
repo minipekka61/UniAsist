@@ -43,9 +43,10 @@ def ortam(tmp_path):
     dizin = AramaDizini(db)
     isleme = BelgeIslemeServisi(dizin, yz)
     bilgi_depo = BilgiKaynagiDeposu(db)
-    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin, DersDeposu(db))
+    ders_depo = DersDeposu(db)
+    bilgi_tabani = BilgiTabaniServisi(bilgi_depo, isleme, dizin, ders_depo)
     bildirim_depo = BildirimDeposu(db)
-    moderasyon = ModerasyonServisi(bildirim_depo, bilgi_tabani)
+    moderasyon = ModerasyonServisi(bildirim_depo, bilgi_tabani, ders_depo)
 
     sahip = ogrenci_olustur(db, "sahip@universite.edu.tr")
     baska = ogrenci_olustur(db, "baska@universite.edu.tr")
@@ -56,11 +57,13 @@ def ortam(tmp_path):
         "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
         sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Staj Dersi",
     )
+    ders_depo.takipEt(baska.kullanici_id, paylasilan.ders_id)
     return {
         "db": db,
         "bilgi_tabani": bilgi_tabani,
         "moderasyon": moderasyon,
         "bildirim_depo": bildirim_depo,
+        "ders_depo": ders_depo,
         "sahip": sahip,
         "baska": baska,
         "paylasilan": paylasilan,
@@ -125,23 +128,11 @@ def test_degerlendir_yoksay(ortam):
     assert ortam["bildirim_depo"].idIleBul(bildirim.bildirim_id).durum == KayitDurumu.DEGERLENDIRILDI
 
 
-def test_ik31_baska_bolum_belgeyi_bildiremez(ortam):
-    baska_bolum = ogrenci_olustur(ortam["db"], "hukuk@universite.edu.tr", bolum="Hukuk")
+def test_ik31_takip_etmedigi_dersi_bildiremez(ortam):
+    takip_etmeyen = ogrenci_olustur(ortam["db"], "takipsiz@universite.edu.tr")
     with pytest.raises(IsKuraliIhlaliException) as h:
         ortam["moderasyon"].bildir(
-            ortam["paylasilan"].kaynak_id, baska_bolum, "Deneme"
-        )
-    assert h.value.kural_no_getir() == "IK-31"
-    assert h.value.mesaj == "Belge bulunamadı."
-
-
-def test_ik31_baska_universite_belgeyi_bildiremez(ortam):
-    baska_universite = ogrenci_olustur(
-        ortam["db"], "baska@itu.edu.tr", universite_id=2
-    )
-    with pytest.raises(IsKuraliIhlaliException) as h:
-        ortam["moderasyon"].bildir(
-            ortam["paylasilan"].kaynak_id, baska_universite, "Deneme"
+            ortam["paylasilan"].kaynak_id, takip_etmeyen, "Deneme"
         )
     assert h.value.kural_no_getir() == "IK-31"
     assert h.value.mesaj == "Belge bulunamadı."

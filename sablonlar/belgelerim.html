@@ -5,7 +5,13 @@
     <h1>Belgelerim</h1>
     <p class="filtre">
         <a href="/belgelerim"{% if sekme == 'benim' %} class="etkin"{% endif %}>Belgelerim</a> ·
-        <a href="/belgelerim?sekme=bolum"{% if sekme == 'bolum' %} class="etkin"{% endif %}>Bölümün Paylaşılanları</a>
+        <a href="/belgelerim?sekme=ders"{% if sekme == 'ders' %} class="etkin"{% endif %}>Dersin Paylaşılanları</a>
+        {% if sekme == 'ders' and dersler %}
+        —
+        {% for d in dersler %}
+        <a href="/belgelerim?sekme=ders&ders_id={{ d.ders_id }}">{{ d.ad }}</a>
+        {% endfor %}
+        {% endif %}
     </p>
 
     {% if sekme == 'benim' %}
@@ -13,10 +19,14 @@
     <form method="post" action="/belgelerim/yukle" enctype="multipart/form-data" class="form-dikey">
         <label>Başlık <input type="text" name="baslik" required></label>
         <label>Ders / Kategori <input type="text" name="kategori" required></label>
+        <label>Ders (paylaşacaksanız zorunlu) <input type="text" name="ders" list="ders-onerileri"></label>
+        <datalist id="ders-onerileri">
+            {% for d in dersler %}<option value="{{ d.ad }}">{% endfor %}
+        </datalist>
         <label>Dosya (PDF veya TXT, en fazla 10 MB) <input type="file" name="dosya" accept=".pdf,.txt" required></label>
         <label class="satir-ici">
             <input type="checkbox" name="paylas" value="1">
-            Bölümümle paylaş (aynı üniversite ve bölümden öğrenciler görebilir)
+            Dersimle paylaş (bu dersi takip eden öğrenciler görebilir)
         </label>
         <button type="submit">Yükle</button>
     </form>
@@ -36,7 +46,8 @@
                       onsubmit="return confirm('Görünürlük değiştirilecek. Devam edilsin mi?');">
                     {% if b.gorunurluk.value == 'OZEL' %}
                     <input type="hidden" name="gorunurluk" value="PAYLASILAN">
-                    <button type="submit" class="buton-kucuk">Bölümümle Paylaş</button>
+                    <input type="text" name="ders" placeholder="Ders adı" aria-label="Ders adı" list="ders-onerileri" required>
+                    <button type="submit" class="buton-kucuk">Dersimle Paylaş</button>
                     {% else %}
                     <input type="hidden" name="gorunurluk" value="OZEL">
                     <button type="submit" class="buton-kucuk">Paylaşmayı Bırak</button>
@@ -61,7 +72,7 @@
     {% endif %}
 
     {% else %}
-    <h2>Bölümün Paylaşılan Belgeleri</h2>
+    <h2>Dersin Paylaşılan Belgeleri</h2>
     {% if belgeler %}
     <table>
         <tr><th>Başlık</th><th>Ders / Kategori</th><th></th></tr>
@@ -80,7 +91,7 @@
         {% endfor %}
     </table>
     {% else %}
-    <p>Bölümünüzde henüz paylaşılan belge yok. Belgelerinizi paylaşarak bölüm arkadaşlarınıza destek olabilirsiniz.</p>
+    <p>Takip ettiğiniz derslerde henüz paylaşılan belge yok. Belgelerinizi paylaşarak ders arkadaşlarınıza destek olabilirsiniz.</p>
     {% endif %}
     {% endif %}
 </div>

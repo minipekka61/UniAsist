@@ -6,17 +6,20 @@ from uniasist.hatalar import IsKuraliIhlaliException
 
 
 class ModerasyonServisi:
-    def __init__(self, bildirim_deposu, bilgi_tabani_servisi):
+    def __init__(self, bildirim_deposu, bilgi_tabani_servisi, ders_deposu=None):
         self.bildirim_deposu = bildirim_deposu
         self.bilgi_tabani_servisi = bilgi_tabani_servisi
+        self.ders_deposu = ders_deposu
 
     def _bildirilebilirMi(self, belge, bildiren):
         if belge.sahip_id == bildiren.kullanici_id:
             return True
-        return (
-            belge.gorunurluk == Gorunurluk.PAYLASILAN
-            and belge.universite_id == bildiren.universite_id
-            and belge.bolum == bildiren.bolum
+        if belge.gorunurluk != Gorunurluk.PAYLASILAN:
+            return False
+        if self.ders_deposu is None:
+            return False
+        return belge.ders_id in self.ders_deposu.kullanicininDersIdleri(
+            bildiren.kullanici_id
         )
 
     def bildir(self, belge_id, bildiren, neden):

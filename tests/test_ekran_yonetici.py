@@ -243,6 +243,7 @@ def _bildirim_hazirla(paket, tmp_path):
         "staj.txt", str(dosya), 1000, "Staj Yönergesi", "Staj",
         sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Staj Dersi",
     )
+    paket.ders_deposu.takipEt(bildiren.kullanici_id, belge.ders_id)
     paket.moderasyon.bildir(belge.kaynak_id, bildiren, "Uygunsuz içerik")
     return belge
 

@@ -30,7 +30,7 @@ from uniasist.yapayzeka.yerel_arama_servisi import YerelAramaServisi
 class KurulumPaketi:
     def __init__(self, db, yapay_zeka, arama_dizini, kimlik, kullanici_yonetimi,
                  bilgi_tabani, sohbet, yanitlanamayan, geri_bildirim, rapor,
-                 universite_deposu, eposta_servisi, moderasyon):
+                 universite_deposu, eposta_servisi, moderasyon, ders_deposu=None):
         self.db = db
         self.yapay_zeka = yapay_zeka
         self.arama_dizini = arama_dizini
@@ -45,6 +45,7 @@ class KurulumPaketi:
         self.eposta_servisi = eposta_servisi
         self.moderasyon = moderasyon
         self.kullanici_deposu = kimlik.kullanici_deposu
+        self.ders_deposu = ders_deposu
 
 
 def temel_verileri_ekle(db):
@@ -96,10 +97,10 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
     bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini, ders_deposu)
     yanit_uretme = YanitUretmeServisi(arama_dizini, yapay_zeka)
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_soru_deposu)
-    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu)
+    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu, ders_deposu)
     geri_bildirim = GeriBildirimServisi(sohbet_deposu, geri_bildirim_deposu)
     rapor = RaporServisi(soru_kaydi_deposu, geri_bildirim_deposu)
-    moderasyon = ModerasyonServisi(BildirimDeposu(db), bilgi_tabani)
+    moderasyon = ModerasyonServisi(BildirimDeposu(db), bilgi_tabani, ders_deposu)
 
     paket = KurulumPaketi(
         db=db,
@@ -115,6 +116,7 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
         universite_deposu=universite_deposu,
         eposta_servisi=eposta_servisi,
         moderasyon=moderasyon,
+        ders_deposu=ders_deposu,
     )
     if seed_yap:
         from uniasist import seed
