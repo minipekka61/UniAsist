@@ -7,6 +7,7 @@ from uniasist.ekran.belgelerim import belgelerim_bp
 from uniasist.ekran.giris import giris_bp
 from uniasist.ekran.inceleme import inceleme_bp
 from uniasist.ekran.kullaniciyonetimi import kullaniciyonetimi_bp
+from uniasist.ekran.plan import plan_bp
 from uniasist.ekran.rapor import rapor_bp
 from uniasist.ekran.sohbet import sohbet_bp
 from uniasist.ekran.yardimcilar import oturum_yukle
@@ -45,6 +46,7 @@ def uygulama_olustur(paket=None):
     uygulama.register_blueprint(inceleme_bp)
     uygulama.register_blueprint(kullaniciyonetimi_bp)
     uygulama.register_blueprint(rapor_bp)
+    uygulama.register_blueprint(plan_bp)
 
     @uygulama.context_processor
     def _ortak():

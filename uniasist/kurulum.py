@@ -16,6 +16,7 @@ from uniasist.servis.geri_bildirim_servisi import GeriBildirimServisi
 from uniasist.servis.kimlik_dogrulama_servisi import KimlikDogrulamaServisi
 from uniasist.servis.kullanici_yonetim_servisi import KullaniciYonetimServisi
 from uniasist.servis.moderasyon_servisi import ModerasyonServisi
+from uniasist.servis.plan_servisi import PlanServisi
 from uniasist.servis.rapor_servisi import RaporServisi
 from uniasist.servis.sohbet_servisi import SohbetServisi
 from uniasist.servis.yanit_uretme_servisi import YanitUretmeServisi
@@ -27,7 +28,7 @@ from uniasist.yapayzeka.yerel_arama_servisi import YerelAramaServisi
 class KurulumPaketi:
     def __init__(self, db, yapay_zeka, arama_dizini, kimlik, kullanici_yonetimi,
                  bilgi_tabani, sohbet, yanitlanamayan, geri_bildirim, rapor,
-                 eposta_servisi, moderasyon, ders_deposu=None):
+                 eposta_servisi, moderasyon, ders_deposu=None, plan=None):
         self.db = db
         self.yapay_zeka = yapay_zeka
         self.arama_dizini = arama_dizini
@@ -42,6 +43,7 @@ class KurulumPaketi:
         self.moderasyon = moderasyon
         self.kullanici_deposu = kimlik.kullanici_deposu
         self.ders_deposu = ders_deposu
+        self.plan = plan
 
 
 def eposta_servisi_olustur():
@@ -79,7 +81,8 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
     bilgi_tabani = BilgiTabaniServisi(bilgi_kaynagi_deposu, belge_isleme, arama_dizini, ders_deposu)
     yanit_uretme = YanitUretmeServisi(arama_dizini, yapay_zeka)
     yanitlanamayan = YanitlanamayanSoruServisi(yanitlanamayan_soru_deposu)
-    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu, ders_deposu)
+    plan = PlanServisi(kullanici_deposu, soru_kaydi_deposu, bilgi_kaynagi_deposu)
+    sohbet = SohbetServisi(sohbet_deposu, soru_kaydi_deposu, yanit_uretme, yanitlanamayan, bilgi_kaynagi_deposu, kullanici_deposu, ders_deposu, plan_servisi=plan)
     geri_bildirim = GeriBildirimServisi(sohbet_deposu, geri_bildirim_deposu)
     rapor = RaporServisi(soru_kaydi_deposu, geri_bildirim_deposu)
     moderasyon = ModerasyonServisi(BildirimDeposu(db), bilgi_tabani, ders_deposu)
@@ -98,6 +101,7 @@ def kur(db=None, db_yolu=None, yapay_zeka=None, seed_yap=False):
         eposta_servisi=eposta_servisi,
         moderasyon=moderasyon,
         ders_deposu=ders_deposu,
+        plan=plan,
     )
     if seed_yap:
         from uniasist import seed

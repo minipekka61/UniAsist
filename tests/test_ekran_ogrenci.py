@@ -39,9 +39,10 @@ def ortam(paket, tmp_path, monkeypatch):
 
 
 def dogrulanmis_ogrenci(paket, eposta="ali@universite.edu.tr",
-                        bolum="Bilgisayar Mühendisliği", dogrulanmis=True):
+                        bolum="Bilgisayar Mühendisliği", dogrulanmis=True,
+                        pro=False):
     from uniasist.entity import Kullanici
-    from uniasist.enumlar import Rol
+    from uniasist.enumlar import Plan, Rol
     from uniasist.guvenlik import sifre_hashle
 
     k = Kullanici(
@@ -52,6 +53,7 @@ def dogrulanmis_ogrenci(paket, eposta="ali@universite.edu.tr",
         universite="Üniversite",
         bolum=bolum,
         eposta_dogrulandi=dogrulanmis,
+        plan=Plan.PRO if pro else None,
     )
     paket.kimlik.kullanici_deposu.kaydet(k)
     return k
@@ -86,7 +88,7 @@ def test_ogrenci_belge_yukler_ve_gorur(ortam):
 
 def test_ogrenci_paylasir_ders_gorur(ortam):
     istemci, paket = ortam
-    ogr = dogrulanmis_ogrenci(paket)
+    ogr = dogrulanmis_ogrenci(paket, pro=True)
     giris_yap(istemci)
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Burs Yönergesi",
@@ -210,7 +212,7 @@ def test_kayit_ekrani_bolum_listesi(ortam):
 
 def test_bolum_belgesi_bildir(ortam):
     istemci, paket = ortam
-    ogr = dogrulanmis_ogrenci(paket)
+    ogr = dogrulanmis_ogrenci(paket, pro=True)
     giris_yap(istemci)
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Staj Yönergesi",
@@ -241,7 +243,7 @@ def test_bolum_belgesi_bildir(ortam):
 
 def test_bolum_paylasilanina_kaynak_baglantisi(ortam):
     istemci, paket = ortam
-    ogr = dogrulanmis_ogrenci(paket)
+    ogr = dogrulanmis_ogrenci(paket, pro=True)
     giris_yap(istemci)
     istemci.post("/belgelerim/yukle", data={
         "baslik": "Burs Yönergesi",

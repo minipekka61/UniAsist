@@ -1,16 +1,16 @@
 from pathlib import Path
 
 from uniasist.entity import Kullanici
-from uniasist.enumlar import Gorunurluk, Rol
+from uniasist.enumlar import Gorunurluk, Plan, Rol
 from uniasist.guvenlik import sifre_hashle
 
 _KOK = Path(__file__).resolve().parent.parent / "veri" / "ornek_belgeler"
 
-# (eposta, sifre, ad_soyad, rol, bolum)
+# (eposta, sifre, ad_soyad, rol, bolum, plan)
 _HESAPLAR = [
-    ("admin@universite.edu.tr", "Yonetici1234", "Sistem Yöneticisi", Rol.YONETICI, ""),
-    ("bilgisayar@universite.edu.tr", "Ogrenci1234", "Bilgisayar Öğrencisi", Rol.OGRENCI, "Bilgisayar Mühendisliği"),
-    ("elektrik@universite.edu.tr", "Ogrenci1234", "Elektrik Öğrencisi", Rol.OGRENCI, "Elektrik-Elektronik Mühendisliği"),
+    ("admin@universite.edu.tr", "Yonetici1234", "Sistem Yöneticisi", Rol.YONETICI, "", None),
+    ("bilgisayar@universite.edu.tr", "Ogrenci1234", "Bilgisayar Öğrencisi", Rol.OGRENCI, "Bilgisayar Mühendisliği", Plan.PRO),
+    ("elektrik@universite.edu.tr", "Ogrenci1234", "Elektrik Öğrencisi", Rol.OGRENCI, "Elektrik-Elektronik Mühendisliği", Plan.PRO),
 ]
 
 # (dosya, başlık, kategori, görünürlük, ders)
@@ -52,7 +52,7 @@ def _belgeleri_yukle(paket, sahip, belgeler):
 
 def kos(paket):
     kullanicilar = {}
-    for eposta, sifre, ad_soyad, rol, bolum in _HESAPLAR:
+    for eposta, sifre, ad_soyad, rol, bolum, plan in _HESAPLAR:
         if not paket.kimlik.kullanici_deposu.epostaVarMi(eposta):
             kullanici = Kullanici(
                 ad_soyad=ad_soyad,
@@ -62,6 +62,7 @@ def kos(paket):
                 universite="Üniversite",
                 bolum=bolum,
                 eposta_dogrulandi=True,
+                plan=plan,
             )
             paket.kimlik.kullanici_deposu.kaydet(kullanici)
         kullanicilar[eposta] = paket.kimlik.kullanici_deposu.epostaIleBul(eposta)

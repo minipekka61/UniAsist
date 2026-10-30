@@ -2,6 +2,8 @@ from uniasist.entity import Belge
 from uniasist.enumlar import Gorunurluk
 from uniasist.hatalar import IsKuraliIhlaliException
 
+import config
+
 
 class BilgiTabaniServisi:
     def __init__(self, bilgi_kaynagi_deposu, belge_isleme_servisi, arama_dizini,
@@ -13,10 +15,17 @@ class BilgiTabaniServisi:
 
     def belgeYukle(self, dosya_adi, dosya_yolu, boyut_byte, baslik, kategori, sahip,
                    gorunurluk=Gorunurluk.OZEL, ders_adi=""):
-        if gorunurluk == Gorunurluk.PAYLASILAN and not sahip.dogrulanmisMi():
+        if not sahip.proMu() and len(
+            self.bilgi_kaynagi_deposu.sahibinBelgeleri(sahip.kullanici_id)
+        ) >= config.UCRETSIZ_AZAMI_BELGE:
             raise IsKuraliIhlaliException(
-                "IK-29",
-                "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
+                "IK-34",
+                f"Ücretsiz planda en fazla {config.UCRETSIZ_AZAMI_BELGE} belge "
+                "yükleyebilirsiniz. Daha fazlası için Pro'ya geçin.",
+            )
+        if gorunurluk == Gorunurluk.PAYLASILAN and not sahip.proMu():
+            raise IsKuraliIhlaliException(
+                "IK-36", "Belge paylaşmak Pro özelliğidir."
             )
         ders = None
         if ders_adi and self.ders_deposu is not None:
@@ -137,10 +146,9 @@ class BilgiTabaniServisi:
     def gorunurlukDegistir(self, belge_id, kullanici, gorunurluk, ders_adi=None):
         belge = self._belgeyiGetir(belge_id)
         self._sahiplikKontrol(belge, kullanici.kullanici_id)
-        if gorunurluk == Gorunurluk.PAYLASILAN and not kullanici.dogrulanmisMi():
+        if gorunurluk == Gorunurluk.PAYLASILAN and not kullanici.proMu():
             raise IsKuraliIhlaliException(
-                "IK-29",
-                "Belge paylaşabilmek için e-posta adresinizi doğrulamanız gerekiyor.",
+                "IK-36", "Belge paylaşmak Pro özelliğidir."
             )
         if gorunurluk == Gorunurluk.PAYLASILAN:
             if ders_adi and ders_adi.strip() and self.ders_deposu is not None:

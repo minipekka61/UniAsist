@@ -17,6 +17,7 @@ from uniasist.enumlar import (
     GonderenTuru,
     Gorunurluk,
     KayitDurumu,
+    Plan,
     Rol,
 )
 from uniasist.guvenlik import sifre_hashle
@@ -316,13 +317,14 @@ STAJ_METNI = (
 ) * 3
 
 
-def _baska_ogrenci(servisler, eposta):
+def _baska_ogrenci(servisler, eposta, pro=False):
     k = Kullanici(
         ad_soyad="Başka Öğrenci",
         eposta=eposta,
         sifre_hash="x",
         rol=Rol.OGRENCI,
         eposta_dogrulandi=True,
+        plan=Plan.PRO if pro else None,
     )
     servisler["kullanici_depo"].kaydet(k)
     return k
@@ -346,7 +348,7 @@ def test_kapsam_kendi_belgesinden_yanit_alir(servisler):
 
 
 def test_kapsam_takip_ettigi_dersin_paylasilanini_gorur(servisler, tmp_path):
-    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr")
+    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr", pro=True)
     paylasilan = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
     servisler["ders_depo"].takipEt(
         servisler["kullanici"].kullanici_id, paylasilan.ders_id
@@ -359,7 +361,7 @@ def test_kapsam_takip_ettigi_dersin_paylasilanini_gorur(servisler, tmp_path):
 
 
 def test_kapsam_takip_etmedigi_dersi_gormez(servisler, tmp_path):
-    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr")
+    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr", pro=True)
     paylasilan = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
     s = ogrenci_sohbeti(servisler)
     yanit = servisler["sohbet"].soruSor(s, "Staj defteri ne zaman teslim edilir?")
@@ -397,7 +399,7 @@ def test_kaynak_rotasi_ders_izolasyonu(servisler, tmp_path):
 
     kullanici = servisler["kullanici"]
     kendi = servisler["bilgi_tabani"].belgeleriListele(kullanici.kullanici_id)[0]
-    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr")
+    baska = _baska_ogrenci(servisler, "baska@universite.edu.tr", pro=True)
 
     paylasilan = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.PAYLASILAN)
     ozel = _staj_belgesi_yukle(servisler, baska, tmp_path, gorunurluk=Gorunurluk.OZEL)

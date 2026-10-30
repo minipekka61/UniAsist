@@ -6,7 +6,7 @@ from uniasist.depo.bildirim_deposu import BildirimDeposu
 from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.entity import Kullanici
-from uniasist.enumlar import Gorunurluk, KayitDurumu, Rol
+from uniasist.enumlar import Gorunurluk, KayitDurumu, Plan, Rol
 from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.servis.arama_dizini import AramaDizini
 from uniasist.servis.belge_isleme_servisi import BelgeIslemeServisi
@@ -21,7 +21,7 @@ STAJ_METNI = (
 ) * 3
 
 
-def ogrenci_olustur(db, eposta):
+def ogrenci_olustur(db, eposta, pro=False):
     depo = KullaniciDeposu(db)
     k = Kullanici(
         ad_soyad="Öğrenci",
@@ -29,6 +29,7 @@ def ogrenci_olustur(db, eposta):
         sifre_hash="x",
         rol=Rol.OGRENCI,
         eposta_dogrulandi=True,
+        plan=Plan.PRO if pro else None,
     )
     depo.kaydet(k)
     return k
@@ -46,7 +47,7 @@ def ortam(tmp_path):
     bildirim_depo = BildirimDeposu(db)
     moderasyon = ModerasyonServisi(bildirim_depo, bilgi_tabani, ders_depo)
 
-    sahip = ogrenci_olustur(db, "sahip@universite.edu.tr")
+    sahip = ogrenci_olustur(db, "sahip@universite.edu.tr", pro=True)
     baska = ogrenci_olustur(db, "baska@universite.edu.tr")
 
     dosya = tmp_path / "staj.txt"

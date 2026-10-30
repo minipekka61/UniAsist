@@ -29,7 +29,7 @@ KARA_LISTE = [
 class SohbetServisi:
     def __init__(self, sohbet_deposu, soru_kaydi_deposu, yanit_uretme_servisi,
                  yanitlanamayan_soru_servisi, bilgi_kaynagi_deposu=None,
-                 kullanici_deposu=None, ders_deposu=None):
+                 kullanici_deposu=None, ders_deposu=None, plan_servisi=None):
         self.sohbet_deposu = sohbet_deposu
         self.soru_kaydi_deposu = soru_kaydi_deposu
         self.yanit_uretme_servisi = yanit_uretme_servisi
@@ -37,6 +37,7 @@ class SohbetServisi:
         self.bilgi_kaynagi_deposu = bilgi_kaynagi_deposu
         self.kullanici_deposu = kullanici_deposu
         self.ders_deposu = ders_deposu
+        self.plan_servisi = plan_servisi
 
     def _kapsamiKur(self, sohbet):
         if self.kullanici_deposu is None or sohbet.kullanici_id is None:
@@ -53,6 +54,16 @@ class SohbetServisi:
         if not soru_metni or not soru_metni.strip():
             return False
         return len(soru_metni.strip()) <= config.AZAMI_SORU_UZUNLUGU
+
+    def _soruHakkiVar(self, sohbet):
+        if self.plan_servisi is None or self.kullanici_deposu is None:
+            return True
+        if sohbet.kullanici_id is None:
+            return True
+        kullanici = self.kullanici_deposu.idIleBul(sohbet.kullanici_id)
+        if kullanici is None:
+            return True
+        return self.plan_servisi.soruHakkiVarMi(kullanici)
 
     def _kapsamIcindeMi(self, soru_metni, baglam_var_mi):
         metin = soru_metni.lower()
@@ -80,6 +91,17 @@ class SohbetServisi:
             }
             return
         soru_metni = soru_metni.strip()
+        if not self._soruHakkiVar(sohbet):
+            yield {
+                "tur": "hata",
+                "kural": "IK-33",
+                "mesaj": (
+                    f"Günlük soru limitine ulaştınız "
+                    f"({config.UCRETSIZ_GUNLUK_SORU}). Sınırsız sohbet için "
+                    "Pro'ya geçin."
+                ),
+            }
+            return
         baglam = sohbet.sonMesajlariGetir(config.BAGLAM_MESAJ_SAYISI)
         if not self._kapsamIcindeMi(soru_metni, bool(baglam)):
             yield {"tur": "hata", "kural": "IK-15", "mesaj": config.KAPSAM_METNI}
@@ -130,6 +152,7 @@ class SohbetServisi:
                 zaman=datetime.now(),
                 kategori=kategori,
                 yanitlandi=sonuc.durum == SonucDurumu.YANIT,
+                kullanici_id=sohbet.kullanici_id,
             )
         )
         yield {

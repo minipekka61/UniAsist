@@ -6,7 +6,7 @@ from uniasist.depo.bilgi_kaynagi_deposu import BilgiKaynagiDeposu
 from uniasist.depo.ders_deposu import DersDeposu
 from uniasist.depo.kullanici_deposu import KullaniciDeposu
 from uniasist.entity import Belge, IcerikParcasi, Kullanici
-from uniasist.enumlar import Gorunurluk, KaynakDurumu, Rol
+from uniasist.enumlar import Gorunurluk, KaynakDurumu, Plan, Rol
 from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.servis.arama_dizini import AramaDizini
 from uniasist.servis.belge_isleme_servisi import BelgeIslemeServisi
@@ -70,7 +70,7 @@ def belge_dosyasi(tmp_path):
 
 
 def ogrenci_olustur(db, eposta="ali@universite.edu.tr", bolum="Bilgisayar Mühendisliği",
-                    dogrulanmis=True):
+                    dogrulanmis=True, pro=False):
     depo = KullaniciDeposu(db)
     k = Kullanici(
         ad_soyad="Öğrenci",
@@ -79,6 +79,7 @@ def ogrenci_olustur(db, eposta="ali@universite.edu.tr", bolum="Bilgisayar Mühen
         rol=Rol.OGRENCI,
         bolum=bolum,
         eposta_dogrulandi=dogrulanmis,
+        plan=Plan.PRO if pro else None,
     )
     depo.kaydet(k)
     return k
@@ -271,18 +272,22 @@ def test_belge_sahiplik_alanlari_atanir(servisler, belge_dosyasi):
             assert parca.ders_id == belge.ders_id
 
 
-def test_ik29_dogrulanmamis_paylasamaz(servisler, belge_dosyasi):
+def test_ik36_ucretsiz_paylasamaz(servisler, belge_dosyasi):
     bilgi_tabani, _, _, _, db = servisler
-    ogr = ogrenci_olustur(db, dogrulanmis=False)
+    ogr = ogrenci_olustur(db)
     with pytest.raises(IsKuraliIhlaliException) as h:
         bilgi_tabani.belgeYukle(
             "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
-            sahip=ogr, gorunurluk=Gorunurluk.PAYLASILAN,
+            sahip=ogr, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
         )
-    assert h.value.kural_no_getir() == "IK-29"
-    belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
+    assert h.value.kural_no_getir() == "IK-36"
+    pro = ogrenci_olustur(db, eposta="pro@universite.edu.tr", pro=True)
+    belge = bilgi_tabani.belgeYukle(
+        "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
+        sahip=pro, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi="Matematik I",
+    )
     assert belge.durum == KaynakDurumu.AKTIF
-    assert belge.gorunurluk == Gorunurluk.OZEL
+    assert belge.gorunurluk == Gorunurluk.PAYLASILAN
 
 
 def test_ik30_baskasi_belgeyi_guncelleyemez(servisler, belge_dosyasi):
@@ -308,7 +313,7 @@ def test_ik30_baskasi_belgeyi_silemez(servisler, belge_dosyasi):
 
 def test_gorunurluk_degisimi_parcalara_yansir(servisler, belge_dosyasi):
     bilgi_tabani, dizin, _, _, db = servisler
-    ogr = ogrenci_olustur(db)
+    ogr = ogrenci_olustur(db, pro=True)
     belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     bilgi_tabani.gorunurlukDegistir(
         belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN, ders_adi="Matematik I"
@@ -328,13 +333,13 @@ def test_gorunurluk_degisimi_parcalara_yansir(servisler, belge_dosyasi):
     )
 
 
-def test_ik29_dogrulanmamis_gorunurluk_degistiremez(servisler, belge_dosyasi):
+def test_ik36_ucretsiz_gorunurluk_degistiremez(servisler, belge_dosyasi):
     bilgi_tabani, _, _, _, db = servisler
-    ogr = ogrenci_olustur(db, dogrulanmis=False)
+    ogr = ogrenci_olustur(db)
     belge = bilgi_tabani.belgeYukle("yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt", sahip=ogr)
     with pytest.raises(IsKuraliIhlaliException) as h:
         bilgi_tabani.gorunurlukDegistir(belge.kaynak_id, ogr, Gorunurluk.PAYLASILAN)
-    assert h.value.kural_no_getir() == "IK-29"
+    assert h.value.kural_no_getir() == "IK-36"
 
 
 def test_belge_ders_etiketi_atanir(servisler, belge_dosyasi):
@@ -354,7 +359,7 @@ def test_belge_ders_etiketi_atanir(servisler, belge_dosyasi):
 
 def test_paylasilan_belge_ders_ister(servisler, belge_dosyasi):
     bilgi_tabani, _, _, _, db = servisler
-    ogr = ogrenci_olustur(db)
+    ogr = ogrenci_olustur(db, pro=True)
     with pytest.raises(IsKuraliIhlaliException) as h:
         bilgi_tabani.belgeYukle(
             "yonetmelik.txt", belge_dosyasi, 5000, "Yönetmelik", "Kayıt",
@@ -386,7 +391,7 @@ def test_belge_ders_degistirilebilir(servisler, belge_dosyasi):
 
 def test_dersin_paylasilanlari_listeler(servisler, belge_dosyasi):
     bilgi_tabani, _, _, _, db = servisler
-    ogr_a = ogrenci_olustur(db, eposta="a@u.edu.tr")
+    ogr_a = ogrenci_olustur(db, eposta="a@u.edu.tr", pro=True)
     ogr_b = ogrenci_olustur(db, eposta="b@u.edu.tr")
 
     mat_paylasilan = bilgi_tabani.belgeYukle(

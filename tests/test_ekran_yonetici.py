@@ -22,7 +22,9 @@ def ortam(paket):
 
 
 def kullanici_ekle(paket, ad_soyad, eposta, rol, sifre="Gizli1234",
-                   universite="", bolum="", eposta_dogrulandi=False):
+                   universite="", bolum="", eposta_dogrulandi=False, pro=False):
+    from uniasist.enumlar import Plan
+
     kullanici = Kullanici(
         ad_soyad=ad_soyad,
         eposta=eposta,
@@ -31,6 +33,7 @@ def kullanici_ekle(paket, ad_soyad, eposta, rol, sifre="Gizli1234",
         universite=universite,
         bolum=bolum,
         eposta_dogrulandi=eposta_dogrulandi,
+        plan=Plan.PRO if pro else None,
     )
     paket.kimlik.kullanici_deposu.kaydet(kullanici)
     return kullanici
@@ -231,7 +234,7 @@ def _bildirim_hazirla(paket, tmp_path):
 
     sahip = kullanici_ekle(
         paket, "Belge Sahibi", "sahip@universite.edu.tr", Rol.OGRENCI,
-        bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True,
+        bolum="Bilgisayar Mühendisliği", eposta_dogrulandi=True, pro=True,
     )
     bildiren = kullanici_ekle(
         paket, "Bildiren Öğrenci", "bildiren@universite.edu.tr", Rol.OGRENCI,

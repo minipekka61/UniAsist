@@ -1,0 +1,25 @@
+{% extends "temel.html" %}
+{% block baslik %}Plan — UniAsist{% endblock %}
+{% block icerik %}
+<section class="kart">
+    <h1>Planınız</h1>
+    {% if haklar.plan.value == 'PRO' %}
+        <p><span class="rozet">PRO</span> — sınırsız sohbet, sınırsız belge, paylaşım.</p>
+        <form method="post" action="/plan/ucretsiz">
+            <button type="submit" class="buton">Ücretsiz plana dön</button>
+        </form>
+    {% else %}
+        <p><span class="rozet">Ücretsiz</span> — günde {{ haklar.gunluk_limit }} soru,
+        en fazla {{ haklar.belge_limiti }} belge.</p>
+        <p>
+            Bugünkü soru: {{ haklar.bugunku_soru }} / {{ haklar.gunluk_limit }} ·
+            Belge: {{ haklar.belge_sayisi }} / {{ haklar.belge_limiti }}
+        </p>
+        <p>Pro ile sınırsız sohbet, sınırsız belge ve belge paylaşımı.</p>
+        <form method="post" action="/plan/pro">
+            <button type="submit" class="buton">Pro'ya Geç</button>
+        </form>
+        <p class="not">Beta — ödeme yakında; geçiş şimdilik ücretsiz.</p>
+    {% endif %}
+</section>
+{% endblock %}

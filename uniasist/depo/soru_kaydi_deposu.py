@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from uniasist.entity import SoruKaydi
 
@@ -28,6 +28,16 @@ class SoruKaydiDeposu:
             yanitlandi=bool(satir["yanitlandi"]),
             kullanici_id=satir["kullanici_id"],
         )
+
+    def gunlukSoruSayisi(self, kullanici_id, gun=None):
+        if gun is None:
+            gun = date.today().isoformat()
+        satir = self.db.execute(
+            "SELECT COUNT(*) AS n FROM soru_kaydi "
+            "WHERE kullanici_id=? AND zaman LIKE ?",
+            (kullanici_id, f"{gun}%"),
+        ).fetchone()
+        return satir["n"]
 
     def araliktakiKayitlar(self, baslangic, bitis):
         satirlar = self.db.execute(
