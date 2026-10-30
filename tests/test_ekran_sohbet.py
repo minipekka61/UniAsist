@@ -65,7 +65,7 @@ def giris_yap(istemci, paket, eposta="ali@universite.edu.tr"):
 
 def test_kayitsiz_anasayfa_girise_yonlendirir(ortam):
     istemci, _, _ = ortam
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 302
     assert "/giris" in yanit.headers["Location"]
 
@@ -80,7 +80,7 @@ def test_kayitsiz_soru_gonderemez(ortam):
 def test_fr14_yaziyor_gostergesi_ve_script(ortam):
     istemci, paket, uygulama = ortam
     giris_yap(istemci, paket)
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 200
     metin = yanit.get_data(as_text=True)
     assert "yaziyor" in metin
@@ -109,7 +109,7 @@ def test_ik16_anasayfa_son_sohbetle_devam_eder(ortam):
     istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
     sohbet_id = paket.sohbet.sohbetleriListele(1)[0].sohbet_id
 
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 200
     metin = yanit.get_data(as_text=True)
     assert f"window.uniasistSohbetId = {sohbet_id}" in metin

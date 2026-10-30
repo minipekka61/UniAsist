@@ -1,0 +1,53 @@
+{% extends "temel.html" %}
+{% block baslik %}UniAsist — Öğrenci Çalışma Asistanı{% endblock %}
+{% block icerik %}
+<section class="tanitim-hero">
+    <h1>UniAsist</h1>
+    <p class="tanitim-slogan">
+        Üniversiteden bağımsız AI çalışma asistanın. Kendi belgelerini yükle,
+        derslerini takip et, sınırsız gibi çalış.
+    </p>
+    <div class="tanitim-cta">
+        <a class="buton-birincil" href="/kayit">Ücretsiz Başla</a>
+        <a class="buton" href="/giris">Giriş</a>
+    </div>
+</section>
+
+<section class="tanitim-ozellikler">
+    <div class="kart">
+        <h2>Kendi belgelerinle</h2>
+        <p class="ipucu">PDF ve TXT belgelerini yükle; yanıtlar kendi materyallerine dayansın, kaynakçalarıyla birlikte.</p>
+    </div>
+    <div class="kart">
+        <h2>Ders bazlı paylaşım</h2>
+        <p class="ipucu">Dersleri takip et, arkadaşlarının paylaştığı ders notlarını gör, kendi belgelerini dersine paylaş.</p>
+    </div>
+    <div class="kart">
+        <h2>Doğal sohbet</h2>
+        <p class="ipucu">Sadece belge sorularıyla sınırlı değil — genel akıl danışma sorularında da yardımcı olur.</p>
+    </div>
+</section>
+
+<section class="tanitim-fiyatlar">
+    <div class="kart">
+        <h2>Ücretsiz</h2>
+        <p class="tanitim-fiyat">₺0</p>
+        <ul class="tanitim-liste">
+            <li>Günde 10 soru</li>
+            <li>En fazla 3 belge</li>
+            <li>Dersleri takip etme</li>
+            <li>Paylaşılan ders notlarını görme</li>
+        </ul>
+    </div>
+    <div class="kart">
+        <h2>Pro</h2>
+        <p class="tanitim-fiyat">—</p>
+        <ul class="tanitim-liste">
+            <li>Sınırsız sohbet</li>
+            <li>Sınırsız belge</li>
+            <li>Belge paylaşımı</li>
+        </ul>
+        <p class="ipucu">Beta — ödeme yakında; şimdilik ücretsiz geçiş.</p>
+    </div>
+</section>
+{% endblock %}

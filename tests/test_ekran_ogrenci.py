@@ -115,7 +115,7 @@ def test_dogrulanmamis_anasayfaya_erisemez(ortam):
     istemci, paket = ortam
     dogrulanmis_ogrenci(paket, dogrulanmis=False)
     giris_yap(istemci)
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 302
     assert yanit.headers["Location"].endswith("/dogrulama-bekliyor")
 
@@ -143,7 +143,7 @@ def test_dogrulanmis_erisir(ortam):
     ogr = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
     ogr.epostaDogrula()
     paket.kimlik.kullanici_deposu.kaydet(ogr)
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 200
 
 
@@ -185,14 +185,14 @@ def test_dogrulama_rotasi_token_ile(ortam):
     ogr.dogrulamaTokenAta("test-token", datetime.now() + timedelta(hours=1))
     paket.kimlik.kullanici_deposu.kaydet(ogr)
     giris_yap(istemci)
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 302
     assert yanit.headers["Location"].endswith("/dogrulama-bekliyor")
 
     yanit = istemci.get("/dogrula/test-token")
     assert yanit.status_code == 200
     assert paket.kimlik.kullanici_deposu.idIleBul(ogr.kullanici_id).dogrulanmisMi()
-    assert istemci.get("/").status_code == 200
+    assert istemci.get("/sohbet").status_code == 200
 
 
 def test_dogrulama_gecersiz_token_hata(ortam):

@@ -10,6 +10,13 @@ sohbet_bp = Blueprint("sohbet", __name__)
 
 
 @sohbet_bp.route("/")
+def tanitim():
+    if getattr(g, "aktif_kullanici", None):
+        return redirect("/sohbet")
+    return render_template("tanitim.html")
+
+
+@sohbet_bp.route("/sohbet")
 @dogrulama_required()
 def sohbet_sayfasi():
     kur_ = paket_getir()
@@ -81,7 +88,7 @@ def _sse(olay, sohbet):
 @sohbet_bp.route("/sohbet/yeni", methods=["GET", "POST"])
 @dogrulama_required()
 def yeni_sohbet():
-    return redirect("/?yeni=1")
+    return redirect("/sohbet?yeni=1")
 
 
 @sohbet_bp.route("/gecmis")

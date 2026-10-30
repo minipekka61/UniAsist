@@ -284,6 +284,32 @@ input:focus, textarea:focus, select:focus {
 
 a { color: var(--vurgu); }
 
+/* Tanıtım sayfası */
+.tanitim-hero {
+    text-align: center;
+    padding: 48px 16px 32px;
+}
+.tanitim-hero h1 {
+    font-size: 2.4rem;
+    background: linear-gradient(90deg, var(--birincil-baslangic), var(--birincil-bitis));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
+}
+.tanitim-slogan { font-size: 1.1rem; color: var(--metin-ikincil); max-width: 640px; margin: 0 auto 20px; }
+.tanitim-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.tanitim-ozellikler, .tanitim-fiyatlar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+.tanitim-ozellikler .kart, .tanitim-fiyatlar .kart { margin: 0; }
+.tanitim-fiyat { font-size: 1.8rem; font-weight: bold; margin: 8px 0; }
+.tanitim-liste { list-style: none; display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.tanitim-liste li::before { content: "✓ "; color: var(--birincil-bitis); font-weight: bold; }
+
 /* Responsive */
 @media (max-width: 600px) {
     .ust-cubuk { padding: 8px 12px; }

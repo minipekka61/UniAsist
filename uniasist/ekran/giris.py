@@ -51,7 +51,7 @@ def dogrula(token):
 @giris_required()
 def dogrulama_bekliyor():
     if g.aktif_kullanici.dogrulanmisMi() or g.aktif_kullanici.rol == Rol.YONETICI:
-        return redirect("/")
+        return redirect("/sohbet")
     return render_template("dogrulama_bekliyor.html")
 
 
@@ -76,7 +76,7 @@ def giris():
                 request.form.get("eposta", ""), request.form.get("sifre", "")
             )
             kullanici = kur_.kimlik.kullanici_deposu.idIleBul(oturum.kullanici_id)
-            hedef = "/yonetici/kullanicilar" if kullanici.rol == Rol.YONETICI else "/"
+            hedef = "/sohbet"
             yanit = make_response(redirect(hedef))
             yanit.set_cookie("uniasist_oturum", oturum.oturum_id, httponly=True)
             return yanit

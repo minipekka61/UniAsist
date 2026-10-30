@@ -54,7 +54,7 @@ def test_uc02_giris_ve_role_gore_yonlendirme(istemci, paket):
     paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     yanit = istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
     assert yanit.status_code == 302
-    assert yanit.headers["Location"].endswith("/")
+    assert yanit.headers["Location"].endswith("/sohbet")
 
     from uniasist.entity import Kullanici
     from uniasist.guvenlik import sifre_hashle
@@ -63,7 +63,7 @@ def test_uc02_giris_ve_role_gore_yonlendirme(istemci, paket):
     paket.kimlik.kullanici_deposu.kaydet(yonetici)
     yanit = istemci.post("/giris", data={"eposta": "y@universite.edu.tr", "sifre": "Yonetici1234"})
     assert yanit.status_code == 302
-    assert yanit.headers["Location"].endswith("/yonetici/kullanicilar")
+    assert yanit.headers["Location"].endswith("/sohbet")
 
 
 def test_uc02_hatali_giris_mesaji(istemci, paket):
@@ -114,6 +114,6 @@ def test_nfr03_ogrenci_yonetim_sayfasina_ulasamaz(istemci, paket):
 
 
 def test_kayitsiz_ana_sayfa_girise_yonlendirir(istemci):
-    yanit = istemci.get("/")
+    yanit = istemci.get("/sohbet")
     assert yanit.status_code == 302
     assert "/giris" in yanit.headers["Location"]
