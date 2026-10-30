@@ -5,17 +5,17 @@
     <h1>Kayıt Ol</h1>
     <form method="post">
         <label>Ad Soyad
-            <input type="text" name="ad_soyad" required>
+            <input class="giris" type="text" name="ad_soyad" required>
         </label>
         <label>Öğrenci E-postası
-            <input type="email" name="eposta" required placeholder="ad@universite.edu.tr">
+            <input class="giris" type="email" name="eposta" required placeholder="ad@universite.edu.tr">
         </label>
         <p class="ipucu">Kayıt yalnızca öğrenci e-posta adresleriyle yapılır (örn. .edu.tr uzantılı).</p>
         <label>Üniversite (isteğe bağlı)
-            <input type="text" name="universite" placeholder="Üniversitenizin adı">
+            <input class="giris" type="text" name="universite" placeholder="Üniversitenizin adı">
         </label>
         <label>Bölüm (isteğe bağlı)
-            <input type="text" name="bolum" list="bolum-onerileri" placeholder="Bölümünüz">
+            <input class="giris" type="text" name="bolum" list="bolum-onerileri" placeholder="Bölümünüz">
             <datalist id="bolum-onerileri">
                 {% for bolum in bolumler %}
                 <option value="{{ bolum }}">
@@ -23,14 +23,14 @@
             </datalist>
         </label>
         <label>Şifre
-            <input type="password" name="sifre" required minlength="8">
+            <input class="giris" type="password" name="sifre" required minlength="8">
         </label>
         <label>Şifre (Tekrar)
-            <input type="password" name="sifre_tekrar" required minlength="8">
+            <input class="giris" type="password" name="sifre_tekrar" required minlength="8">
         </label>
         <p class="ipucu">Şifre en az 8 karakter olmalı, en az bir harf ve bir rakam içermelidir.</p>
-        <button type="submit">Kayıt Ol</button>
+        <button type="submit" class="buton-birincil">Kayıt Ol</button>
     </form>
-    <p>Zaten hesabınız var mı? <a href="/giris">Giriş yapın</a>.</p>
+    <p class="ipucu">Zaten hesabınız var mı? <a href="/giris">Giriş yapın</a>.</p>
 </div>
 {% endblock %}

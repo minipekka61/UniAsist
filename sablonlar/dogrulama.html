@@ -4,11 +4,11 @@
 <div class="kart">
     <h1>E-posta Doğrulama</h1>
     {% if basarili %}
-    <div class="mesaj mesaj-bilgi">E-posta adresiniz doğrulandı. Hesabınız artık tam aktif; belgelerinizi bölümünüzle paylaşabilirsiniz.</div>
-    <p><a class="buton" href="/">Sohbete dön</a></p>
+    <div class="mesaj mesaj-bilgi">E-posta adresiniz doğrulandı. Hesabınız artık tam aktif.</div>
+    <p><a class="buton-birincil" href="/">Sohbete dön</a></p>
     {% else %}
     <div class="mesaj mesaj-hata">Doğrulama bağlantısı geçersiz veya süresi dolmuş.</div>
-    <p><a href="/giris">Giriş yapın</a> ve sayfadaki bağlantıyla yeni bir doğrulama e-postası isteyin.</p>
+    <p class="ipucu"><a href="/giris">Giriş yapın</a> ve sayfadaki bağlantıyla yeni bir doğrulama e-postası isteyin.</p>
     {% endif %}
 </div>
 {% endblock %}

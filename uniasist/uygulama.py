@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, g
+from flask import Flask, g, request
 
 import config
 from uniasist.ekran.belgelerim import belgelerim_bp
@@ -55,9 +55,13 @@ def uygulama_olustur(paket=None):
     @uygulama.context_processor
     def _ortak():
         yerel_mod = type(paket.yapay_zeka).__name__ == "YerelAramaServisi"
+        tema = request.cookies.get("uniasist_tema", "acik")
+        if tema not in ("acik", "koyu"):
+            tema = "acik"
         return {
             "aktif_kullanici": getattr(g, "aktif_kullanici", None),
             "yerel_mod": yerel_mod,
+            "tema": tema,
         }
 
     return uygulama

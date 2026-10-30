@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-tema="{{ tema }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,7 @@
 </head>
 <body>
 <header class="ust-cubuk">
-    <a class="marka" href="/">UniAsist</a>
+    <a class="marka" href="/"><span class="marka-adi">UniAsist</span></a>
     {% if yerel_mod %}<span class="rozet rozet-yerel" title="API anahtarı tanımlı değil; yanıtlar yerel arama modunda üretiliyor">Yerel mod</span>{% endif %}
     <nav class="menu">
         {% if aktif_kullanici %}
@@ -28,6 +28,7 @@
             <a href="/giris">Giriş</a>
             <a href="/kayit">Kayıt Ol</a>
         {% endif %}
+        <button type="button" id="tema-dugme" class="tema-dugme" title="Açık/koyu temayı değiştir">◐</button>
     </nav>
 </header>
 <main class="icerik">
@@ -35,7 +36,7 @@
     <div class="mesaj mesaj-uyari">
         E-posta adresinizi doğrulayın — UniAsist'i kullanabilmek için gereklidir.
         <form method="post" action="/dogrulama/yeniden" class="satir-ici">
-            <button type="submit" class="buton-kucuk">Doğrulama e-postasını tekrar gönder</button>
+            <button type="submit" class="buton buton-kucuk">Doğrulama e-postasını tekrar gönder</button>
         </form>
     </div>
     {% endif %}
@@ -44,7 +45,8 @@
     {% block icerik %}{% endblock %}
 </main>
 <footer class="alt-cubuk">
-    UniAsist — Üniversite Öğrenci Destek Asistanı · Yanıtlar bilgilendirme amaçlıdır.
+    UniAsist — Öğrenci Çalışma Asistanı · Yanıtlar bilgilendirme amaçlıdır.
 </footer>
+<script src="{{ url_for('static', filename='tema.js') }}"></script>
 </body>
 </html>

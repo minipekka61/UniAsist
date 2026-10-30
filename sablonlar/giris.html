@@ -5,13 +5,13 @@
     <h1>Giriş Yap</h1>
     <form method="post">
         <label>E-posta
-            <input type="email" name="eposta" required placeholder="ad@universite.edu.tr">
+            <input class="giris" type="email" name="eposta" required placeholder="ad@universite.edu.tr">
         </label>
         <label>Şifre
-            <input type="password" name="sifre" required>
+            <input class="giris" type="password" name="sifre" required>
         </label>
-        <button type="submit">Giriş</button>
+        <button type="submit" class="buton-birincil">Giriş</button>
     </form>
-    <p>Hesabınız yok mu? <a href="/kayit">Kayıt olun</a>.</p>
+    <p class="ipucu">Hesabınız yok mu? <a href="/kayit">Kayıt olun</a>.</p>
 </div>
 {% endblock %}
