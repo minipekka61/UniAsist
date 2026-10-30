@@ -97,7 +97,7 @@ def test_ogrenci_sohbeti_kalici(ortam):
     giris_yap(istemci, paket)
     istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
     istemci.post("/sohbet/yanit", data={"soru": "Burs için ortalama şartı nedir?"}).get_data(as_text=True)
-    gecmis = istemci.get("/gecmis")
+    gecmis = istemci.get("/sohbet")
     metin = gecmis.get_data(as_text=True)
     assert gecmis.status_code == 200
     assert "Burs başvurusu" in metin
@@ -128,8 +128,11 @@ def test_ik21_baskasi_gecmisine_url_ile_ulasamaz(ortam):
     sohbet_id = paket.sohbet.sohbetleriListele(1)[0].sohbet_id
 
     giris_yap(istemci, paket, "ayse@universite.edu.tr")
-    yanit = istemci.get(f"/gecmis/{sohbet_id}")
-    assert yanit.status_code == 403
+    yanit = istemci.get(f"/sohbet?sohbet_id={sohbet_id}")
+    assert yanit.status_code == 200
+    metin = yanit.get_data(as_text=True)
+    assert "Burs başvurusu" not in metin
+    assert "Belgeye göre" not in metin
 
 
 def test_uc07a1_silinen_kaynak_mesaji(ortam):
@@ -180,10 +183,112 @@ def test_uc12_sohbet_sil(ortam):
     sohbet_id = paket.sohbet.sohbetleriListele(1)[0].sohbet_id
 
     paket.yanitlanamayan.kaydet("Silinmeyecek anonim soru")
-    yanit = istemci.post(f"/gecmis/{sohbet_id}/sil", follow_redirects=True)
+    yanit = istemci.post(f"/sohbet/{sohbet_id}/sil", follow_redirects=True)
     assert yanit.status_code == 200
     assert paket.sohbet.sohbetleriListele(1) == []
     assert len(paket.db.execute("SELECT * FROM yanitlanamayan_soru").fetchall()) == 1
+
+
+def test_kaynakca_yalniz_dugmeyle_gorunur(ortam):
+    istemci, paket, _ = ortam
+    giris_yap(istemci, paket)
+    istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
+    yanit = istemci.get("/sohbet")
+    metin = yanit.get_data(as_text=True)
+    assert 'class="kaynakca-dugme"' in metin
+    assert "Kaynakçalar" in metin
+    assert "kaynakca-liste gizli" in metin
+
+
+def test_kaynaksiz_yanitta_kaynakca_dugmesi_yok(ortam):
+    istemci, paket, _ = ortam
+    giris_yap(istemci, paket, "ayse@universite.edu.tr")
+    istemci.post("/sohbet/yanit", data={"soru": "Futbol nasıl bir spordur?"}).get_data(as_text=True)
+    yanit = istemci.get("/sohbet")
+    metin = yanit.get_data(as_text=True)
+    assert "kaynakca-dugme" not in metin
+    assert "kaynakca-liste" not in metin
+
+
+def test_gecmis_paneli_sohbetlerde(ortam):
+    istemci, paket, _ = ortam
+    giris_yap(istemci, paket)
+    istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
+    yanit = istemci.get("/sohbet")
+    metin = yanit.get_data(as_text=True)
+    assert "sohbet-liste" in metin
+    assert "Burs başvurusu" in metin
+
+
+def test_sohbet_adlandirma(ortam):
+    istemci, paket, _ = ortam
+    giris_yap(istemci, paket)
+    istemci.post("/sohbet/yanit", data={"soru": "Burs başvurusu ne zaman yapılır?"}).get_data(as_text=True)
+    sohbet_id = paket.sohbet.sohbetleriListele(1)[0].sohbet_id
+
+    yanit = istemci.post(f"/sohbet/{sohbet_id}/ad", data={"baslik": "Burs Sorularım"})
+    assert yanit.status_code == 302
+    metin = istemci.get("/sohbet").get_data(as_text=True)
+    assert "Burs Sorularım" in metin
+
+
+def _paylasilan_yukle(paket, sahip, tmp_path, baslik, dosya_adi, ders_adi):
+    from uniasist.enumlar import Gorunurluk
+
+    dosya = tmp_path / dosya_adi
+    dosya.write_text(
+        "Staj yonergesi ogrencilerin yaz stajlarini duzenler. "
+        "Staj basvurusu icin en az 60 gun kesintisiz calisma sarti vardir. "
+        "Staj defteri staj bitiminden sonraki 15 gun icinde teslim edilir. " * 3,
+        encoding="utf-8",
+    )
+    return paket.bilgi_tabani.belgeYukle(
+        dosya_adi, str(dosya), 1000, baslik, "Staj",
+        sahip=sahip, gorunurluk=Gorunurluk.PAYLASILAN, ders_adi=ders_adi,
+    )
+
+
+def test_ders_filtresi(ortam, tmp_path):
+    import json
+
+    from uniasist.entity import Kullanici
+    from uniasist.enumlar import Plan, Rol
+    from uniasist.guvenlik import sifre_hashle
+
+    istemci, paket, _ = ortam
+    sahip = Kullanici(
+        ad_soyad="Belge Sahibi",
+        eposta="sahip@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.OGRENCI,
+        eposta_dogrulandi=True,
+        plan=Plan.PRO,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(sahip)
+    staj_belgesi = _paylasilan_yukle(paket, sahip, tmp_path, "Staj A", "staj-a.txt", "Staj Dersi")
+    burs_belgesi = _paylasilan_yukle(paket, sahip, tmp_path, "Staj B", "staj-b.txt", "Burs Dersi")
+
+    giris_yap(istemci, paket)
+    ali = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
+    for ad in ("Staj Dersi", "Burs Dersi"):
+        ders = paket.ders_deposu.adIleBul(ad)
+        paket.ders_deposu.takipEt(ali.kullanici_id, ders.ders_id)
+    staj_ders = paket.ders_deposu.adIleBul("Staj Dersi")
+
+    yanit = istemci.post("/sohbet/yanit", data={
+        "soru": "Staj defteri ne zaman teslim edilir?",
+        "ders_id": staj_ders.ders_id,
+    })
+    metin = yanit.get_data(as_text=True)
+    sonuc_satirlari = [
+        satir for satir in metin.split("\n")
+        if satir.startswith("data: ") and '"tur": "sonuc"' in satir
+    ]
+    assert sonuc_satirlari
+    veri = json.loads(sonuc_satirlari[-1][6:])
+    kaynak_idler = {k["kaynak_id"] for k in veri["kaynaklar"]}
+    assert staj_belgesi.kaynak_id in kaynak_idler
+    assert burs_belgesi.kaynak_id not in kaynak_idler
 
 
 def test_nfr06_mobil_gorunum():

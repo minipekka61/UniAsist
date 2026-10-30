@@ -201,6 +201,87 @@ input:focus, textarea:focus, select:focus {
 .alt-cubuk { text-align: center; font-size: .8rem; color: var(--metin-ikincil); padding: 12px; }
 
 /* Sohbet */
+.sohbet-duzen {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.sohbet-panel {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--yuzey);
+    border: 1px solid var(--kenarlik);
+    border-radius: 12px;
+    box-shadow: var(--golge);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sohbet-liste {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    max-height: calc(100vh - 220px);
+}
+
+.sohbet-satir {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+.sohbet-satir:hover { background: var(--yuzey-2); }
+.sohbet-satir.etkin { background: var(--vurgu-yumusak); }
+
+.sohbet-baslik-link {
+    flex: 1;
+    min-width: 0;
+    font-size: .85rem;
+    text-decoration: none;
+    color: var(--metin);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sohbet-satir-butonlar { display: flex; gap: 2px; align-items: center; }
+.sohbet-ad-kutu { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.sohbet-ad-giris { font-size: .8rem; padding: 3px 6px; min-width: 0; }
+
+.ders-filtre-etiket {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    color: var(--metin-ikincil);
+}
+
+/* Kaynakça — düğme + gizli liste */
+.kaynakca { margin-top: 8px; }
+.kaynakca-dugme {
+    font-size: .78rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--vurgu-kenarlik);
+    background: var(--yuzey);
+    color: var(--vurgu);
+    cursor: pointer;
+}
+.kaynakca-dugme:hover { background: var(--vurgu-yumusak); }
+.kaynakca-liste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+.kaynakca-liste.gizli { display: none; }
+
 .sohbet-kapsul {
     display: flex;
     flex-direction: column;
@@ -316,4 +397,6 @@ a { color: var(--vurgu); }
     .menu { width: 100%; margin-left: 0; }
     .kart { padding: 16px; margin: 16px auto; }
     .balon { max-width: 92%; }
+    .sohbet-duzen { flex-direction: column; }
+    .sohbet-panel { width: 100%; }
 }

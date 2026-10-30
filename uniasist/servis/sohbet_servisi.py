@@ -20,12 +20,14 @@ class SohbetServisi:
         self.ders_deposu = ders_deposu
         self.plan_servisi = plan_servisi
 
-    def _kapsamiKur(self, sohbet):
+    def _kapsamiKur(self, sohbet, ders_id=None):
         if self.kullanici_deposu is None or sohbet.kullanici_id is None:
             return None
         kullanici = self.kullanici_deposu.idIleBul(sohbet.kullanici_id)
         if kullanici is None:
             return None
+        if ders_id is not None:
+            return Kapsam(kullanici.kullanici_id, {ders_id})
         ders_idler = set()
         if self.ders_deposu is not None:
             ders_idler = self.ders_deposu.kullanicininDersIdleri(kullanici.kullanici_id)
@@ -53,7 +55,7 @@ class SohbetServisi:
             kullanici_id=kullanici.kullanici_id,
         )
 
-    def soruSorAkis(self, sohbet, soru_metni):
+    def soruSorAkis(self, sohbet, soru_metni, ders_id=None):
         if not self._soruGecerliMi(soru_metni):
             yield {
                 "tur": "hata",
@@ -76,7 +78,7 @@ class SohbetServisi:
         baglam = sohbet.sonMesajlariGetir(config.BAGLAM_MESAJ_SAYISI)
 
         sonuc = None
-        kapsam = self._kapsamiKur(sohbet)
+        kapsam = self._kapsamiKur(sohbet, ders_id)
         for olay in self.yanit_uretme_servisi.yanitUretAkis(
             soru_metni, baglam, kapsam=kapsam
         ):
@@ -132,9 +134,9 @@ class SohbetServisi:
             "yanit": yanit_mesaji,
         }
 
-    def soruSor(self, sohbet, soru_metni):
+    def soruSor(self, sohbet, soru_metni, ders_id=None):
         yanit = None
-        for olay in self.soruSorAkis(sohbet, soru_metni):
+        for olay in self.soruSorAkis(sohbet, soru_metni, ders_id=ders_id):
             if olay["tur"] == "hata":
                 raise IsKuraliIhlaliException(olay["kural"], olay["mesaj"])
             if olay["tur"] == "sonuc":
@@ -157,6 +159,14 @@ class SohbetServisi:
     def sohbetSil(self, sohbet_id, kullanici_id):
         sohbet = self.sohbetGetir(sohbet_id, kullanici_id)
         self.sohbet_deposu.sil(sohbet.sohbet_id)
+
+    def sohbetAdlandir(self, sohbet_id, kullanici_id, baslik):
+        sohbet = self.sohbetGetir(sohbet_id, kullanici_id)
+        baslik = (baslik or "").strip()
+        if baslik:
+            sohbet.baslik = baslik[:100]
+        self.sohbet_deposu.kaydet(sohbet)
+        return sohbet
 
     def tumSohbetleriSil(self, kullanici_id):
         self.sohbet_deposu.kullaniciSohbetleriniSil(kullanici_id)

@@ -34,8 +34,14 @@ def sohbet_sayfasi():
             gosterilen_sohbet_id = sohbet.sohbet_id
         except IsKuraliIhlaliException:
             mesajlar = []
+    sohbetler = kur_.sohbet.sohbetleriListele(g.aktif_kullanici.kullanici_id)
+    dersler = kur_.ders_deposu.kullanicininDersleri(g.aktif_kullanici.kullanici_id)
     return render_template(
-        "sohbet.html", mesajlar=mesajlar, sohbet_id=gosterilen_sohbet_id
+        "sohbet.html",
+        mesajlar=mesajlar,
+        sohbet_id=gosterilen_sohbet_id,
+        sohbetler=sohbetler,
+        dersler=dersler,
     )
 
 
@@ -51,10 +57,11 @@ def _ogrenci_sohbeti(kur_):
 def yanit():
     kur_ = paket_getir()
     soru = request.form.get("soru", "")
+    ders_id = request.form.get("ders_id", type=int)
     sohbet = _ogrenci_sohbeti(kur_)
 
     def akis():
-        for olay in kur_.sohbet.soruSorAkis(sohbet, soru):
+        for olay in kur_.sohbet.soruSorAkis(sohbet, soru, ders_id=ders_id):
             yield _sse(olay, sohbet)
 
     return Response(akis(), mimetype="text/event-stream")
@@ -91,47 +98,30 @@ def yeni_sohbet():
     return redirect("/sohbet?yeni=1")
 
 
-@sohbet_bp.route("/gecmis")
+@sohbet_bp.route("/sohbet/<int:sohbet_id>/sil", methods=["POST"])
 @dogrulama_required()
-def gecmis():
-    kur_ = paket_getir()
-    sohbetler = kur_.sohbet.sohbetleriListele(g.aktif_kullanici.kullanici_id)
-    return render_template("gecmis.html", sohbetler=sohbetler)
-
-
-@sohbet_bp.route("/gecmis/tumunu-sil", methods=["POST"])
-@dogrulama_required()
-def tumunu_sil():
-    kur_ = paket_getir()
-    kur_.sohbet.tumSohbetleriSil(g.aktif_kullanici.kullanici_id)
-    return redirect("/gecmis")
-
-
-@sohbet_bp.route("/gecmis/<int:sohbet_id>")
-@dogrulama_required()
-def gecmis_ac(sohbet_id):
-    kur_ = paket_getir()
-    try:
-        sohbet = kur_.sohbet.sohbetGetir(sohbet_id, g.aktif_kullanici.kullanici_id)
-    except IsKuraliIhlaliException:
-        abort(403)
-    return render_template(
-        "sohbet.html",
-        mesajlar=sohbet.mesajlar,
-        sadece_okuma=True,
-        sohbet_id=sohbet.sohbet_id,
-    )
-
-
-@sohbet_bp.route("/gecmis/<int:sohbet_id>/sil", methods=["POST"])
-@dogrulama_required()
-def gecmis_sil(sohbet_id):
+def sohbet_sil(sohbet_id):
     kur_ = paket_getir()
     try:
         kur_.sohbet.sohbetSil(sohbet_id, g.aktif_kullanici.kullanici_id)
     except IsKuraliIhlaliException:
         abort(403)
-    return redirect("/gecmis")
+    return redirect("/sohbet")
+
+
+@sohbet_bp.route("/sohbet/<int:sohbet_id>/ad", methods=["POST"])
+@dogrulama_required()
+def sohbet_adlandir(sohbet_id):
+    kur_ = paket_getir()
+    try:
+        kur_.sohbet.sohbetAdlandir(
+            sohbet_id,
+            g.aktif_kullanici.kullanici_id,
+            request.form.get("baslik", ""),
+        )
+    except IsKuraliIhlaliException:
+        abort(403)
+    return redirect("/sohbet")
 
 
 @sohbet_bp.route("/kaynak/<int:kaynak_id>")

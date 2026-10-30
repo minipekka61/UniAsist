@@ -128,7 +128,7 @@ def test_dogrulanmamis_url_ile_erezami_yapar(ortam):
         ("/belgelerim", "GET"),
         ("/sohbet/yanit", "POST"),
         ("/kaynak/1", "GET"),
-        ("/gecmis", "GET"),
+        ("/sohbet", "GET"),
     ]
     for yol, yontem in yollar:
         yanit = istemci.post(yol) if yontem == "POST" else istemci.get(yol)
