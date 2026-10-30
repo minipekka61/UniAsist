@@ -48,6 +48,14 @@ def dogrula(token):
         return render_template("dogrulama.html", basarili=False)
 
 
+@giris_bp.route("/dogrulama-bekliyor")
+@giris_required()
+def dogrulama_bekliyor():
+    if g.aktif_kullanici.dogrulanmisMi() or g.aktif_kullanici.rol == Rol.YONETICI:
+        return redirect("/")
+    return render_template("dogrulama_bekliyor.html")
+
+
 @giris_bp.route("/dogrulama/yeniden", methods=["POST"])
 @giris_required()
 def dogrulama_yeniden():

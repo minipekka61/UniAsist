@@ -109,22 +109,70 @@ def test_ogrenci_paylasir_ders_gorur(ortam):
     assert "Burs Yönergesi" in yanit.get_data(as_text=True)
 
 
-def test_dogrulanmamis_paylas_hata(ortam):
+def test_dogrulanmamis_anasayfaya_erisemez(ortam):
     istemci, paket = ortam
-    ogr = dogrulanmis_ogrenci(paket, dogrulanmis=False)
+    dogrulanmis_ogrenci(paket, dogrulanmis=False)
     giris_yap(istemci)
-
     yanit = istemci.get("/")
-    assert "doğrulayın" in yanit.get_data(as_text=True)
+    assert yanit.status_code == 302
+    assert yanit.headers["Location"].endswith("/dogrulama-bekliyor")
 
-    yanit = istemci.post("/belgelerim/yukle", data={
-        "baslik": "Burs Yönergesi",
-        "kategori": "Burs",
-        "paylas": "1",
-        "dosya": (io.BytesIO(BELGE_METNI.encode("utf-8")), "burs.txt"),
-    }, content_type="multipart/form-data", follow_redirects=True)
-    assert "doğrulamanız" in yanit.get_data(as_text=True)
-    assert paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
+
+def test_dogrulanmamis_url_ile_erezami_yapar(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket, dogrulanmis=False)
+    giris_yap(istemci)
+    yollar = [
+        ("/belgelerim", "GET"),
+        ("/sohbet/yanit", "POST"),
+        ("/kaynak/1", "GET"),
+        ("/gecmis", "GET"),
+    ]
+    for yol, yontem in yollar:
+        yanit = istemci.post(yol) if yontem == "POST" else istemci.get(yol)
+        assert yanit.status_code == 302, yol
+        assert yanit.headers["Location"].endswith("/dogrulama-bekliyor"), yol
+
+
+def test_dogrulanmis_erisir(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket, dogrulanmis=False)
+    giris_yap(istemci)
+    ogr = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
+    ogr.epostaDogrula()
+    paket.kimlik.kullanici_deposu.kaydet(ogr)
+    yanit = istemci.get("/")
+    assert yanit.status_code == 200
+
+
+def test_dogrulama_bekliyor_sayfasi(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket, dogrulanmis=False)
+    giris_yap(istemci)
+    yanit = istemci.get("/dogrulama-bekliyor")
+    assert yanit.status_code == 200
+    metin = yanit.get_data(as_text=True)
+    assert "doğrulama" in metin.lower()
+    assert "/dogrulama/yeniden" in metin
+
+
+def test_yonetici_muaf(ortam):
+    istemci, paket = ortam
+    from uniasist.entity import Kullanici
+    from uniasist.enumlar import Rol
+    from uniasist.guvenlik import sifre_hashle
+
+    yonetici = Kullanici(
+        ad_soyad="Yönetici",
+        eposta="y@universite.edu.tr",
+        sifre_hash=sifre_hashle("Yonetici1234"),
+        rol=Rol.YONETICI,
+        eposta_dogrulandi=False,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(yonetici)
+    istemci.post("/giris", data={"eposta": "y@universite.edu.tr", "sifre": "Yonetici1234"})
+    yanit = istemci.get("/belgelerim")
+    assert yanit.status_code == 200
 
 
 def test_dogrulama_rotasi_token_ile(ortam):
@@ -135,12 +183,14 @@ def test_dogrulama_rotasi_token_ile(ortam):
     ogr.dogrulamaTokenAta("test-token", datetime.now() + timedelta(hours=1))
     paket.kimlik.kullanici_deposu.kaydet(ogr)
     giris_yap(istemci)
-    assert "doğrulayın" in istemci.get("/").get_data(as_text=True)
+    yanit = istemci.get("/")
+    assert yanit.status_code == 302
+    assert yanit.headers["Location"].endswith("/dogrulama-bekliyor")
 
     yanit = istemci.get("/dogrula/test-token")
     assert yanit.status_code == 200
     assert paket.kimlik.kullanici_deposu.idIleBul(ogr.kullanici_id).dogrulanmisMi()
-    assert "doğrulayın" not in istemci.get("/").get_data(as_text=True)
+    assert istemci.get("/").status_code == 200
 
 
 def test_dogrulama_gecersiz_token_hata(ortam):

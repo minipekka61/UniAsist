@@ -30,9 +30,9 @@
     </nav>
 </header>
 <main class="icerik">
-    {% if aktif_kullanici and not aktif_kullanici.eposta_dogrulandi %}
+    {% if aktif_kullanici and not aktif_kullanici.eposta_dogrulandi and aktif_kullanici.rol.value != 'YONETICI' %}
     <div class="mesaj mesaj-uyari">
-        E-posta adresinizi doğrulayın — belgelerinizi bölümünüzle paylaşabilmek için gereklidir.
+        E-posta adresinizi doğrulayın — UniAsist'i kullanabilmek için gereklidir.
         <form method="post" action="/dogrulama/yeniden" class="satir-ici">
             <button type="submit" class="buton-kucuk">Doğrulama e-postasını tekrar gönder</button>
         </form>

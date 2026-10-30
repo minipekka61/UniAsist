@@ -57,6 +57,9 @@ def giris_yap(istemci, paket, eposta="ali@universite.edu.tr"):
         paket.kimlik.kayitOl(
             "Ali Veli", eposta, "Gizli1234", "Gizli1234", "Bilgisayar Mühendisliği"
         )
+        k = paket.kimlik.kullanici_deposu.epostaIleBul(eposta)
+        k.epostaDogrula()
+        paket.kimlik.kullanici_deposu.kaydet(k)
     istemci.post("/giris", data={"eposta": eposta, "sifre": "Gizli1234"})
 
 

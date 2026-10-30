@@ -1,0 +1,19 @@
+{% extends "temel.html" %}
+{% block baslik %}Doğrulama Bekleniyor — UniAsist{% endblock %}
+{% block icerik %}
+<section class="kart">
+    <h1>E-posta doğrulaması bekleniyor</h1>
+    <p>
+        UniAsist'i kullanabilmek için e-posta adresinizi doğrulamanız gerekiyor.
+        <strong>{{ g.aktif_kullanici.eposta }}</strong> adresine gönderdiğimiz
+        bağlantıya tıklayarak hesabınızı aktifleştirebilirsiniz.
+    </p>
+    <p>
+        Bağlantıya ulaşamadıysanız doğrulama e-postasını tekrar
+        gönderebilirsiniz.
+    </p>
+    <form method="post" action="/dogrulama/yeniden">
+        <button type="submit" class="buton">Doğrulama e-postasını tekrar gönder</button>
+    </form>
+</section>
+{% endblock %}

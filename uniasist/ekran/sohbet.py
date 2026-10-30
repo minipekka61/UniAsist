@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, Response, abort, g, redirect, render_template, request
 
-from uniasist.ekran.yardimcilar import giris_required, paket_getir
+from uniasist.ekran.yardimcilar import dogrulama_required, paket_getir
 from uniasist.enumlar import GonderenTuru
 from uniasist.hatalar import IsKuraliIhlaliException
 
@@ -10,9 +10,8 @@ sohbet_bp = Blueprint("sohbet", __name__)
 
 
 @sohbet_bp.route("/")
+@dogrulama_required()
 def sohbet_sayfasi():
-    if not g.aktif_kullanici:
-        return redirect("/giris")
     kur_ = paket_getir()
     mesajlar = []
     gosterilen_sohbet_id = None
@@ -41,9 +40,8 @@ def _ogrenci_sohbeti(kur_):
 
 
 @sohbet_bp.route("/sohbet/yanit", methods=["POST"])
+@dogrulama_required()
 def yanit():
-    if not g.aktif_kullanici:
-        return redirect("/giris")
     kur_ = paket_getir()
     soru = request.form.get("soru", "")
     sohbet = _ogrenci_sohbeti(kur_)
@@ -81,12 +79,13 @@ def _sse(olay, sohbet):
 
 
 @sohbet_bp.route("/sohbet/yeni", methods=["GET", "POST"])
+@dogrulama_required()
 def yeni_sohbet():
     return redirect("/?yeni=1")
 
 
 @sohbet_bp.route("/gecmis")
-@giris_required()
+@dogrulama_required()
 def gecmis():
     kur_ = paket_getir()
     sohbetler = kur_.sohbet.sohbetleriListele(g.aktif_kullanici.kullanici_id)
@@ -94,7 +93,7 @@ def gecmis():
 
 
 @sohbet_bp.route("/gecmis/tumunu-sil", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def tumunu_sil():
     kur_ = paket_getir()
     kur_.sohbet.tumSohbetleriSil(g.aktif_kullanici.kullanici_id)
@@ -102,7 +101,7 @@ def tumunu_sil():
 
 
 @sohbet_bp.route("/gecmis/<int:sohbet_id>")
-@giris_required()
+@dogrulama_required()
 def gecmis_ac(sohbet_id):
     kur_ = paket_getir()
     try:
@@ -118,7 +117,7 @@ def gecmis_ac(sohbet_id):
 
 
 @sohbet_bp.route("/gecmis/<int:sohbet_id>/sil", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def gecmis_sil(sohbet_id):
     kur_ = paket_getir()
     try:
@@ -129,6 +128,7 @@ def gecmis_sil(sohbet_id):
 
 
 @sohbet_bp.route("/kaynak/<int:kaynak_id>")
+@dogrulama_required()
 def kaynak_ac(kaynak_id):
     kur_ = paket_getir()
     from uniasist.entity import KaynakReferansi
@@ -145,7 +145,7 @@ def kaynak_ac(kaynak_id):
 
 
 @sohbet_bp.route("/geri-bildirim", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def geri_bildirim():
     kur_ = paket_getir()
     veri = request.get_json(silent=True) or {}

@@ -5,7 +5,7 @@ from flask import Blueprint, g, redirect, render_template, request
 from werkzeug.utils import secure_filename
 
 import config
-from uniasist.ekran.yardimcilar import giris_required, paket_getir
+from uniasist.ekran.yardimcilar import dogrulama_required, paket_getir
 from uniasist.enumlar import Gorunurluk
 from uniasist.hatalar import IsKuraliIhlaliException
 
@@ -60,7 +60,7 @@ def _sayfa(kur_, kullanici, sekme="benim", hata=None, bilgi=None):
 
 
 @belgelerim_bp.route("/belgelerim")
-@giris_required()
+@dogrulama_required()
 def belgelerim():
     kur_ = paket_getir()
     return _sayfa(
@@ -69,7 +69,7 @@ def belgelerim():
 
 
 @belgelerim_bp.route("/belgelerim/yukle", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def belge_yukle():
     kur_ = paket_getir()
     kullanici = g.aktif_kullanici
@@ -98,7 +98,7 @@ def belge_yukle():
 
 
 @belgelerim_bp.route("/belgelerim/<int:belge_id>/gorunurluk", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def gorunurluk_degistir(belge_id):
     kur_ = paket_getir()
     try:
@@ -116,7 +116,7 @@ def gorunurluk_degistir(belge_id):
 
 
 @belgelerim_bp.route("/belgelerim/<int:belge_id>/sil", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def belge_sil(belge_id):
     kur_ = paket_getir()
     try:
@@ -127,7 +127,7 @@ def belge_sil(belge_id):
 
 
 @belgelerim_bp.route("/belgelerim/<int:belge_id>/guncelle", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def belge_guncelle(belge_id):
     kur_ = paket_getir()
     kullanici = g.aktif_kullanici
@@ -153,7 +153,7 @@ def belge_guncelle(belge_id):
 
 
 @belgelerim_bp.route("/belgelerim/<int:belge_id>/bildir", methods=["POST"])
-@giris_required()
+@dogrulama_required()
 def belge_bildir(belge_id):
     kur_ = paket_getir()
     try:
