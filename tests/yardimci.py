@@ -66,7 +66,7 @@ class SahteYZ(IYapayZekaServisi):
             cumleler = [c.strip() for c in metin.replace("\n", " ").split(".") if c.strip()]
             govde = ". ".join(cumleler[:2]) + ("." if cumleler else "")
             return f"Belgeye göre: {govde}"
-        return "Belgeye göre: bilgi bulunamadı."
+        return "Bu genel bir soru gibi görünüyor; bildiklerimle yardımcı olmaya çalışabilirim."
 
     def yanitUretAkis(self, soru_metni, parcalar, baglam):
         tam = self.yanitUret(soru_metni, parcalar, baglam)

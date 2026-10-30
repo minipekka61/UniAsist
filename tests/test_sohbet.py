@@ -113,12 +113,10 @@ def test_ik11_500_karakter_siniri(servisler):
         servisler["sohbet"].soruSor(s2, "burs " + "x" * 501)
 
 
-def test_ik15_kapsam_disi_soru(servisler):
+def test_kapsam_filtresi_kalkti(servisler):
     s = ogrenci_sohbeti(servisler)
-    with pytest.raises(IsKuraliIhlaliException) as h:
-        servisler["sohbet"].soruSor(s, "Bugün hava nasıl?")
-    assert h.value.kural_no_getir() == "IK-15"
-    assert h.value.mesaj == config.KAPSAM_METNI
+    yanit = servisler["sohbet"].soruSor(s, "Futbol nasıl bir spordur?")
+    assert yanit is not None
 
 
 def test_ik15_takip_sorusu_kapsamda(servisler):

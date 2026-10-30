@@ -54,20 +54,9 @@ class YanitUretmeServisi:
             )
             return
 
-        if not sonuclar or sonuclar[0].skor < self.benzerlik_esigi:
-            yield self._sonuc_olayi(
-                YanitSonucu(SonucDurumu.ICERIK_BULUNAMADI, config.BILGI_YOK_METNI, [])
-            )
-            return
-
-        kaynaklar = self._kaynakReferanslariOlustur(sonuclar)
-        if not kaynaklar:
-            yield self._sonuc_olayi(
-                YanitSonucu(SonucDurumu.ICERIK_BULUNAMADI, config.BILGI_YOK_METNI, [])
-            )
-            return
-
-        parcalar = [s.parca for s in sonuclar]
+        secilen = [s for s in sonuclar if s.skor >= self.benzerlik_esigi]
+        kaynaklar = self._kaynakReferanslariOlustur(secilen)
+        parcalar = [s.parca for s in secilen]
         yayilan = []
         askida = ""
         elendi = False

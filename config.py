@@ -43,18 +43,11 @@ HATA_EPOSTA_SIFRE = "E-posta veya şifre hatalı."
 HATA_KILIT = "Hesabınız geçici olarak kilitlendi. Lütfen 15 dakika sonra tekrar deneyin."
 HATA_DEVRE_DISI = "Hesabınız devre dışı bırakılmıştır."
 BILGI_YOK_METNI = (
-    "Bu konuda kesin bilgiye sahip değilim. Detaylı bilgi için Öğrenci İşleri "
-    "Daire Başkanlığı'na (ogrenciisleri@universite.edu.tr, 0212 555 00 00) "
-    "başvurabilirsiniz."
+    "Bu konuda materyallerinde bilgi bulamadım. İlgili belgeyi yüklersen "
+    "bu konuda da yardımcı olabilirim."
 )
 RESMI_UYARI = "Bu yanıt bilgilendirme amaçlıdır; kesin bilgi için resmî belgeyi kontrol ediniz."
 KISISEL_VERI_UYARISI = (
     "Lütfen sorularınızda öğrenci no, T.C. kimlik no gibi kişisel veri paylaşmayın."
 )
 SERVIS_HATA_METNI = "Yapay zekâ servisine şu anda ulaşılamıyor. Lütfen soruyu tekrar gönderin."
-KAPSAM_METNI = (
-    "UniAsist yalnızca üniversitenin akademik ve idari konularındaki soruları yanıtlar "
-    "(kayıt, dersler, burs, yurt, staj, mezuniyet vb.). Lütfen sorunuzu bu kapsamda "
-    "yeniden yazın."
-)
-BIRIM_ILETISIM = "Öğrenci İşleri Daire Başkanlığı — ogrenciisleri@universite.edu.tr — 0212 555 00 00"

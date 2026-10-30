@@ -6,25 +6,6 @@ from uniasist.entity import Mesaj, Sohbet, SoruKaydi
 from uniasist.enumlar import GonderenTuru, Gorunurluk, SonucDurumu
 from uniasist.hatalar import IsKuraliIhlaliException
 
-KAPSAM_ANAHTAR_SOZCUKLERI = [
-    "ders", "sınav", "sinav", "kayıt", "kayit", "burs", "yurt", "staj",
-    "mezuniyet", "mezun", "akademik takvim", "bırakma", "birakma",
-    "çift anadal", "cift anadal", "yatay geçiş", "yatay gecis", "üniversite",
-    "universite", "fakülte", "fakulte", "bölüm", "bolum", "öğrenci", "ogrenci",
-    "diploma", "tez", "kredi", "danışman", "danisman", "harf notu",
-    "yaz okulu", "müfredat", "mufredat", "lisansüstü", "lisansustu",
-    "dilekçe", "dilekce", "öğrenim", "ogrenim", "akts", "devamsızlık",
-    "devamsizlik", "kayıt yenileme", "kayit yenileme", "transkript",
-    "öğrenci işleri", "ogrenci isleri", "seminer", "asistan", "mülakat",
-    "mulakat", "bahar", "güz", "guz", "dünya", "sözlük", "yeniden",
-]
-
-KARA_LISTE = [
-    "hava", "spor", "futbol", "basketbol", "yemek tarifi", "şarkı", "sarki",
-    "fıkra", "fikra", "film", "dizi", "döviz", "doviz", "piyango", "borsa",
-    "astroloji", "burç", "burc", "güzel söz", "siir", "şiir",
-]
-
 
 class SohbetServisi:
     def __init__(self, sohbet_deposu, soru_kaydi_deposu, yanit_uretme_servisi,
@@ -65,16 +46,6 @@ class SohbetServisi:
             return True
         return self.plan_servisi.soruHakkiVarMi(kullanici)
 
-    def _kapsamIcindeMi(self, soru_metni, baglam_var_mi):
-        metin = soru_metni.lower()
-        if any(a in metin for a in KAPSAM_ANAHTAR_SOZCUKLERI):
-            return True
-        if baglam_var_mi:
-            return True
-        if any(k in metin for k in KARA_LISTE):
-            return False
-        return True
-
     def yeniSohbetBaslat(self, kullanici):
         return Sohbet(
             baslik="Yeni sohbet",
@@ -103,9 +74,6 @@ class SohbetServisi:
             }
             return
         baglam = sohbet.sonMesajlariGetir(config.BAGLAM_MESAJ_SAYISI)
-        if not self._kapsamIcindeMi(soru_metni, bool(baglam)):
-            yield {"tur": "hata", "kural": "IK-15", "mesaj": config.KAPSAM_METNI}
-            return
 
         sonuc = None
         kapsam = self._kapsamiKur(sohbet)

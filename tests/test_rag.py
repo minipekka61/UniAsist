@@ -29,22 +29,33 @@ def servis(yz=None, sonuclar=None, esik=None):
     return YanitUretmeServisi(dizin, yz, benzerlik_esigi=esik)
 
 
-def test_ik14_esik_alti_llm_cagrilamaz():
+def test_dogrulama_belge_disi_soru_doal_yanit():
+    yz = SahteYZ()
+    s = servis(yz=yz, sonuclar=[], esik=0.60)
+    sonuc = s.yanitUret("Türkiye'nin başkenti neresidir?", [])
+    assert sonuc.durum == SonucDurumu.YANIT
+    assert sonuc.kaynaklar == []
+    assert yz.cagri_sayisi == 1
+    assert yz.gorunen_parcalar == []
+
+
+def test_esik_alti_parca_elengir_ama_yanit_gelir():
     yz = SahteYZ()
     s = servis(yz=yz, sonuclar=[AramaSonucu(parca=parca("burs"), skor=0.59)], esik=0.60)
     sonuc = s.yanitUret("Burs ne zaman?", [])
+    assert sonuc.durum == SonucDurumu.YANIT
+    assert sonuc.kaynaklar == []
+    assert yz.cagri_sayisi == 1
+    assert yz.gorunen_parcalar == []
+
+
+def test_bilgi_yok_bekcisi_kalir():
+    yz = SahteYZ(mod="bilgi_yok")
+    s = servis(yz=yz, sonuclar=[], esik=0.60)
+    sonuc = s.yanitUret("Belgemdeki özel not nedir?", [])
     assert sonuc.durum == SonucDurumu.ICERIK_BULUNAMADI
     assert sonuc.metin == config.BILGI_YOK_METNI
     assert sonuc.kaynaklar == []
-    assert yz.cagri_sayisi == 0
-
-
-def test_ik14_sonuç_yok_llm_cagrilamaz():
-    yz = SahteYZ()
-    s = servis(yz=yz, sonuclar=[], esik=0.60)
-    sonuc = s.yanitUret("Burs ne zaman?", [])
-    assert sonuc.durum == SonucDurumu.ICERIK_BULUNAMADI
-    assert yz.cagri_sayisi == 0
 
 
 def test_ik13_yanit_kaynaklarla_donar():
@@ -130,10 +141,11 @@ def test_esik_servis_turune_gore():
     assert s2.benzerlik_esigi == config.BENZERLIK_ESIGI
 
 
-def test_ik13_kaynaksiz_yanit_gosterilmez():
+def test_ik13_kaynaksiz_yanit_doal_modda_gorunur():
     yz = SahteYZ()
     p = parca("burs")
     p.kaynak_adi = ""
     s = servis(yz=yz, sonuclar=[AramaSonucu(parca=p, skor=0.9)], esik=0.60)
     sonuc = s.yanitUret("Burs ne zaman?", [])
-    assert sonuc.durum == SonucDurumu.ICERIK_BULUNAMADI
+    assert sonuc.durum == SonucDurumu.YANIT
+    assert sonuc.kaynaklar == []

@@ -7,11 +7,13 @@ from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.yapayzeka.i_yapay_zeka_servisi import IYapayZekaServisi
 
 SISTEM_TALIMATI = (
-    "Sen UniAsist adlı üniversite öğrenci destek asistanısın. Yalnızca "
-    "'BELGE İÇERİĞİ' bölümünde verilen metinlere dayanarak, Türkçe ve anlaşılır "
-    "biçimde yanıt ver. Belge içeriğinde yanıt bulunmuyorsa tahmin yürütmeye "
-    "çalışma ve yalnızca 'BILGI_YOK' yaz. Yanıtında öğrenci numarası, T.C. kimlik "
-    "numarası gibi kişisel veri isteme."
+    "UniAsist bir öğrenci çalışma asistanıdır. VERİLEN BELGE PARÇALARI "
+    "soruyla ilgiliyse yanıtı onlara dayanarak ver. Belge parçaları "
+    "verilmemişse veya soruyla ilgili değilse genel bilgine dayanarak doğal "
+    "biçimde yardımcı ol. Öğrencinin kendi materyallerine dair spesifik bir "
+    "soruya verilen parçalar yanıt içermiyorsa tahmin yürütme ve yalnızca "
+    "'BILGI_YOK' yaz. Yanıtında öğrenci numarası, T.C. kimlik numarası gibi "
+    "kişisel veri isteme. Türkçe yanıt ver."
 )
 
 
@@ -55,10 +57,11 @@ class HazirLLMServisi(IYapayZekaServisi):
                 kim = "Kullanıcı" if mesaj.gonderen and mesaj.gonderen.name == "KULLANICI" else "Asistan"
                 satirlar.append(f"{kim}: {mesaj.metin}")
             satirlar.append("")
-        satirlar.append("BELGE İÇERİĞİ:")
-        for i, parca in enumerate(parcalar, start=1):
-            satirlar.append(f"[{i}] ({parca.kaynak_adi} — {parca.bolumBilgisiGetir()}) {parca.metin}")
-        satirlar.append("")
+        if parcalar:
+            satirlar.append("BELGE İÇERİĞİ:")
+            for i, parca in enumerate(parcalar, start=1):
+                satirlar.append(f"[{i}] ({parca.kaynak_adi} — {parca.bolumBilgisiGetir()}) {parca.metin}")
+            satirlar.append("")
         satirlar.append(f"SORU: {soru_metni}")
         return [
             {"role": "system", "content": SISTEM_TALIMATI},
