@@ -1,0 +1,51 @@
+{% extends "temel.html" %}
+{% block baslik %}{{ ders.ad if ders else 'Ders bulunamadı' }} — UniAsist{% endblock %}
+{% block icerik %}
+{% if not ders %}
+<section class="kart">
+    <h1>Ders bulunamadı</h1>
+    <p><a href="/dersler">Dersler listesine dön</a></p>
+</section>
+{% else %}
+<section class="kart">
+    <h1>{{ ders.ad }}</h1>
+    {% if takipte %}
+        <p><span class="rozet">Takiptesiniz</span></p>
+        <form method="post" action="/dersler/{{ ders.ders_id }}/birak">
+            <button type="submit" class="buton-kucuk">Takibi bırak</button>
+        </form>
+        {% if belgeler %}
+        <table class="tablo">
+            <thead>
+                <tr><th>Belge</th><th>Kategori</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for belge in belgeler %}
+                <tr>
+                    <td><a href="/kaynak/{{ belge.kaynak_id }}">{{ belge.baslik }}</a></td>
+                    <td>{{ belge.kategori }}</td>
+                    <td>
+                        <form method="post" action="/belgelerim/{{ belge.kaynak_id }}/bildir">
+                            <input type="hidden" name="neden" value="Uygunsuz içerik">
+                            <button type="submit" class="buton-kucuk">Bildir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Bu derste henüz paylaşılan belge yok.</p>
+        {% endif %}
+    {% else %}
+        <p class="mesaj mesaj-uyari">
+            Bu dersin paylaşılan belgelerini görmek için dersi takip etmelisiniz.
+        </p>
+        <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
+            <button type="submit" class="buton">Takip et</button>
+        </form>
+    {% endif %}
+    <p><a href="/dersler">← Dersler</a></p>
+</section>
+{% endif %}
+{% endblock %}

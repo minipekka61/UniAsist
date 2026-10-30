@@ -1,0 +1,43 @@
+{% extends "temel.html" %}
+{% block baslik %}Dersler — UniAsist{% endblock %}
+{% block icerik %}
+<section class="kart">
+    <h1>Dersler</h1>
+    <form method="get" action="/dersler" class="satir-ici">
+        <input type="search" name="q" value="{{ q }}" placeholder="Ders ara...">
+        <button type="submit" class="buton">Ara</button>
+    </form>
+    <form method="post" action="/dersler" class="satir-ici">
+        <input type="text" name="ad" placeholder="Yeni ders adı" required>
+        <button type="submit" class="buton">Ders ekle</button>
+    </form>
+    {% if satirlar %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Ders</th><th>Takip</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for ders, takipte in satirlar %}
+            <tr>
+                <td><a href="/dersler/{{ ders.ders_id }}">{{ ders.ad }}</a></td>
+                <td>{% if takipte %}<span class="rozet">Takipte</span>{% else %}—{% endif %}</td>
+                <td>
+                    {% if takipte %}
+                    <form method="post" action="/dersler/{{ ders.ders_id }}/birak">
+                        <button type="submit" class="buton-kucuk">Bırak</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
+                        <button type="submit" class="buton-kucuk">Takip et</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Henüz ders yok. Yukarıdan ekleyebilirsiniz.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -14,6 +14,7 @@
         {% if aktif_kullanici %}
             <span class="kullanici">{{ aktif_kullanici.ad_soyad }} · {{ aktif_kullanici.rol.value }}</span>
             <a href="/belgelerim">Belgelerim</a>
+            <a href="/dersler">Dersler</a>
             {% if aktif_kullanici.rol.value == 'YONETICI' %}
                 <a href="/yonetici/kullanicilar">Kullanıcılar</a>
                 <a href="/yonetici/rapor">Rapor</a>
