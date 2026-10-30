@@ -79,7 +79,7 @@ def test_uc03_cikis_sonrasi_korumali_sayfa(istemci, paket):
     istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
     yanit = istemci.get("/cikis")
     assert yanit.status_code == 302
-    yanit = istemci.get("/sifre-degistir")
+    yanit = istemci.get("/profil")
     assert yanit.status_code == 302
     assert "/giris" in yanit.headers["Location"]
 
@@ -87,12 +87,12 @@ def test_uc03_cikis_sonrasi_korumali_sayfa(istemci, paket):
 def test_uc04_sifre_degistirme(istemci, paket):
     k = paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
-    yanit = istemci.post("/sifre-degistir", data={
+    yanit = istemci.post("/profil/sifre", data={
         "mevcut_sifre": "yanlis", "yeni_sifre": "Yeni1234", "yeni_sifre_tekrar": "Yeni1234",
     })
     assert "hatalı" in yanit.get_data(as_text=True)
 
-    yanit = istemci.post("/sifre-degistir", data={
+    yanit = istemci.post("/profil/sifre", data={
         "mevcut_sifre": "Gizli1234", "yeni_sifre": "Yeni12345", "yeni_sifre_tekrar": "Yeni12345",
     }, follow_redirects=True)
     assert yanit.status_code == 200
@@ -101,7 +101,7 @@ def test_uc04_sifre_degistirme(istemci, paket):
 
 def test_ik08_gecersiz_cerez_girise_yonlendirir(istemci):
     istemci.set_cookie("uniasist_oturum", "uydurma-token")
-    yanit = istemci.get("/sifre-degistir")
+    yanit = istemci.get("/profil")
     assert yanit.status_code == 302
     assert "/giris" in yanit.headers["Location"]
 

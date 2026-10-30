@@ -4,7 +4,6 @@ from uniasist.ekran.yardimcilar import giris_required, paket_getir
 from uniasist.enumlar import Rol
 from uniasist.hatalar import IsKuraliIhlaliException
 from uniasist.veri.bolumler import BOLUMLER
-
 giris_bp = Blueprint("giris", __name__)
 
 
@@ -93,23 +92,3 @@ def cikis():
     yanit = make_response(redirect("/giris"))
     yanit.delete_cookie("uniasist_oturum")
     return yanit
-
-
-@giris_bp.route("/sifre-degistir", methods=["GET", "POST"])
-@giris_required()
-def sifre_degistir():
-    hata = None
-    bilgi = None
-    if request.method == "POST":
-        try:
-            kur_ = paket_getir()
-            kur_.kimlik.sifreDegistir(
-                g.aktif_kullanici.kullanici_id,
-                request.form.get("mevcut_sifre", ""),
-                request.form.get("yeni_sifre", ""),
-                request.form.get("yeni_sifre_tekrar", ""),
-            )
-            bilgi = "Şifreniz güncellendi."
-        except IsKuraliIhlaliException as e:
-            hata = e.mesaj
-    return render_template("sifre.html", hata=hata, bilgi=bilgi)

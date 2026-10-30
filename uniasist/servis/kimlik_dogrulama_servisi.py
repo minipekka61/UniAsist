@@ -175,5 +175,17 @@ class KimlikDogrulamaServisi:
         kullanici.sifreGuncelle(sifre_hashle(yeniSifre))
         self.kullanici_deposu.kaydet(kullanici)
 
+    def profilGuncelle(self, kullanici_id, ad_soyad, universite="", bolum=""):
+        kullanici = self.kullanici_deposu.idIleBul(kullanici_id)
+        if kullanici is None:
+            raise IsKuraliIhlaliException("IK-01", "Kullanıcı bulunamadı.")
+        if not ad_soyad or not ad_soyad.strip():
+            raise IsKuraliIhlaliException("IK-01", "Ad soyad zorunludur.")
+        kullanici.ad_soyad = ad_soyad.strip()
+        kullanici.universite = (universite or "").strip()
+        kullanici.bolum = (bolum or "").strip()
+        self.kullanici_deposu.kaydet(kullanici)
+        return kullanici
+
     def kullaniciOturumlariniSonlandir(self, kullanici_id):
         oturumlari_sonlandir(self.kullanici_deposu.db, kullanici_id)
