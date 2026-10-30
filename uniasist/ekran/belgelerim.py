@@ -161,8 +161,8 @@ def belge_bildir(belge_id):
             belge_id, g.aktif_kullanici, request.form.get("neden", "")
         )
     except IsKuraliIhlaliException as e:
-        return _sayfa(kur_, g.aktif_kullanici, sekme="bolum", hata=e.mesaj)
+        return _sayfa(kur_, g.aktif_kullanici, sekme="ders", hata=e.mesaj)
     return _sayfa(
-        kur_, g.aktif_kullanici, sekme="bolum",
+        kur_, g.aktif_kullanici, sekme="ders",
         bilgi="Bildiriminiz alındı; yönetici ekibi inceleyecek.",
     )

@@ -21,15 +21,13 @@ STAJ_METNI = (
 ) * 3
 
 
-def ogrenci_olustur(db, eposta, bolum="Bilgisayar Mühendisliği", universite_id=1):
+def ogrenci_olustur(db, eposta):
     depo = KullaniciDeposu(db)
     k = Kullanici(
         ad_soyad="Öğrenci",
         eposta=eposta,
         sifre_hash="x",
         rol=Rol.OGRENCI,
-        universite_id=universite_id,
-        bolum=bolum,
         eposta_dogrulandi=True,
     )
     depo.kaydet(k)

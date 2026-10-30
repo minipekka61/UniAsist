@@ -44,7 +44,7 @@ def test_ik03_sifre_kurallari(servisler):
     kimlik, _, _ = servisler
     for sifre, tekrar in [("Kisa1", "Kisa1"), ("12345678", "12345678"), ("sifresifre", "sifresifre"), ("Gizli1234", "Baska1234")]:
         with pytest.raises(IsKuraliIhlaliException) as h:
-            kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", sifre, tekrar, BOLUM)
+            kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", sifre, tekrar)
         assert h.value.kural_no_getir() == "IK-03"
 
 

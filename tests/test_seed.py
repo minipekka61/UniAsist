@@ -31,7 +31,7 @@ def test_seed_hesaplar_ve_belgeler(paket):
     assert elektrik.sifreDogrula("Ogrenci1234")
     assert bilgisayar.bolum == "Bilgisayar Mühendisliği"
     assert elektrik.bolum == "Elektrik-Elektronik Mühendisliği"
-    assert bilgisayar.universite_id == elektrik.universite_id
+    assert bilgisayar.universite == elektrik.universite
     assert bilgisayar.dogrulanmisMi() and elektrik.dogrulanmisMi()
 
     bilgisayar_belgeleri = paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)
@@ -51,7 +51,6 @@ def test_seed_hesaplar_ve_belgeler(paket):
     ).fetchone()["n"]
     assert parca_sayisi >= 16
 
-    universite_id = bilgisayar.universite_id
     ders_depo = paket.ders_deposu
     burs_dersi = ders_depo.adIleBul("Burs")
     staj_dersi = ders_depo.adIleBul("Staj")

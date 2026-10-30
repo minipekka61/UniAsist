@@ -53,7 +53,6 @@ def servisler(tmp_path):
         eposta="ali@universite.edu.tr",
         sifre_hash=sifre_hashle("Gizli1234"),
         rol=Rol.OGRENCI,
-        universite_id=1,
         bolum="Bilgisayar Mühendisliği",
         eposta_dogrulandi=True,
     )
@@ -317,14 +316,12 @@ STAJ_METNI = (
 ) * 3
 
 
-def _baska_ogrenci(servisler, eposta, bolum="Bilgisayar Mühendisliği", universite_id=1):
+def _baska_ogrenci(servisler, eposta):
     k = Kullanici(
         ad_soyad="Başka Öğrenci",
         eposta=eposta,
         sifre_hash="x",
         rol=Rol.OGRENCI,
-        universite_id=universite_id,
-        bolum=bolum,
         eposta_dogrulandi=True,
     )
     servisler["kullanici_depo"].kaydet(k)

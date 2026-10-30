@@ -320,13 +320,6 @@ class SoruKaydi:
         self.kullanici_id = kullanici_id
 
 
-class Universite:
-    def __init__(self, ad, eposta_alan_adi, universite_id=None):
-        self.universite_id = universite_id
-        self.ad = ad
-        self.eposta_alan_adi = eposta_alan_adi
-
-
 class Ders:
     def __init__(self, ders_id=None, ad=""):
         self.ders_id = ders_id
