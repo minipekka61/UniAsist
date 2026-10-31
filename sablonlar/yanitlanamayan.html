@@ -9,25 +9,29 @@
         <a href="/yonetici/yanitlanamayan-sorular?durum=COZULDU"{% if durum == 'COZULDU' %} class="etkin"{% endif %}>Çözüldü</a>
     </p>
     {% if kayitlar %}
-    <table>
-        <tr><th>Soru</th><th>Tekrar Sayısı</th><th>İlk Tarihi</th><th></th></tr>
-        {% for k in kayitlar %}
-        <tr>
-            <td>{{ k.soru_metni }}</td>
-            <td>{{ k.tekrar_sayisi }}</td>
-            <td>{{ k.ilk_tarih | tarih }}</td>
-            <td>
-                {% if k.durum.value == 'ACIK' %}
-                <form method="post" action="/yonetici/yanitlanamayan-sorular/{{ k.kayit_id }}/coz" class="satir-ici">
-                    <button type="submit" class="buton-kucuk">Çözüldü işaretle</button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Soru</th><th>Tekrar Sayısı</th><th>İlk Tarihi</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for k in kayitlar %}
+            <tr>
+                <td>{{ k.soru_metni }}</td>
+                <td>{{ k.tekrar_sayisi }}</td>
+                <td>{{ k.ilk_tarih | tarih }}</td>
+                <td>
+                    {% if k.durum.value == 'ACIK' %}
+                    <form method="post" action="/yonetici/yanitlanamayan-sorular/{{ k.kayit_id }}/coz" class="satir-ici">
+                        <button type="submit" class="buton-kucuk buton-birincil">Çözüldü işaretle</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Bu durumda kayıt bulunmuyor.</p>
+    <p class="ipucu">Bu durumda kayıt bulunmuyor.</p>
     {% endif %}
 </div>
 {% endblock %}

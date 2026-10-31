@@ -4,30 +4,34 @@
 <div class="kart kart-genis">
     <h1>Bildirilen Belgeler</h1>
     {% if kayitlar %}
-    <table>
-        <tr><th>Belge</th><th>Sahibi</th><th>Bildiren</th><th>Neden</th><th>Tarih</th><th>Karar</th></tr>
-        {% for kayit in kayitlar %}
-        <tr>
-            <td>{{ kayit.belge.baslik }}</td>
-            <td>{{ kayit.sahip_adi }}</td>
-            <td>{{ kayit.bildiren_adi }}</td>
-            <td>{{ kayit.bildirim.neden }}</td>
-            <td>{{ kayit.bildirim.tarih | tarih }}</td>
-            <td>
-                <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici"
-                      onsubmit="return confirm('Belge kalıcı olarak silinecek. Devam edilsin mi?');">
-                    <input type="hidden" name="sil" value="1">
-                    <button type="submit" class="buton-kucuk buton-tehlike">Belgeyi Sil</button>
-                </form>
-                <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici">
-                    <button type="submit" class="buton-kucuk">Yok Say</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Belge</th><th>Sahibi</th><th>Bildiren</th><th>Neden</th><th>Tarih</th><th>Karar</th></tr>
+        </thead>
+        <tbody>
+            {% for kayit in kayitlar %}
+            <tr>
+                <td>{{ kayit.belge.baslik }}</td>
+                <td>{{ kayit.sahip_adi }}</td>
+                <td>{{ kayit.bildiren_adi }}</td>
+                <td>{{ kayit.bildirim.neden }}</td>
+                <td>{{ kayit.bildirim.tarih | tarih }}</td>
+                <td>
+                    <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici"
+                          onsubmit="return confirm('Belge kalıcı olarak silinecek. Devam edilsin mi?');">
+                        <input type="hidden" name="sil" value="1">
+                        <button type="submit" class="buton-kucuk buton-tehlike">Belgeyi Sil</button>
+                    </form>
+                    <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici">
+                        <button type="submit" class="buton-kucuk">Yok Say</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Açık bildirim bulunmuyor.</p>
+    <p class="ipucu">Açık bildirim bulunmuyor.</p>
     {% endif %}
 </div>
 {% endblock %}

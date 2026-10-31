@@ -10,7 +10,8 @@ kullaniciyonetimi_bp = Blueprint("kullaniciyonetimi", __name__)
 def _kullanicilar_sayfasi(kur_, arama="", hata=None, bilgi=None):
     satirlar = []
     for kullanici in kur_.kullanici_yonetimi.kullanicilariListele(arama):
-        satirlar.append((kullanici, kullanici.universite or "—", kullanici.bolum or "—"))
+        plan_metni = "Pro" if kullanici.proMu() else "Ücretsiz"
+        satirlar.append((kullanici, kullanici.universite or "—", plan_metni))
     return render_template(
         "kullanicilar.html",
         satirlar=satirlar,

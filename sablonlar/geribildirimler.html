@@ -4,20 +4,24 @@
 <div class="kart kart-genis">
     <h1>Yararsız Yanıt Bildirimleri</h1>
     {% if ozetler %}
-    <table>
-        <tr><th>Soru</th><th>Yanıt</th><th>Kaynaklar</th><th>Not</th><th>Tarih</th></tr>
-        {% for o in ozetler %}
-        <tr>
-            <td>{{ o.soru }}</td>
-            <td>{{ o.yanit }}</td>
-            <td>{% for k in o.kaynaklar %}{{ k }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
-            <td>{{ o.aciklama }}</td>
-            <td>{{ o.tarih | tarih }}</td>
-        </tr>
-        {% endfor %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Soru</th><th>Yanıt</th><th>Kaynaklar</th><th>Not</th><th>Tarih</th></tr>
+        </thead>
+        <tbody>
+            {% for o in ozetler %}
+            <tr>
+                <td>{{ o.soru }}</td>
+                <td>{{ o.yanit }}</td>
+                <td>{% for k in o.kaynaklar %}{{ k }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                <td>{{ o.aciklama }}</td>
+                <td>{{ o.tarih | tarih }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Yararsız olarak işaretlenmiş yanıt bulunmuyor.</p>
+    <p class="ipucu">Yararsız olarak işaretlenmiş yanıt bulunmuyor.</p>
     {% endif %}
 </div>
 {% endblock %}

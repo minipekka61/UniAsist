@@ -222,6 +222,52 @@ def test_kullanicilar_universite_bolum_sutunu(ortam):
     assert "Doğrulanmış" in metin
 
 
+def test_kullanicilar_plan_sutunu(ortam):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+    kullanici_ekle(paket, "Ali Veli", "ali@universite.edu.tr", Rol.OGRENCI, pro=True)
+    kullanici_ekle(paket, "Ayşe Can", "ayse@universite.edu.tr", Rol.OGRENCI)
+
+    yanit = istemci.get("/yonetici/kullanicilar")
+    metin = yanit.get_data(as_text=True)
+    assert "<th>Plan</th>" in metin
+    assert "<td>Pro</td>" in metin
+    assert "<td>Ücretsiz</td>" in metin
+
+
+def test_menu_ogrenci_yonetici_ogeleri_gormez(ortam):
+    istemci, paket = ortam
+    kullanici_ekle(paket, "Ali Veli", "ali@universite.edu.tr", Rol.OGRENCI, eposta_dogrulandi=True)
+    istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
+
+    yanit = istemci.get("/sohbet")
+    metin = yanit.get_data(as_text=True)
+    for ogrenci_link in ('href="/sohbet"', 'href="/belgelerim"', 'href="/dersler"',
+                         'href="/plan"', 'href="/profil"'):
+        assert ogrenci_link in metin
+    for yonetici_link in ('href="/yonetici/kullanicilar"', 'href="/yonetici/rapor"',
+                          'href="/yonetici/bildirimler"',
+                          'href="/yonetici/yanitlanamayan-sorular"',
+                          'href="/yonetici/geri-bildirimler"'):
+        assert yonetici_link not in metin
+
+
+def test_menu_yonetici_yonetici_ogeleri(ortam):
+    istemci, paket = ortam
+    yonetici_giris_yap(istemci, paket)
+
+    yanit = istemci.get("/sohbet")
+    metin = yanit.get_data(as_text=True)
+    for ogrenci_link in ('href="/sohbet"', 'href="/belgelerim"', 'href="/dersler"',
+                         'href="/plan"', 'href="/profil"'):
+        assert ogrenci_link in metin
+    for yonetici_link in ('href="/yonetici/kullanicilar"', 'href="/yonetici/rapor"',
+                          'href="/yonetici/bildirimler"',
+                          'href="/yonetici/yanitlanamayan-sorular"',
+                          'href="/yonetici/geri-bildirimler"'):
+        assert yonetici_link in metin
+
+
 STAJ_METNI_Y = (
     "Staj yonergesi ogrencilerin yaz stajlarini duzenler ve zorunlu kilar. "
     "Staj basvurusu icin en az 60 gun kesintisiz calisma sarti vardir. "

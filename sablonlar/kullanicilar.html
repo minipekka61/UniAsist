@@ -4,42 +4,47 @@
 <div class="kart kart-genis">
     <h1>Kullanıcı Yönetimi</h1>
     <form method="get" action="/yonetici/kullanicilar" class="satir-ici arama-formu">
-        <input type="text" name="q" value="{{ arama }}" placeholder="Ad veya e-posta ara">
+        <input type="text" name="q" value="{{ arama }}" placeholder="Ad veya e-posta ara" class="giris">
         <button type="submit" class="buton-kucuk">Ara</button>
     </form>
     {% if satirlar %}
-    <table>
-        <tr><th>Ad Soyad</th><th>E-posta</th><th>Üniversite</th><th>Bölüm</th><th>Rol</th><th>E-posta Doğrulaması</th><th>Durum</th><th>Kayıt Tarihi</th><th>İşlemler</th></tr>
-        {% for k, universite_adi, bolum_adi in satirlar %}
-        <tr>
-            <td>{{ k.ad_soyad }}</td>
-            <td>{{ k.eposta }}</td>
-            <td>{{ universite_adi }}</td>
-            <td>{{ bolum_adi }}</td>
-            <td>{{ k.rol.value }}</td>
-            <td>{% if k.eposta_dogrulandi %}Doğrulanmış{% else %}Bekliyor{% endif %}</td>
-            <td>{{ k.durum.value }}</td>
-            <td>{{ k.kayit_tarihi | tarih }}</td>
-            <td>
-                {% if k.kullanici_id != aktif_kullanici.kullanici_id and k.rol.value != 'YONETICI' %}
-                <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/rol" class="satir-ici"
-                      onsubmit="return confirm('Bu kullanıcının rolü değiştirilecek. Devam edilsin mi?');">
-                    <select name="yeni_rol" aria-label="Yeni rol">
-                        <option value="OGRENCI" {% if k.rol.value == 'OGRENCI' %}selected{% endif %}>OGRENCI</option>
-                    </select>
-                    <button type="submit" class="buton-kucuk">Rolü Değiştir</button>
-                </form>
-                <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/devre-disi" class="satir-ici"
-                      onsubmit="return confirm('Bu hesap devre dışı bırakılacak ve oturumları kapatılacak. Devam edilsin mi?');">
-                    <button type="submit" class="buton-kucuk buton-tehlike">Devre Dışı Bırak</button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Ad Soyad</th><th>E-posta</th><th>Üniversite</th><th>Bölüm</th><th>Plan</th><th>Rol</th><th>E-posta Doğrulaması</th><th>Durum</th><th>Kayıt Tarihi</th><th>İşlemler</th></tr>
+        </thead>
+        <tbody>
+            {% for k, universite_metni, plan_metni in satirlar %}
+            <tr>
+                <td>{{ k.ad_soyad }}</td>
+                <td>{{ k.eposta }}</td>
+                <td>{{ universite_metni }}</td>
+                <td>{{ k.bolum or "—" }}</td>
+                <td>{{ plan_metni }}</td>
+                <td>{{ k.rol.value }}</td>
+                <td>{% if k.eposta_dogrulandi %}Doğrulanmış{% else %}Bekliyor{% endif %}</td>
+                <td>{{ k.durum.value }}</td>
+                <td>{{ k.kayit_tarihi | tarih }}</td>
+                <td>
+                    {% if k.kullanici_id != aktif_kullanici.kullanici_id and k.rol.value != 'YONETICI' %}
+                    <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/rol" class="satir-ici"
+                          onsubmit="return confirm('Bu kullanıcının rolü değiştirilecek. Devam edilsin mi?');">
+                        <select name="yeni_rol" aria-label="Yeni rol">
+                            <option value="OGRENCI" {% if k.rol.value == 'OGRENCI' %}selected{% endif %}>OGRENCI</option>
+                        </select>
+                        <button type="submit" class="buton-kucuk">Rolü Değiştir</button>
+                    </form>
+                    <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/devre-disi" class="satir-ici"
+                          onsubmit="return confirm('Bu hesap devre dışı bırakılacak ve oturumları kapatılacak. Devam edilsin mi?');">
+                        <button type="submit" class="buton-kucuk buton-tehlike">Devre Dışı Bırak</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Kullanıcı bulunamadı.</p>
+    <p class="ipucu">Kullanıcı bulunamadı.</p>
     {% endif %}
     <p><a href="/yonetici/rapor">Kullanım Raporu</a></p>
 </div>
