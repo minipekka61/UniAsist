@@ -1,22 +1,43 @@
 # UniAsist
 
-Üniversite öğrencileri için ders çalışma asistanı SaaS'ı: öğrenciler kendi
-belgeleriyle (PDF/TXT) AI üzerinden ders çalışır, istediklerinde belgelerini
-aynı üniversite ve aynı bölümden arkadaşlarıyla paylaşır. Bölümün ortak belge
-havuzu büyüdükçe yanıtlar zenginleşir (RAG). Sohbet geçmişi, geri bildirim,
-bildiri/moderasyon, kullanıcı yönetimi ve kullanım raporlama içerir.
+Üniversite öğrencileri için AI çalışma asistanı SaaS'ı. UniAsist herhangi bir
+üniversiteye bağlı değildir: öğrenci akademik e-postasıyla (örn. `.edu.tr`)
+kayıt olur, kendi derslerini takip eder, kendi belgeleriyle (PDF/TXT) AI
+üzerinden çalışır. İstediğinde belgelerini takip ettiği derse paylaşır; dersin
+diğer takipçileri bu belgeleri sohbette kaynak olarak görür (RAG). Doğal sohbet
+akışı, sohbet geçmişi, geri bildirim, bildiri/moderasyon, kullanıcı yönetimi,
+plan (Ücretsiz/Pro) yönetimi ve kullanım raporlama içerir.
 
-## Kayıt akışı
+## Kayıt ve doğrulama akışı
 
-1. Üniversite e-postanızla kayıt olun (üniversite, e-posta alan adından otomatik
-   belirlenir; desteklenen alan adları `uniasist/veri/universiteler.py` içindedir).
-2. Bölümünüzü listeden seçin.
-3. E-postanıza gönderilen doğrulama bağlantısıyla hesabınızı aktifleştirin
-   (geliştirme modunda bağlantı konsol kaydına yazılır — `uniasist.eposta` log'u).
-   Doğrulama yapılmadan belge **paylaşılamaz**; kişisel kullanım açıktır.
+1. Kayıt yalnızca akademik e-posta adresleriyle yapılır — alan adı
+   `AKADEMIK_ALAN_ADLARI` son eklerinden biriyle bitmelidir (`.edu.tr`, `.edu`,
+   `.ac.uk`, `.edu.au`; `UNIASIST_AKADEMIK_ALANLAR` ortam değişkeniyle
+   genişletilebilir). Gmail gibi adresler reddedilir.
+2. Üniversite ve bölüm bilgisi serbest metindir (zorunlu değildir).
+3. E-postanıza gönderilen doğrulama bağlantısıyla hesabınızı
+   doğrulayın (geliştirme modunda bağlantı konsol kaydına yazılır —
+   `uniasist.eposta` log'u). Doğrulama yapılmadan sohbet, belge ve kaynak
+   ekranlarına erişilemez; yönetici muafdir.
 
-Belgeler varsayılan olarak özeldir; yalnız siz (ve AI asistanınız) erişir.
-"Paylaş" ile belgeniz aynı üniversite + aynı bölümden öğrencilere açılır.
+## Dersler ve paylaşım
+
+- Dersler globaldir: arar, bulur ya da yeni oluşturur ve takip edersiniz.
+- Belgeler varsayılan olarak özeldir; yalnız siz (ve AI asistanınız) erişir.
+- Belge paylaşımı Pro özelliğidir: paylaşılan belge, o dersi takip eden tüm
+  öğrencilerin sohbet kapsamına girer ve `/kaynak/<id>` ile görünür olur.
+- Uygunsuz içerik ders sayfasından bildirilebilir; yönetici moderasyonla
+  değerlendirir.
+
+## Planlar
+
+| Plan | Soru | Belge | Paylaşım |
+| --- | --- | --- | --- |
+| Ücretsiz | Günde 10 | En fazla 3 | Yok |
+| Pro | Sınırsız | Sınırsız | Var |
+
+Pro şu an beta aşamasında — ödeme yakında; geçiş şimdilik ücretsizdir
+(`/plan` sayfasından "Pro'ya Geç").
 
 ## Kurulum
 
@@ -33,25 +54,30 @@ Gereksinimler: Python 3.13, Flask, pypdf, requests, pytest.
 .venv\Scripts\python app.py
 ```
 
-Uygulama http://127.0.0.1:5000 adresinde açılır. Boş veritabanında ilk açılışta
-örnek veri otomatik yüklenir: 26 üniversite, 30 bölüm, 3 hesap ve sahipli
-örnek belgeler. Kayıtsız kullanıcılar giriş sayfasına yönlendirilir.
+Uygulama http://127.0.0.1:5000 adresinde açılır. Kayıtsız kullanıcılar tanıtım
+sayfasını görür. Boş veritabanında ilk açılışta örnek veri otomatik yüklenir.
 
-**Önemli:** Veritabanı şeması SaaS sürümüyle değişti. Önceki (tek üniversiteli)
-sürümün `data/uniasist.db` dosyası varsa silin — uygulama ilk açılışta yeni
-şemayla ve örnek veriyle taze veritabanı kurar.
+**Önemli:** Veritabanı şeması v2 SaaS sürümüyle değişti. Önceki sürümün
+`data/uniasist.db` dosyası varsa silin — uygulama ilk açılışta yeni şemayla ve
+örnek veriyle taze veritabanı kurar (`data/` klasörü git-ignore'ludur).
 
 ## Demo hesapları
 
-| Rol | E-posta | Şifre | Bölüm |
+| Rol | E-posta | Şifre | Plan |
 | --- | --- | --- | --- |
 | Yönetici | admin@universite.edu.tr | Yonetici1234 | — |
-| Öğrenci | bilgisayar@universite.edu.tr | Ogrenci1234 | Bilgisayar Mühendisliği |
-| Öğrenci | elektrik@universite.edu.tr | Ogrenci1234 | Elektrik-Elektronik Mühendisliği |
+| Öğrenci | ali@universite.edu.tr | Ogrenci1234 | Pro |
+| Öğrenci | ayse@universite.edu.tr | Ogrenci1234 | Ücretsiz |
 
-Bilgisayar öğrencisi 14 örnek belgenin sahibidir (2'si bölüme paylaşılmış);
-elektrik öğrencisinin 2 belgesi vardır (1'i paylaşılmış). Farklı bölümler
-birbirinin paylaşılan belgelerini göremez — kapsam izolasyonu testlidir.
+Ali 14 örnek belgenin sahibidir (Burs Yönergesi "Matematik I"e, Staj Yönergesi
+"Fizik I"e paylaşılmıştır). Ayşe'nin 2 özel belgesi vardır ve her iki dersi de
+takip eder — Ali'nin paylaşılan belgelerini sohbet kapsamında görür.
+
+## Tema
+
+Arayüz açık/koyu temalıdır. Üst çubuktaki tema düğmesi tercihi
+`uniasist_tema` çerezine yazar; çerez yoksa tarayıcının
+`prefers-color-scheme` ayarına uyulur.
 
 ## Yapay zekâ sağlayıcısı
 
@@ -66,6 +92,7 @@ set UNIASIST_MODEL=gpt-4o-mini          (isteğe bağlı)
 set UNIASIST_EMBEDDING_MODEL=text-embedding-3-small (isteğe bağlı)
 set UNIASIST_DB=data/uniasist.db        (isteğe bağlı)
 set UNIASIST_SECRET_KEY=...             (üretime alırken zorunlu önerilir)
+set UNIASIST_AKADEMIK_ALANLAR=.edu.tr,.edu,.ac.uk (isteğe bağlı; virgülle ayrılmış son ekler)
 ```
 
 Sağlayıcı değiştiğinde indeksli parçalar açılışta otomatik olarak yeniden gömülür.
@@ -100,20 +127,20 @@ adresi verecek şekilde ayarlayın.
 .venv\Scripts\python degerlendir.py
 ```
 
-Betik, 50 örnek soruyu doğrulanmış demo öğrencisinin kapsamıyla (kendi
-belgeleri + bölümün paylaşılanları) gerçek servis üzerinden işler ve doğru
-yanıt oranını raporlar (hedef %80). API anahtarı tanımlıysa hazır LLM,
-tanımlı değilse yerel arama kullanılır.
+Betik, 50 örnek soruyu doğrulanmış demo öğrencisi Ali'nin kapsamıyla
+(kapsam=None: kendi belgeleri) gerçek servis üzerinden işler ve doğru yanıt
+oranını raporlar (hedef %80). API anahtarı tanımlıysa hazır LLM, tanımlı
+değilse yerel arama kullanılır.
 
 ## Katmanlar
 
-- `uniasist/entity.py` — varlık sınıfları (Kullanici, Sohbet, Belge, Bildirim, ...)
+- `uniasist/entity.py` — varlık sınıfları (Kullanici, Sohbet, Belge, Ders, ...)
 - `uniasist/depo/` — SQLite depoları
 - `uniasist/servis/` — iş kuralları (kimlik doğrulama, e-posta, RAG, bilgi
-  tabanı, moderasyon, rapor, ...)
+  tabanı, moderasyon, plan, rapor, ...)
 - `uniasist/yapayzeka/` — LLM arayüzü, hazır servis ve yerel arama gerçeklemeleri
-- `uniasist/ekran/` — Flask blueprint'leri (öğrenci belgeleri, sohbet, inceleme,
-  kullanıcı yönetimi, rapor)
-- `uniasist/veri/` — üniversite ve bölüm seed listeleri
-- `sablonlar/`, `statik/` — arayüz
+- `uniasist/ekran/` — Flask blueprint'leri (sohbet, belgelerim, dersler, plan,
+  profil, kullanıcı yönetimi, rapor)
+- `uniasist/veri/` — bölüm öneri listesi
+- `sablonlar/`, `statik/` — arayüz (açık/koyu tema)
 - `veri/ornek_belgeler/` — seed belgeleri

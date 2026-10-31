@@ -59,9 +59,9 @@ def main():
 
     paket = kur(seed_yap=True)
     saglayici = type(paket.yapay_zeka).__name__
-    kullanici = paket.kimlik.kullanici_deposu.epostaIleBul("bilgisayar@universite.edu.tr")
+    kullanici = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
     sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=kullanici)
-    print(f"Kapsam: {kullanici.ad_soyad} — {kullanici.bolum}")
+    print(f"Kapsam: {kullanici.ad_soyad} (kapsam=None, tüm belgeler)")
 
     dogru = 0
     basarisiz = []

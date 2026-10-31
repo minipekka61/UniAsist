@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from uniasist.uygulama import uygulama_olustur
@@ -12,4 +13,5 @@ if __name__ == "__main__":
         seed.kos(kur(seed_yap=False))
         print("Örnek veri yüklendi.")
     else:
+        logging.basicConfig(level=logging.INFO)
         uygulama.run(debug=True, port=5000)

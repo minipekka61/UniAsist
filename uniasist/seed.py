@@ -9,18 +9,18 @@ _KOK = Path(__file__).resolve().parent.parent / "veri" / "ornek_belgeler"
 # (eposta, sifre, ad_soyad, rol, bolum, plan)
 _HESAPLAR = [
     ("admin@universite.edu.tr", "Yonetici1234", "Sistem Yöneticisi", Rol.YONETICI, "", None),
-    ("bilgisayar@universite.edu.tr", "Ogrenci1234", "Bilgisayar Öğrencisi", Rol.OGRENCI, "Bilgisayar Mühendisliği", Plan.PRO),
-    ("elektrik@universite.edu.tr", "Ogrenci1234", "Elektrik Öğrencisi", Rol.OGRENCI, "Elektrik-Elektronik Mühendisliği", Plan.PRO),
+    ("ali@universite.edu.tr", "Ogrenci1234", "Ali Veli", Rol.OGRENCI, "Bilgisayar Mühendisliği", Plan.PRO),
+    ("ayse@universite.edu.tr", "Ogrenci1234", "Ayşe Can", Rol.OGRENCI, "Elektrik-Elektronik Mühendisliği", None),
 ]
 
 # (dosya, başlık, kategori, görünürlük, ders)
-_BILGISAYAR_BELGELERI = [
+_ALI_BELGELERI = [
     ("lisans_egitim_ogretim_yonetmeligi.txt", "Lisans Eğitim-Öğretim Yönetmeliği", "Kayıt", Gorunurluk.OZEL, ""),
     ("akademik_takvim.txt", "2026-2027 Akademik Takvim", "Akademik Takvim", Gorunurluk.OZEL, ""),
     ("ders_ekle_birak.txt", "Ders Ekleme-Bırakma Yönergesi", "Ders İşlemleri", Gorunurluk.OZEL, ""),
-    ("burs_yonergesi.txt", "Burs Yönergesi", "Burs", Gorunurluk.PAYLASILAN, "Burs"),
+    ("burs_yonergesi.txt", "Burs Yönergesi", "Burs", Gorunurluk.PAYLASILAN, "Matematik I"),
     ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu", "Yurt", Gorunurluk.OZEL, ""),
-    ("staj_yonergesi.txt", "Staj Yönergesi", "Staj", Gorunurluk.PAYLASILAN, "Staj"),
+    ("staj_yonergesi.txt", "Staj Yönergesi", "Staj", Gorunurluk.PAYLASILAN, "Fizik I"),
     ("mezuniyet_kosullari.txt", "Mezuniyet Koşulları", "Mezuniyet", Gorunurluk.OZEL, ""),
     ("cift_anadal.txt", "Çift Anadal Yönergesi", "Çift Anadal", Gorunurluk.OZEL, ""),
     ("yatay_gecis.txt", "Yatay Geçiş Koşulları", "Yatay Geçiş", Gorunurluk.OZEL, ""),
@@ -31,10 +31,12 @@ _BILGISAYAR_BELGELERI = [
     ("engelli_destek.txt", "Engelli Öğrenci Destek Birimi", "Öğrenci Hizmetleri", Gorunurluk.OZEL, ""),
 ]
 
-_ELEKTRIK_BELGELERI = [
+_AYSE_BELGELERI = [
     ("yaz_okulu.txt", "Yaz Okulu Kuralları (Elektrik)", "Ders İşlemleri", Gorunurluk.OZEL, ""),
-    ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu (Elektrik)", "Yurt", Gorunurluk.PAYLASILAN, "Yurt"),
+    ("kyk_yurt_basvuru.txt", "Yurt Başvuru Kılavuzu (Elektrik)", "Yurt", Gorunurluk.OZEL, ""),
 ]
+
+_TAKIP_EDILEN_DERSLER = ["Matematik I", "Fizik I"]
 
 
 def _belgeleri_yukle(paket, sahip, belgeler):
@@ -67,9 +69,11 @@ def kos(paket):
             paket.kimlik.kullanici_deposu.kaydet(kullanici)
         kullanicilar[eposta] = paket.kimlik.kullanici_deposu.epostaIleBul(eposta)
 
-    _belgeleri_yukle(
-        paket, kullanicilar["bilgisayar@universite.edu.tr"], _BILGISAYAR_BELGELERI
-    )
-    _belgeleri_yukle(
-        paket, kullanicilar["elektrik@universite.edu.tr"], _ELEKTRIK_BELGELERI
-    )
+    _belgeleri_yukle(paket, kullanicilar["ali@universite.edu.tr"], _ALI_BELGELERI)
+    _belgeleri_yukle(paket, kullanicilar["ayse@universite.edu.tr"], _AYSE_BELGELERI)
+
+    ayse = kullanicilar["ayse@universite.edu.tr"]
+    for ders_adi in _TAKIP_EDILEN_DERSLER:
+        ders = paket.ders_deposu.bulVeYaOlustur(ders_adi)
+        if not paket.ders_deposu.takipteMi(ayse.kullanici_id, ders.ders_id):
+            paket.ders_deposu.takipEt(ayse.kullanici_id, ders.ders_id)

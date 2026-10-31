@@ -21,76 +21,92 @@ def _ogrenci(paket, eposta):
 
 def test_seed_hesaplar_ve_belgeler(paket):
     admin = _ogrenci(paket, "admin@universite.edu.tr")
-    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
-    elektrik = _ogrenci(paket, "elektrik@universite.edu.tr")
+    ali = _ogrenci(paket, "ali@universite.edu.tr")
+    ayse = _ogrenci(paket, "ayse@universite.edu.tr")
     assert admin is not None and admin.rol.value == "YONETICI"
-    assert bilgisayar is not None and bilgisayar.rol.value == "OGRENCI"
-    assert elektrik is not None and elektrik.rol.value == "OGRENCI"
+    assert ali is not None and ali.rol.value == "OGRENCI"
+    assert ayse is not None and ayse.rol.value == "OGRENCI"
     assert admin.sifreDogrula("Yonetici1234")
-    assert bilgisayar.sifreDogrula("Ogrenci1234")
-    assert elektrik.sifreDogrula("Ogrenci1234")
-    assert bilgisayar.bolum == "Bilgisayar Mühendisliği"
-    assert elektrik.bolum == "Elektrik-Elektronik Mühendisliği"
-    assert bilgisayar.universite == elektrik.universite
-    assert bilgisayar.dogrulanmisMi() and elektrik.dogrulanmisMi()
+    assert ali.sifreDogrula("Ogrenci1234")
+    assert ayse.sifreDogrula("Ogrenci1234")
+    assert ali.proMu()
+    assert not ayse.proMu()
+    assert ali.dogrulanmisMi() and ayse.dogrulanmisMi()
 
-    bilgisayar_belgeleri = paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)
-    elektrik_belgeleri = paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id)
-    assert len(bilgisayar_belgeleri) == 14
-    assert len(elektrik_belgeleri) == 2
-    assert all(b.aktifMi() for b in bilgisayar_belgeleri + elektrik_belgeleri)
+    ali_belgeleri = paket.bilgi_tabani.belgeleriListele(ali.kullanici_id)
+    ayse_belgeleri = paket.bilgi_tabani.belgeleriListele(ayse.kullanici_id)
+    assert len(ali_belgeleri) == 14
+    assert len(ayse_belgeleri) == 2
+    assert all(b.aktifMi() for b in ali_belgeleri + ayse_belgeleri)
     from uniasist.enumlar import Gorunurluk
 
-    assert any(b.gorunurluk == Gorunurluk.OZEL for b in bilgisayar_belgeleri)
-    assert any(b.gorunurluk == Gorunurluk.PAYLASILAN for b in bilgisayar_belgeleri)
-    assert any(b.gorunurluk == Gorunurluk.OZEL for b in elektrik_belgeleri)
-    assert any(b.gorunurluk == Gorunurluk.PAYLASILAN for b in elektrik_belgeleri)
+    assert any(b.gorunurluk == Gorunurluk.OZEL for b in ali_belgeleri)
+    assert any(b.gorunurluk == Gorunurluk.PAYLASILAN for b in ali_belgeleri)
+    assert all(b.gorunurluk == Gorunurluk.OZEL for b in ayse_belgeleri)
 
     parca_sayisi = paket.db.execute(
         "SELECT COUNT(*) AS n FROM icerik_parcasi"
     ).fetchone()["n"]
     assert parca_sayisi >= 16
 
-    ders_depo = paket.ders_deposu
-    burs_dersi = ders_depo.adIleBul("Burs")
-    staj_dersi = ders_depo.adIleBul("Staj")
-    yurt_dersi = ders_depo.adIleBul("Yurt")
-    assert burs_dersi is not None and staj_dersi is not None and yurt_dersi is not None
-    bilgisayar_paylasilanlari = (
-        paket.bilgi_tabani.dersinPaylasilanlari(burs_dersi.ders_id)
-        + paket.bilgi_tabani.dersinPaylasilanlari(staj_dersi.ders_id)
+
+def test_seed_dersler_ve_takipler(paket):
+    ali = _ogrenci(paket, "ali@universite.edu.tr")
+    ayse = _ogrenci(paket, "ayse@universite.edu.tr")
+
+    matematik = paket.ders_deposu.adIleBul("Matematik I")
+    fizik = paket.ders_deposu.adIleBul("Fizik I")
+    assert matematik is not None
+    assert fizik is not None
+
+    burs = next(
+        b for b in paket.bilgi_tabani.belgeleriListele(ali.kullanici_id)
+        if b.baslik == "Burs Yönergesi"
     )
-    elektrik_paylasilanlari = paket.bilgi_tabani.dersinPaylasilanlari(yurt_dersi.ders_id)
-    assert all(b.sahip_id == bilgisayar.kullanici_id for b in bilgisayar_paylasilanlari)
-    assert len(bilgisayar_paylasilanlari) >= 1
-    assert all(b.sahip_id == elektrik.kullanici_id for b in elektrik_paylasilanlari)
-    assert len(elektrik_paylasilanlari) >= 1
+    staj = next(
+        b for b in paket.bilgi_tabani.belgeleriListele(ali.kullanici_id)
+        if b.baslik == "Staj Yönergesi"
+    )
+    assert burs.ders_id == matematik.ders_id
+    assert staj.ders_id == fizik.ders_id
+
+    matematik_paylasilanlari = paket.bilgi_tabani.dersinPaylasilanlari(matematik.ders_id)
+    fizik_paylasilanlari = paket.bilgi_tabani.dersinPaylasilanlari(fizik.ders_id)
+    assert burs.kaynak_id in [b.kaynak_id for b in matematik_paylasilanlari]
+    assert staj.kaynak_id in [b.kaynak_id for b in fizik_paylasilanlari]
+    assert all(b.sahip_id == ali.kullanici_id for b in matematik_paylasilanlari + fizik_paylasilanlari)
+
+    assert paket.ders_deposu.takipteMi(ayse.kullanici_id, matematik.ders_id)
+    assert paket.ders_deposu.takipteMi(ayse.kullanici_id, fizik.ders_id)
+    assert not paket.ders_deposu.takipteMi(ali.kullanici_id, matematik.ders_id)
 
 
 def test_seed_idempotent(paket):
     from uniasist import seed
 
-    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
-    elektrik = _ogrenci(paket, "elektrik@universite.edu.tr")
+    ali = _ogrenci(paket, "ali@universite.edu.tr")
+    ayse = _ogrenci(paket, "ayse@universite.edu.tr")
     n_kullanici = paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"]
-    n_belge = len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)) + len(
-        paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id)
+    n_belge = len(paket.bilgi_tabani.belgeleriListele(ali.kullanici_id)) + len(
+        paket.bilgi_tabani.belgeleriListele(ayse.kullanici_id)
     )
+    n_ders = len(paket.ders_deposu.hepsiniListele())
 
     seed.kos(paket)
 
     assert paket.db.execute("SELECT COUNT(*) AS n FROM kullanici").fetchone()["n"] == n_kullanici
     assert (
-        len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id))
-        + len(paket.bilgi_tabani.belgeleriListele(elektrik.kullanici_id))
+        len(paket.bilgi_tabani.belgeleriListele(ali.kullanici_id))
+        + len(paket.bilgi_tabani.belgeleriListele(ayse.kullanici_id))
         == n_belge
     )
+    assert len(paket.ders_deposu.hepsiniListele()) == n_ders
 
 
 def test_seed_soru_yanitlanabilir(paket):
     paket.sohbet.yanit_uretme_servisi.benzerlik_esigi = config.YEREL_ESIK
-    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
-    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=bilgisayar)
+    ali = _ogrenci(paket, "ali@universite.edu.tr")
+    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=ali)
     mesaj = paket.sohbet.soruSor(sohbet, "Staj başvurusu için en az kaç gün çalışma gerekir?")
     assert "60" in mesaj.metin
     assert len(mesaj.kaynaklariGetir()) >= 1
@@ -100,6 +116,7 @@ def test_uygulama_olustur_bos_db_otomatik_seed(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "VERITABANI_YOLU", str(tmp_path / "seed-test.db"))
     uygulama = uygulama_olustur()
     paket = uygulama.extensions["uniasist"]
-    bilgisayar = _ogrenci(paket, "bilgisayar@universite.edu.tr")
-    assert len(paket.bilgi_tabani.belgeleriListele(bilgisayar.kullanici_id)) == 14
+    ali = _ogrenci(paket, "ali@universite.edu.tr")
+    assert len(paket.bilgi_tabani.belgeleriListele(ali.kullanici_id)) == 14
     assert paket.kimlik.kullanici_deposu.epostaVarMi("admin@universite.edu.tr")
+    assert paket.kimlik.kullanici_deposu.epostaVarMi("ayse@universite.edu.tr")
