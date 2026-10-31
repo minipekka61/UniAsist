@@ -26,11 +26,13 @@ class SohbetServisi:
         kullanici = self.kullanici_deposu.idIleBul(sohbet.kullanici_id)
         if kullanici is None:
             return None
-        if ders_id is not None:
-            return Kapsam(kullanici.kullanici_id, {ders_id})
         ders_idler = set()
         if self.ders_deposu is not None:
-            ders_idler = self.ders_deposu.kullanicininDersIdleri(kullanici.kullanici_id)
+            ders_idler = self.ders_deposu.kullanicininDersIdleri(
+                kullanici.kullanici_id
+            )
+        if ders_id is not None and ders_id in ders_idler:
+            return Kapsam(kullanici.kullanici_id, {ders_id})
         return Kapsam(kullanici.kullanici_id, ders_idler)
 
     def _soruGecerliMi(self, soru_metni):

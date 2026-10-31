@@ -145,15 +145,19 @@ def belge_guncelle(belge_id):
     kategori = request.form.get("kategori", "")
     dosya = request.files.get("dosya")
     try:
+        ek = {}
+        if "ders" in request.form:
+            ek["yeni_ders_adi"] = request.form.get("ders")
         if dosya is not None and dosya.filename:
             ad, yol, boyut = _dosya_kaydet(dosya)
             kur_.bilgi_tabani.belgeGuncelle(
                 belge_id, kullanici.kullanici_id, baslik, kategori,
                 yeni_dosya_yolu=yol, yeni_dosya_adi=ad, yeni_boyut_byte=boyut,
+                **ek,
             )
         else:
             kur_.bilgi_tabani.belgeGuncelle(
-                belge_id, kullanici.kullanici_id, baslik, kategori
+                belge_id, kullanici.kullanici_id, baslik, kategori, **ek
             )
     except IsKuraliIhlaliException as e:
         if dosya is not None and dosya.filename:

@@ -291,6 +291,48 @@ def test_ders_filtresi(ortam, tmp_path):
     assert burs_belgesi.kaynak_id not in kaynak_idler
 
 
+def test_ders_filtresi_takip_edilmeyen_ders_kapsama_girmez(ortam, tmp_path):
+    import json
+
+    from uniasist.entity import Kullanici
+    from uniasist.enumlar import Plan, Rol
+    from uniasist.guvenlik import sifre_hashle
+
+    istemci, paket, _ = ortam
+    sahip = Kullanici(
+        ad_soyad="Belge Sahibi",
+        eposta="sahip@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.OGRENCI,
+        eposta_dogrulandi=True,
+        plan=Plan.PRO,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(sahip)
+    staj_belgesi = _paylasilan_yukle(paket, sahip, tmp_path, "Staj A", "staj-a.txt", "Staj Dersi")
+    burs_belgesi = _paylasilan_yukle(paket, sahip, tmp_path, "Staj B", "staj-b.txt", "Burs Dersi")
+
+    giris_yap(istemci, paket)
+    ali = paket.kimlik.kullanici_deposu.epostaIleBul("ali@universite.edu.tr")
+    burs_ders = paket.ders_deposu.adIleBul("Burs Dersi")
+    staj_ders = paket.ders_deposu.adIleBul("Staj Dersi")
+    paket.ders_deposu.takipEt(ali.kullanici_id, burs_ders.ders_id)
+
+    yanit = istemci.post("/sohbet/yanit", data={
+        "soru": "Staj defteri ne zaman teslim edilir?",
+        "ders_id": staj_ders.ders_id,
+    })
+    metin = yanit.get_data(as_text=True)
+    sonuc_satirlari = [
+        satir for satir in metin.split("\n")
+        if satir.startswith("data: ") and '"tur": "sonuc"' in satir
+    ]
+    assert sonuc_satirlari
+    veri = json.loads(sonuc_satirlari[-1][6:])
+    kaynak_idler = {k["kaynak_id"] for k in veri["kaynaklar"]}
+    assert staj_belgesi.kaynak_id not in kaynak_idler
+    assert burs_belgesi.kaynak_id in kaynak_idler
+
+
 def test_nfr06_mobil_gorunum():
     import pathlib
 

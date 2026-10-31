@@ -344,3 +344,28 @@ def test_belgelerim_ders_adi_sutunu(ortam):
     metin = yanit.get_data(as_text=True)
     assert "<th>Ders</th>" in metin
     assert "Matematik I" in metin
+
+
+def test_belge_ders_guncelleme_rotasi(ortam):
+    istemci, paket = ortam
+    ogr = dogrulanmis_ogrenci(paket, pro=True)
+    giris_yap(istemci)
+    istemci.post("/belgelerim/yukle", data={
+        "baslik": "Staj Yönergesi",
+        "kategori": "Staj",
+        "ders": "Matematik I",
+        "dosya": (io.BytesIO(STAJ_METNI.encode("utf-8")), "staj.txt"),
+    }, content_type="multipart/form-data", follow_redirects=True)
+    belge = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
+
+    yanit = istemci.post(
+        f"/belgelerim/{belge.kaynak_id}/guncelle",
+        data={"baslik": "Staj Yönergesi", "kategori": "Staj", "ders": "Fizik I"},
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert "Fizik I" in yanit.get_data(as_text=True)
+
+    fizik = paket.ders_deposu.adIleBul("Fizik I")
+    guncel = paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id)[0]
+    assert guncel.ders_id == fizik.ders_id

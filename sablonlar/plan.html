@@ -8,15 +8,17 @@
             <h2>Ücretsiz</h2>
             <p class="tanitim-fiyat">₺0</p>
             <ul class="tanitim-liste">
-                <li>Günde {{ haklar.gunluk_limit }} soru</li>
-                <li>En fazla {{ haklar.belge_limiti }} belge</li>
+                <li>Günde 10 soru</li>
+                <li>En fazla 3 belge</li>
                 <li>Dersleri takip etme</li>
                 <li>Paylaşılan ders notlarını görme</li>
             </ul>
+            {% if haklar.gunluk_limit is not none %}
             <p class="ipucu">
                 Bugünkü soru: {{ haklar.bugunku_soru }} / {{ haklar.gunluk_limit }} ·
                 Belge: {{ haklar.belge_sayisi }} / {{ haklar.belge_limiti }}
             </p>
+            {% endif %}
             {% if haklar.plan.value == 'PRO' %}
             <form method="post" action="/plan/ucretsiz">
                 <button type="submit" class="buton">Ücretsiz plana dön</button>

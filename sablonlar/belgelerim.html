@@ -80,6 +80,7 @@
                     <form method="post" action="/belgelerim/{{ b.kaynak_id }}/guncelle" enctype="multipart/form-data" class="satir-ici">
                         <input type="text" name="baslik" value="{{ b.baslik }}" aria-label="Yeni başlık">
                         <input type="text" name="kategori" value="{{ b.kategori }}" aria-label="Yeni kategori">
+                        <input type="text" name="ders" value="{{ ders_adi }}" placeholder="Ders" aria-label="Yeni ders" list="ders-onerileri">
                         <input type="file" name="dosya" accept=".pdf,.txt" aria-label="Yeni dosya">
                         <button type="submit" class="buton-kucuk">Güncelle</button>
                     </form>

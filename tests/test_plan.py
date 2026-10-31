@@ -125,6 +125,22 @@ def test_prodan_donusumde_paylasim_kalir(paket, tmp_path):
     assert okunan.gorunurluk == Gorunurluk.PAYLASILAN
 
 
+def test_plan_ekrani_pro_gorunum_none_yazmaz(ortam):
+    istemci, paket = ortam
+    ogr = ogrenci(paket)
+    giris_yap(istemci)
+
+    istemci.post("/plan/pro", follow_redirects=True)
+    yanit = istemci.get("/plan")
+    metin = yanit.get_data(as_text=True)
+    assert paket.kimlik.kullanici_deposu.idIleBul(ogr.kullanici_id).proMu()
+    assert "Günde None" not in metin
+    assert "En fazla None" not in metin
+    assert "/ None" not in metin
+    assert "None" not in metin
+    assert "Mevcut planınız" in metin
+
+
 def test_plan_ekrani_ve_gecis(ortam):
     istemci, paket = ortam
     ogr = ogrenci(paket)
