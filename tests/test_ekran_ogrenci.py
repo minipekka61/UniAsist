@@ -298,3 +298,49 @@ def test_reddedilen_yukleme_artik_dosya_birakmaz(ortam):
     assert "Belge yüklenemedi" in yanit.get_data(as_text=True)
     assert paket.bilgi_tabani.belgeleriListele(ogr.kullanici_id) == []
     assert os.listdir(config.DOSYA_KLASORU) == []
+
+
+def test_belgelerim_kota_gostergesi_ve_paylas_kilidi(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket)
+    giris_yap(istemci)
+    for i in range(2):
+        istemci.post("/belgelerim/yukle", data={
+            "baslik": f"Belge {i}",
+            "kategori": "Staj",
+            "dosya": (io.BytesIO(STAJ_METNI.encode("utf-8")), f"belge-{i}.txt"),
+        }, content_type="multipart/form-data", follow_redirects=True)
+
+    yanit = istemci.get("/belgelerim")
+    metin = yanit.get_data(as_text=True)
+    assert "3 belgeden 2" in metin
+    assert '<input type="checkbox" name="paylas" value="1" disabled>' in metin
+    assert '<span class="rozet">Pro</span>' in metin
+
+
+def test_belgelerim_pro_paylas_aktif(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket, pro=True)
+    giris_yap(istemci)
+
+    yanit = istemci.get("/belgelerim")
+    metin = yanit.get_data(as_text=True)
+    assert '<input type="checkbox" name="paylas" value="1">' in metin
+    assert "sınırsız" in metin
+
+
+def test_belgelerim_ders_adi_sutunu(ortam):
+    istemci, paket = ortam
+    ogr = dogrulanmis_ogrenci(paket, pro=True)
+    giris_yap(istemci)
+    istemci.post("/belgelerim/yukle", data={
+        "baslik": "Staj Yönergesi",
+        "kategori": "Staj",
+        "ders": "Matematik I",
+        "dosya": (io.BytesIO(STAJ_METNI.encode("utf-8")), "staj.txt"),
+    }, content_type="multipart/form-data", follow_redirects=True)
+
+    yanit = istemci.get("/belgelerim")
+    metin = yanit.get_data(as_text=True)
+    assert "<th>Ders</th>" in metin
+    assert "Matematik I" in metin

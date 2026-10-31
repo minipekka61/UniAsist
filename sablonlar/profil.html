@@ -1,18 +1,18 @@
 {% extends "temel.html" %}
 {% block baslik %}Profil — UniAsist{% endblock %}
 {% block icerik %}
-<section class="kart">
+<section class="kart kart-genis">
     <h1>Profil</h1>
     <table class="tablo">
         <tbody>
             <tr><th>Ad Soyad</th><td>{{ kullanici.ad_soyad }}</td></tr>
             <tr><th>E-posta</th><td>{{ kullanici.eposta }}</td></tr>
             <tr><th>Doğrulama</th>
-                <td>{% if kullanici.dogrulanmisMi() %}Doğrulanmış{% else %}Doğrulanmamış{% endif %}</td></tr>
+                <td>{% if kullanici.dogrulanmisMi() %}<span class="rozet">Doğrulanmış</span>{% else %}Doğrulanmamış{% endif %}</td></tr>
             <tr><th>Üniversite</th><td>{{ kullanici.universite or "—" }}</td></tr>
             <tr><th>Bölüm</th><td>{{ kullanici.bolum or "—" }}</td></tr>
             <tr><th>Plan</th>
-                <td>{% if haklar.plan.value == 'PRO' %}Pro{% else %}Ücretsiz{% endif %}</td></tr>
+                <td>{% if haklar.plan.value == 'PRO' %}<span class="rozet">Pro</span>{% else %}Ücretsiz{% endif %}</td></tr>
             {% if haklar.gunluk_limit is not none %}
             <tr><th>Kullanım</th>
                 <td>Bugünkü soru: {{ haklar.bugunku_soru }} / {{ haklar.gunluk_limit }} ·
@@ -24,37 +24,40 @@
             {% endif %}
         </tbody>
     </table>
+    <p class="ipucu">Planınızı <a href="/plan">Plan</a> sayfasından değiştirebilirsiniz.</p>
 </section>
 
-<section class="kart">
-    <h2>Profili düzenle</h2>
-    <form method="post" action="/profil">
-        <label>Ad Soyad
-            <input type="text" name="ad_soyad" value="{{ kullanici.ad_soyad }}" required>
-        </label>
-        <label>Üniversite
-            <input type="text" name="universite" value="{{ kullanici.universite }}">
-        </label>
-        <label>Bölüm
-            <input type="text" name="bolum" value="{{ kullanici.bolum }}">
-        </label>
-        <button type="submit" class="buton">Kaydet</button>
-    </form>
-</section>
+<div class="tanitim-fiyatlar">
+    <section class="kart">
+        <h2>Profili düzenle</h2>
+        <form method="post" action="/profil" class="form-dikey">
+            <label>Ad Soyad
+                <input type="text" name="ad_soyad" value="{{ kullanici.ad_soyad }}" required>
+            </label>
+            <label>Üniversite
+                <input type="text" name="universite" value="{{ kullanici.universite }}">
+            </label>
+            <label>Bölüm
+                <input type="text" name="bolum" value="{{ kullanici.bolum }}">
+            </label>
+            <button type="submit" class="buton-birincil">Kaydet</button>
+        </form>
+    </section>
 
-<section class="kart">
-    <h2>Şifre değiştir</h2>
-    <form method="post" action="/profil/sifre">
-        <label>Mevcut şifre
-            <input type="password" name="mevcut_sifre" required>
-        </label>
-        <label>Yeni şifre
-            <input type="password" name="yeni_sifre" required>
-        </label>
-        <label>Yeni şifre (tekrar)
-            <input type="password" name="yeni_sifre_tekrar" required>
-        </label>
-        <button type="submit" class="buton">Şifreyi güncelle</button>
-    </form>
-</section>
+    <section class="kart">
+        <h2>Şifre değiştir</h2>
+        <form method="post" action="/profil/sifre" class="form-dikey">
+            <label>Mevcut şifre
+                <input type="password" name="mevcut_sifre" required>
+            </label>
+            <label>Yeni şifre
+                <input type="password" name="yeni_sifre" required>
+            </label>
+            <label>Yeni şifre (tekrar)
+                <input type="password" name="yeni_sifre_tekrar" required>
+            </label>
+            <button type="submit" class="buton-birincil">Şifreyi güncelle</button>
+        </form>
+    </section>
+</div>
 {% endblock %}

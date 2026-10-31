@@ -1,25 +1,47 @@
 {% extends "temel.html" %}
 {% block baslik %}Plan — UniAsist{% endblock %}
 {% block icerik %}
-<section class="kart">
+<section class="kart kart-genis">
     <h1>Planınız</h1>
-    {% if haklar.plan.value == 'PRO' %}
-        <p><span class="rozet">PRO</span> — sınırsız sohbet, sınırsız belge, paylaşım.</p>
-        <form method="post" action="/plan/ucretsiz">
-            <button type="submit" class="buton">Ücretsiz plana dön</button>
-        </form>
-    {% else %}
-        <p><span class="rozet">Ücretsiz</span> — günde {{ haklar.gunluk_limit }} soru,
-        en fazla {{ haklar.belge_limiti }} belge.</p>
-        <p>
-            Bugünkü soru: {{ haklar.bugunku_soru }} / {{ haklar.gunluk_limit }} ·
-            Belge: {{ haklar.belge_sayisi }} / {{ haklar.belge_limiti }}
-        </p>
-        <p>Pro ile sınırsız sohbet, sınırsız belge ve belge paylaşımı.</p>
-        <form method="post" action="/plan/pro">
-            <button type="submit" class="buton">Pro'ya Geç</button>
-        </form>
-        <p class="not">Beta — ödeme yakında; geçiş şimdilik ücretsiz.</p>
-    {% endif %}
+    <div class="tanitim-fiyatlar">
+        <div class="kart">
+            <h2>Ücretsiz</h2>
+            <p class="tanitim-fiyat">₺0</p>
+            <ul class="tanitim-liste">
+                <li>Günde {{ haklar.gunluk_limit }} soru</li>
+                <li>En fazla {{ haklar.belge_limiti }} belge</li>
+                <li>Dersleri takip etme</li>
+                <li>Paylaşılan ders notlarını görme</li>
+            </ul>
+            <p class="ipucu">
+                Bugünkü soru: {{ haklar.bugunku_soru }} / {{ haklar.gunluk_limit }} ·
+                Belge: {{ haklar.belge_sayisi }} / {{ haklar.belge_limiti }}
+            </p>
+            {% if haklar.plan.value == 'PRO' %}
+            <form method="post" action="/plan/ucretsiz">
+                <button type="submit" class="buton">Ücretsiz plana dön</button>
+            </form>
+            {% else %}
+            <p><span class="rozet">Mevcut planınız</span></p>
+            {% endif %}
+        </div>
+        <div class="kart">
+            <h2>Pro</h2>
+            <p class="tanitim-fiyat">—</p>
+            <ul class="tanitim-liste">
+                <li>Sınırsız sohbet</li>
+                <li>Sınırsız belge</li>
+                <li>Belge paylaşımı</li>
+            </ul>
+            <p class="ipucu">Beta — ödeme yakında; geçiş şimdilik ücretsiz.</p>
+            {% if haklar.plan.value == 'PRO' %}
+            <p><span class="rozet">Mevcut planınız</span></p>
+            {% else %}
+            <form method="post" action="/plan/pro">
+                <button type="submit" class="buton-birincil">Pro'ya Geç</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
 </section>
 {% endblock %}

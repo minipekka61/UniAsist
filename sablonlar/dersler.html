@@ -1,16 +1,19 @@
 {% extends "temel.html" %}
 {% block baslik %}Dersler — UniAsist{% endblock %}
 {% block icerik %}
-<section class="kart">
+<section class="kart kart-genis">
     <h1>Dersler</h1>
-    <form method="get" action="/dersler" class="satir-ici">
-        <input type="search" name="q" value="{{ q }}" placeholder="Ders ara...">
-        <button type="submit" class="buton">Ara</button>
-    </form>
-    <form method="post" action="/dersler" class="satir-ici">
-        <input type="text" name="ad" placeholder="Yeni ders adı" required>
-        <button type="submit" class="buton">Ders ekle</button>
-    </form>
+    <div class="panel">
+        <form method="get" action="/dersler" class="satir-ici">
+            <input type="search" name="q" value="{{ q }}" placeholder="Ders ara..." class="giris">
+            <button type="submit" class="buton">Ara</button>
+        </form>
+        <form method="post" action="/dersler" class="satir-ici">
+            <input type="text" name="ad" placeholder="Yeni ders adı" required class="giris">
+            <button type="submit" class="buton-birincil">Ders ekle</button>
+        </form>
+        <p class="ipucu">Takip ettiğiniz derslerde paylaşılan belgeleri görür, kendi belgelerinizi dersle paylaşabilirsiniz.</p>
+    </div>
     {% if satirlar %}
     <table class="tablo">
         <thead>
@@ -28,7 +31,7 @@
                     </form>
                     {% else %}
                     <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
-                        <button type="submit" class="buton-kucuk">Takip et</button>
+                        <button type="submit" class="buton-kucuk buton-birincil">Takip et</button>
                     </form>
                     {% endif %}
                 </td>
@@ -37,7 +40,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>Henüz ders yok. Yukarıdan ekleyebilirsiniz.</p>
+    <p class="ipucu">Henüz ders yok. Yukarıdan ekleyebilirsiniz.</p>
     {% endif %}
 </section>
 {% endblock %}

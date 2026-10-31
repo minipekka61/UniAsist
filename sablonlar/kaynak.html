@@ -6,11 +6,11 @@
     <h1>{{ kaynak.baslik }}</h1>
     <p class="ipucu">Kategori: {{ kaynak.kategori }} · Durum: {{ kaynak.durum.value }}</p>
     {% if bolum %}<p class="bolum-vurgu">Yanıtın dayandığı bölüm: <strong>{{ bolum }}</strong></p>{% endif %}
-    <pre class="kaynak-metin">{{ kaynak.icerikMetniGetir() }}</pre>
+    <pre class="kaynak-metin panel">{{ kaynak.icerikMetniGetir() }}</pre>
     {% else %}
     <h1>Kaynak Bulunamadı</h1>
-    <p>Bu kaynak artık mevcut değil. Belge silinmiş veya pasif durumda olabilir.</p>
+    <p class="mesaj mesaj-uyari">Bu kaynak artık mevcut değil. Belge silinmiş veya pasif durumda olabilir.</p>
     {% endif %}
-    <p><a href="/sohbet">Sohbete dön</a></p>
+    <p><a class="buton" href="/sohbet">Sohbete dön</a></p>
 </div>
 {% endblock %}

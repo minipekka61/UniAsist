@@ -49,13 +49,23 @@ def _sayfa(kur_, kullanici, sekme="benim", hata=None, bilgi=None):
     else:
         sekme = "benim"
         belgeler = kur_.bilgi_tabani.belgeleriListele(kullanici.kullanici_id)
+    satirlar = []
+    for b in belgeler:
+        ders_adi = ""
+        if b.ders_id:
+            ders = kur_.ders_deposu.idIleBul(b.ders_id)
+            ders_adi = ders.ad if ders else ""
+        satirlar.append((b, ders_adi))
+    plan_haklari = kur_.plan.haklar(kullanici)
     return render_template(
         "belgelerim.html",
-        belgeler=belgeler,
+        satirlar=satirlar,
         dersler=dersler,
         sekme=sekme,
         hata=hata,
         bilgi=bilgi,
+        plan_haklari=plan_haklari,
+        plan_pro_mu=kullanici.proMu(),
     )
 
 

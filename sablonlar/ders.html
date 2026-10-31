@@ -2,12 +2,13 @@
 {% block baslik %}{{ ders.ad if ders else 'Ders bulunamadı' }} — UniAsist{% endblock %}
 {% block icerik %}
 {% if not ders %}
-<section class="kart">
+<section class="kart kart-orta">
     <h1>Ders bulunamadı</h1>
-    <p><a href="/dersler">Dersler listesine dön</a></p>
+    <p class="ipucu">Bu ders mevcut değil.</p>
+    <p><a class="buton" href="/dersler">Dersler listesine dön</a></p>
 </section>
 {% else %}
-<section class="kart">
+<section class="kart kart-genis">
     <h1>{{ ders.ad }}</h1>
     {% if takipte %}
         <p><span class="rozet">Takiptesiniz</span></p>
@@ -25,9 +26,10 @@
                     <td><a href="/kaynak/{{ belge.kaynak_id }}">{{ belge.baslik }}</a></td>
                     <td>{{ belge.kategori }}</td>
                     <td>
-                        <form method="post" action="/belgelerim/{{ belge.kaynak_id }}/bildir">
+                        <form method="post" action="/belgelerim/{{ belge.kaynak_id }}/bildir"
+                              onsubmit="return confirm('Bu belge bildirilecek. Devam edilsin mi?');">
                             <input type="hidden" name="neden" value="Uygunsuz içerik">
-                            <button type="submit" class="buton-kucuk">Bildir</button>
+                            <button type="submit" class="buton-kucuk buton-tehlike">Bildir</button>
                         </form>
                     </td>
                 </tr>
@@ -35,14 +37,14 @@
             </tbody>
         </table>
         {% else %}
-        <p>Bu derste henüz paylaşılan belge yok.</p>
+        <p class="ipucu">Bu derste henüz paylaşılan belge yok.</p>
         {% endif %}
     {% else %}
         <p class="mesaj mesaj-uyari">
             Bu dersin paylaşılan belgelerini görmek için dersi takip etmelisiniz.
         </p>
         <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
-            <button type="submit" class="buton">Takip et</button>
+            <button type="submit" class="buton-birincil">Takip et</button>
         </form>
     {% endif %}
     <p><a href="/dersler">← Dersler</a></p>

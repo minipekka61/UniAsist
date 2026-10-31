@@ -15,83 +15,113 @@
     </p>
 
     {% if sekme == 'benim' %}
-    <h2>Belge Yükle</h2>
-    <form method="post" action="/belgelerim/yukle" enctype="multipart/form-data" class="form-dikey">
-        <label>Başlık <input type="text" name="baslik" required></label>
-        <label>Ders / Kategori <input type="text" name="kategori" required></label>
-        <label>Ders (paylaşacaksanız zorunlu) <input type="text" name="ders" list="ders-onerileri"></label>
-        <datalist id="ders-onerileri">
-            {% for d in dersler %}<option value="{{ d.ad }}">{% endfor %}
-        </datalist>
-        <label>Dosya (PDF veya TXT, en fazla 10 MB) <input type="file" name="dosya" accept=".pdf,.txt" required></label>
-        <label class="satir-ici">
-            <input type="checkbox" name="paylas" value="1">
-            Dersimle paylaş (bu dersi takip eden öğrenciler görebilir)
-        </label>
-        <button type="submit">Yükle</button>
-    </form>
+    <div class="panel">
+        <h2>Belge Yükle</h2>
+        {% if plan_pro_mu %}
+        <p class="ipucu">Pro plan: sınırsız belge yükleyebilir ve paylaşabilirsiniz.</p>
+        {% else %}
+        <p class="ipucu">
+            Belge: {{ plan_haklari.belge_limiti }} belgeden {{ plan_haklari.belge_sayisi }} ·
+            Paylaşım Pro özelliğidir.
+        </p>
+        {% endif %}
+        <form method="post" action="/belgelerim/yukle" enctype="multipart/form-data" class="form-dikey">
+            <label>Başlık <input type="text" name="baslik" required></label>
+            <label>Ders / Kategori <input type="text" name="kategori" required></label>
+            <label>Ders <input type="text" name="ders" list="ders-onerileri"></label>
+            <datalist id="ders-onerileri">
+                {% for d in dersler %}<option value="{{ d.ad }}">{% endfor %}
+            </datalist>
+            <label>Dosya (PDF veya TXT, en fazla 10 MB) <input type="file" name="dosya" accept=".pdf,.txt" required></label>
+            <label class="satir-ici">
+                {% if plan_pro_mu %}
+                <input type="checkbox" name="paylas" value="1">
+                {% else %}
+                <input type="checkbox" name="paylas" value="1" disabled>
+                {% endif %}
+                Dersimle paylaş (bu dersi takip eden öğrenciler görebilir)
+                {% if not plan_pro_mu %}<span class="rozet">Pro</span>{% endif %}
+            </label>
+            <button type="submit" class="buton-birincil">Yükle</button>
+        </form>
+    </div>
 
     <h2>Belgelerim</h2>
-    {% if belgeler %}
-    <table>
-        <tr><th>Başlık</th><th>Ders / Kategori</th><th>Görünürlük</th><th>Durum</th><th></th></tr>
-        {% for b in belgeler %}
-        <tr>
-            <td>{{ b.baslik }}</td>
-            <td>{{ b.kategori }}</td>
-            <td>{{ b.gorunurluk.value }}</td>
-            <td>{{ b.durum.value }}</td>
-            <td>
-                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/gorunurluk" class="satir-ici"
-                      onsubmit="return confirm('Görünürlük değiştirilecek. Devam edilsin mi?');">
-                    {% if b.gorunurluk.value == 'OZEL' %}
-                    <input type="hidden" name="gorunurluk" value="PAYLASILAN">
-                    <input type="text" name="ders" placeholder="Ders adı" aria-label="Ders adı" list="ders-onerileri" required>
-                    <button type="submit" class="buton-kucuk">Dersimle Paylaş</button>
-                    {% else %}
-                    <input type="hidden" name="gorunurluk" value="OZEL">
-                    <button type="submit" class="buton-kucuk">Paylaşmayı Bırak</button>
-                    {% endif %}
-                </form>
-                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/guncelle" enctype="multipart/form-data" class="satir-ici">
-                    <input type="text" name="baslik" value="{{ b.baslik }}" aria-label="Yeni başlık">
-                    <input type="text" name="kategori" value="{{ b.kategori }}" aria-label="Yeni kategori">
-                    <input type="file" name="dosya" accept=".pdf,.txt" aria-label="Yeni dosya">
-                    <button type="submit" class="buton-kucuk">Güncelle</button>
-                </form>
-                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/sil" class="satir-ici"
-                      onsubmit="return confirm('Bu belge ve indeksi kalıcı olarak silinecek. Devam edilsin mi?');">
-                    <button type="submit" class="buton-kucuk buton-tehlike">Sil</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+    {% if satirlar %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Başlık</th><th>Ders</th><th>Ders / Kategori</th><th>Görünürlük</th><th>Durum</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for b, ders_adi in satirlar %}
+            <tr>
+                <td>{{ b.baslik }}</td>
+                <td>{{ ders_adi or "—" }}</td>
+                <td>{{ b.kategori }}</td>
+                <td>{% if b.gorunurluk.value == 'PAYLASILAN' %}<span class="rozet">Paylaşılan</span>{% else %}<span class="rozet">Özel</span>{% endif %}</td>
+                <td>{{ b.durum.value }}</td>
+                <td>
+                    <form method="post" action="/belgelerim/{{ b.kaynak_id }}/gorunurluk" class="satir-ici"
+                          onsubmit="return confirm('Görünürlük değiştirilecek. Devam edilsin mi?');">
+                        {% if b.gorunurluk.value == 'OZEL' %}
+                        {% if plan_pro_mu %}
+                        <input type="hidden" name="gorunurluk" value="PAYLASILAN">
+                        <input type="text" name="ders" placeholder="Ders adı" aria-label="Ders adı" list="ders-onerileri" required>
+                        <button type="submit" class="buton-kucuk">Dersimle Paylaş</button>
+                        {% else %}
+                        <button type="button" class="buton-kucuk" disabled>Dersimle Paylaş</button>
+                        <span class="rozet">Pro</span>
+                        {% endif %}
+                        {% else %}
+                        <input type="hidden" name="gorunurluk" value="OZEL">
+                        <button type="submit" class="buton-kucuk">Paylaşmayı Bırak</button>
+                        {% endif %}
+                    </form>
+                    <form method="post" action="/belgelerim/{{ b.kaynak_id }}/guncelle" enctype="multipart/form-data" class="satir-ici">
+                        <input type="text" name="baslik" value="{{ b.baslik }}" aria-label="Yeni başlık">
+                        <input type="text" name="kategori" value="{{ b.kategori }}" aria-label="Yeni kategori">
+                        <input type="file" name="dosya" accept=".pdf,.txt" aria-label="Yeni dosya">
+                        <button type="submit" class="buton-kucuk">Güncelle</button>
+                    </form>
+                    <form method="post" action="/belgelerim/{{ b.kaynak_id }}/sil" class="satir-ici"
+                          onsubmit="return confirm('Bu belge ve indeksi kalıcı olarak silinecek. Devam edilsin mi?');">
+                        <button type="submit" class="buton-kucuk buton-tehlike">Sil</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Henüz belge yüklemediniz. Ders notlarınızı ve yönergel yükleyerek AI ile çalışabilirsiniz.</p>
+    <p class="ipucu">Henüz belge yüklemediniz. Ders notlarınızı ve yönergel yükleyerek AI ile çalışabilirsiniz.</p>
     {% endif %}
 
     {% else %}
     <h2>Dersin Paylaşılan Belgeleri</h2>
-    {% if belgeler %}
-    <table>
-        <tr><th>Başlık</th><th>Ders / Kategori</th><th></th></tr>
-        {% for b in belgeler %}
-        <tr>
-            <td><a href="/kaynak/{{ b.kaynak_id }}">{{ b.baslik }}</a></td>
-            <td>{{ b.kategori }}</td>
-            <td>
-                <form method="post" action="/belgelerim/{{ b.kaynak_id }}/bildir" class="satir-ici"
-                      onsubmit="return confirm('Bu belge bildirilecek. Devam edilsin mi?');">
-                    <input type="text" name="neden" placeholder="Bildirme nedeniniz" aria-label="Neden" required>
-                    <button type="submit" class="buton-kucuk buton-tehlike">Bildir</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+    {% if satirlar %}
+    <table class="tablo">
+        <thead>
+            <tr><th>Başlık</th><th>Ders</th><th>Ders / Kategori</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for b, ders_adi in satirlar %}
+            <tr>
+                <td><a href="/kaynak/{{ b.kaynak_id }}">{{ b.baslik }}</a></td>
+                <td>{{ ders_adi or "—" }}</td>
+                <td>{{ b.kategori }}</td>
+                <td>
+                    <form method="post" action="/belgelerim/{{ b.kaynak_id }}/bildir" class="satir-ici"
+                          onsubmit="return confirm('Bu belge bildirilecek. Devam edilsin mi?');">
+                        <input type="text" name="neden" placeholder="Bildirme nedeniniz" aria-label="Neden" required>
+                        <button type="submit" class="buton-kucuk buton-tehlike">Bildir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
-    <p>Takip ettiğiniz derslerde henüz paylaşılan belge yok. Belgelerinizi paylaşarak ders arkadaşlarınıza destek olabilirsiniz.</p>
+    <p class="ipucu">Takip ettiğiniz derslerde henüz paylaşılan belge yok. Belgelerinizi paylaşarak ders arkadaşlarınıza destek olabilirsiniz.</p>
     {% endif %}
     {% endif %}
 </div>

@@ -135,6 +135,7 @@ def test_plan_ekrani_ve_gecis(ortam):
     metin = yanit.get_data(as_text=True)
     assert "Ücretsiz" in metin
     assert "Pro" in metin
+    assert "beta" in metin.lower()
 
     yanit = istemci.post("/plan/pro", follow_redirects=True)
     assert yanit.status_code == 200
