@@ -58,7 +58,10 @@ def yanit():
     kur_ = paket_getir()
     soru = request.form.get("soru", "")
     ders_id = request.form.get("ders_id", type=int)
-    sohbet = _ogrenci_sohbeti(kur_)
+    try:
+        sohbet = _ogrenci_sohbeti(kur_)
+    except IsKuraliIhlaliException:
+        abort(403)
 
     def akis():
         for olay in kur_.sohbet.soruSorAkis(sohbet, soru, ders_id=ders_id):

@@ -291,6 +291,30 @@ def test_ders_filtresi(ortam, tmp_path):
     assert burs_belgesi.kaynak_id not in kaynak_idler
 
 
+def test_yabanci_sohbet_id_ile_yanit_403_doner(ortam):
+    istemci, paket, _ = ortam
+    giris_yap(istemci, paket, "baska@universite.edu.tr")
+    baska = paket.kimlik.kullanici_deposu.epostaIleBul("baska@universite.edu.tr")
+    istemci.post(
+        "/sohbet/yanit",
+        data={"soru": "Burs başvurusu ne zaman yapılır?"},
+    ).get_data(as_text=True)
+    yabanci_sohbetler = paket.sohbet.sohbetleriListele(baska.kullanici_id)
+    assert yabanci_sohbetler
+    yabanci_sohbet_id = yabanci_sohbetler[0].sohbet_id
+
+    istemci.get("/cikis")
+    giris_yap(istemci, paket)
+    yanit = istemci.post(
+        "/sohbet/yanit",
+        data={
+            "soru": "Burs başvurusu ne zaman yapılır?",
+            "sohbet_id": yabanci_sohbet_id,
+        },
+    )
+    assert yanit.status_code == 403
+
+
 def test_ders_filtresi_takip_edilmeyen_ders_kapsama_girmez(ortam, tmp_path):
     import json
 
