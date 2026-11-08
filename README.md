@@ -18,7 +18,7 @@ plan (Ücretsiz/Pro) yönetimi ve kullanım raporlama içerir.
 3. E-postanıza gönderilen doğrulama bağlantısıyla hesabınızı
    doğrulayın (geliştirme modunda bağlantı konsol kaydına yazılır —
    `uniasist.eposta` log'u). Doğrulama yapılmadan sohbet, belge ve kaynak
-   ekranlarına erişilemez; yönetici muafdir.
+   ekranlarına erişilemez; yönetici muaftır.
 
 ## Dersler ve paylaşım
 
