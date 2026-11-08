@@ -27,7 +27,7 @@
         {% endif %}
         <form method="post" action="/belgelerim/yukle" enctype="multipart/form-data" class="form-dikey">
             <label>Başlık <input type="text" name="baslik" required></label>
-            <label>Ders / Kategori <input type="text" name="kategori" required></label>
+            <label>Kategori <input type="text" name="kategori" required></label>
             <label>Ders <input type="text" name="ders" list="ders-onerileri"></label>
             <datalist id="ders-onerileri">
                 {% for d in dersler %}<option value="{{ d.ad }}">{% endfor %}
@@ -50,7 +50,7 @@
     {% if satirlar %}
     <table class="tablo">
         <thead>
-            <tr><th>Başlık</th><th>Ders</th><th>Ders / Kategori</th><th>Görünürlük</th><th>Durum</th><th></th></tr>
+            <tr><th>Başlık</th><th>Ders</th><th>Kategori</th><th>Görünürlük</th><th>Durum</th><th></th></tr>
         </thead>
         <tbody>
             {% for b, ders_adi in satirlar %}
@@ -102,7 +102,7 @@
     {% if satirlar %}
     <table class="tablo">
         <thead>
-            <tr><th>Başlık</th><th>Ders</th><th>Ders / Kategori</th><th></th></tr>
+            <tr><th>Başlık</th><th>Ders</th><th>Kategori</th><th></th></tr>
         </thead>
         <tbody>
             {% for b, ders_adi in satirlar %}

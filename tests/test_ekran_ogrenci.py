@@ -346,6 +346,23 @@ def test_belgelerim_ders_adi_sutunu(ortam):
     assert "Matematik I" in metin
 
 
+def test_belgelerim_kategori_etiketi(ortam):
+    istemci, paket = ortam
+    dogrulanmis_ogrenci(paket)
+    giris_yap(istemci)
+    istemci.post("/belgelerim/yukle", data={
+        "baslik": "Staj Yönergesi",
+        "kategori": "Staj",
+        "dosya": (io.BytesIO(STAJ_METNI.encode("utf-8")), "staj.txt"),
+    }, content_type="multipart/form-data", follow_redirects=True)
+
+    yanit = istemci.get("/belgelerim")
+    metin = yanit.get_data(as_text=True)
+    assert "Ders / Kategori" not in metin
+    assert "Kategori <input" in metin
+    assert "<th>Kategori</th>" in metin
+
+
 def test_belge_ders_guncelleme_rotasi(ortam):
     istemci, paket = ortam
     ogr = dogrulanmis_ogrenci(paket, pro=True)
