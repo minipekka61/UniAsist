@@ -1,4 +1,5 @@
 .venv/
+.superpowers/
 data/
 veri/dosyalar/
 __pycache__/

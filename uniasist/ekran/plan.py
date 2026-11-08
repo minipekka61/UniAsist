@@ -18,19 +18,27 @@ def plan_ekrani():
 @dogrulama_required()
 def pro_yap():
     kur_ = paket_getir()
+    hata = None
     try:
         kur_.plan.proYap(g.aktif_kullanici)
-    except IsKuraliIhlaliException:
-        pass
-    return redirect("/plan")
+    except IsKuraliIhlaliException as e:
+        hata = e.mesaj
+    if hata is None:
+        return redirect("/plan")
+    haklar = kur_.plan.haklar(g.aktif_kullanici)
+    return render_template("plan.html", haklar=haklar, hata=hata)
 
 
 @plan_bp.route("/plan/ucretsiz", methods=["POST"])
 @dogrulama_required()
 def ucretsize_don():
     kur_ = paket_getir()
+    hata = None
     try:
         kur_.plan.ucretsizeDon(g.aktif_kullanici)
-    except IsKuraliIhlaliException:
-        pass
-    return redirect("/plan")
+    except IsKuraliIhlaliException as e:
+        hata = e.mesaj
+    if hata is None:
+        return redirect("/plan")
+    haklar = kur_.plan.haklar(g.aktif_kullanici)
+    return render_template("plan.html", haklar=haklar, hata=hata)

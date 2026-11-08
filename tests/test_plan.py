@@ -160,3 +160,24 @@ def test_plan_ekrani_ve_gecis(ortam):
     yanit = istemci.post("/plan/ucretsiz", follow_redirects=True)
     assert yanit.status_code == 200
     assert not paket.kimlik.kullanici_deposu.idIleBul(ogr.kullanici_id).proMu()
+
+
+def test_plan_gecisinde_hata_mesaji_gorunur(ortam):
+    istemci, paket = ortam
+    yonetici = Kullanici(
+        ad_soyad="Yonetici",
+        eposta="y@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.YONETICI,
+        eposta_dogrulandi=True,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(yonetici)
+    giris_yap(istemci, "y@universite.edu.tr")
+
+    yanit = istemci.post("/plan/pro", follow_redirects=True)
+    metin = yanit.get_data(as_text=True)
+    assert yanit.status_code == 200
+    assert "Yönetici hesapları plan değiştiremez" in metin
+    assert not paket.kimlik.kullanici_deposu.idIleBul(
+        yonetici.kullanici_id
+    ).proMu()
