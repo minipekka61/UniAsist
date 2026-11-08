@@ -76,6 +76,18 @@ def test_ik33_gunluk_soru_limiti(paket):
     assert yanit is not None
 
 
+def test_ik33_servis_hatasi_kotayi_tuketmez(paket):
+    ogr = ogrenci(paket)
+    sohbet = paket.sohbet.yeniSohbetBaslat(kullanici=ogr)
+    paket.yapay_zeka.mod = "hata"
+    for _ in range(config.UCRETSIZ_GUNLUK_SORU):
+        yanit = paket.sohbet.soruSor(sohbet, "Burs başvurusu ne zaman yapılır?")
+        assert yanit is None
+    paket.yapay_zeka.mod = "yanit"
+    yanit = paket.sohbet.soruSor(sohbet, "Burs başvurusu ne zaman yapılır?")
+    assert yanit is not None
+
+
 def test_ik34_belge_limiti(paket, tmp_path):
     ogr = ogrenci(paket)
     for i in range(config.UCRETSIZ_AZAMI_BELGE):
