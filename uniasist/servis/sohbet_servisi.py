@@ -32,7 +32,9 @@ class SohbetServisi:
                 kullanici.kullanici_id
             )
         if ders_id is not None and ders_id in ders_idler:
-            return Kapsam(kullanici.kullanici_id, {ders_id})
+            return Kapsam(
+                kullanici.kullanici_id, {ders_id}, ders_filtresi=ders_id
+            )
         return Kapsam(kullanici.kullanici_id, ders_idler)
 
     def _soruGecerliMi(self, soru_metni):

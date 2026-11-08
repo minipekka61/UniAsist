@@ -392,6 +392,39 @@ def test_kapsam_baskasinin_ozelini_gormez(servisler, tmp_path):
     assert all(s.parca.kaynak_id != ozel.kaynak_id for s in sonuclar)
 
 
+def test_kapsam_ders_filtresi_kendi_belgelerini_filtreler(servisler, tmp_path):
+    kullanici = servisler["kullanici"]
+    etiketsiz = servisler["bilgi_tabani"].belgeleriListele(
+        kullanici.kullanici_id
+    )[0]
+
+    dosya = tmp_path / "fizik-notu.txt"
+    dosya.write_text(STAJ_METNI, encoding="utf-8")
+    etiketli = servisler["bilgi_tabani"].belgeYukle(
+        "fizik-notu.txt", str(dosya), 1000, "Fizik Notu", "Fizik",
+        sahip=kullanici, gorunurluk=Gorunurluk.OZEL, ders_adi="Fizik Dersi",
+    )
+    fizik = servisler["ders_depo"].bulVeYaOlustur("Fizik Dersi")
+    servisler["ders_depo"].takipEt(kullanici.kullanici_id, fizik.ders_id)
+
+    s = ogrenci_sohbeti(servisler)
+    yanit = servisler["sohbet"].soruSor(
+        s, "Staj defteri ne zaman teslim edilir?", ders_id=fizik.ders_id
+    )
+    assert yanit is not None
+    alinti_idler = {r.kaynak_id for r in yanit.kaynaklariGetir()}
+    assert etiketli.kaynak_id in alinti_idler
+    assert etiketsiz.kaynak_id not in alinti_idler
+
+    kapsam = servisler["sohbet"]._kapsamiKur(s, ders_id=fizik.ders_id)
+    sorgu = servisler["yz"].gommeUret("staj defteri teslim")
+    dizin = servisler["sohbet"].yanit_uretme_servisi.arama_dizini
+    sonuclar = dizin.enYakinParcalar(sorgu, 100, kapsam=kapsam)
+    kaynak_idler = {x.parca.kaynak_id for x in sonuclar}
+    assert etiketli.kaynak_id in kaynak_idler
+    assert etiketsiz.kaynak_id not in kaynak_idler
+
+
 def test_kaynak_rotasi_ders_izolasyonu(servisler, tmp_path):
     from uniasist.entity import KaynakReferansi
 

@@ -135,8 +135,10 @@ elde edilir; B'nin maliyeti şimdiki hedef için gereksiz.
   edilmez); yalnız yeni paylaşım engellenir.
 - Paylaşım görünürlüğü: `PAYLASILAN` belge, o dersi takip eden herkese görünür
   (liste, RAG kapsamı, `/kaynak/<id>`).
-- `Kapsam(kullanici_id, ders_ids: set)`; `parcaErisilebilirMi`: `sahip_id == kullanici_id`
-  VEYA (`PAYLASILAN` ve `ders_id in ders_ids`).
+- `Kapsam(kullanici_id, ders_ids: set, ders_filtresi=None)`; `parcaErisilebilirMi`:
+  `sahip_id == kullanici_id` VEYA (`PAYLASILAN` ve `ders_id in ders_ids`).
+  `ders_filtresi` doluysa (sohbette belirli bir ders seçiliyken) kullanıcının kendi
+  belgeleri de o derse etiketli olanlarla sınırlanır (ürün sahibi kararı, 2026-11-08).
 - Bildir (moderasyon): yalnız kullanıcının erişebildiği paylaşılan belgeler bildirilebilir
   (mevcut kapsam kuralının ders versiyonu).
 
