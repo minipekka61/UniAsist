@@ -27,7 +27,10 @@
             <a href="/yonetici/yanitlanamayan-sorular">Yanıtlanamayanlar</a>
             <a href="/yonetici/geri-bildirimler">Geri Bildirimler</a>
             {% endif %}
-            <a href="/cikis">Çıkış</a>
+            <form method="post" action="/cikis" class="satir-ici">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="cikis-baglanti">Çıkış</button>
+            </form>
         {% else %}
             <a href="/giris">Giriş</a>
             <a href="/kayit">Kayıt Ol</a>

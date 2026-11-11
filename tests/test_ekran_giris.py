@@ -78,7 +78,7 @@ def test_uc02_hatali_giris_mesaji(istemci, paket):
 def test_uc03_cikis_sonrasi_korumali_sayfa(istemci, paket):
     paket.kimlik.kayitOl("Ali Veli", "ali@universite.edu.tr", "Gizli1234", "Gizli1234")
     istemci.post("/giris", data={"eposta": "ali@universite.edu.tr", "sifre": "Gizli1234"})
-    yanit = istemci.get("/cikis")
+    yanit = istemci.post("/cikis")
     assert yanit.status_code == 302
     yanit = istemci.get("/profil")
     assert yanit.status_code == 302

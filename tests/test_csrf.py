@@ -149,3 +149,16 @@ def test_geri_bildirim_json_rotasi_korumali(istemci, paket):
     )
     veri = yanit.get_json(silent=True)
     assert veri is not None and veri["ok"] is False  # view çalıştı, mesaj yok
+
+
+def test_cikis_post_ile_yapilir(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    _giris_yap(istemci)
+    token = _token_al(istemci, "/sohbet")
+    yanit = istemci.post("/cikis", headers={"X-CSRFToken": token})
+    assert yanit.status_code == 302
+    assert yanit.headers["Location"].endswith("/giris")
+
+
+def test_cikis_get_405_doner(istemci):
+    assert istemci.get("/cikis").status_code == 405

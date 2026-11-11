@@ -102,7 +102,7 @@ def test_profil_sifre_degistirme(ortam):
     }, follow_redirects=True)
     assert yanit.status_code == 200
 
-    istemci.get("/cikis")
+    istemci.post("/cikis")
     yanit = istemci.post("/giris", data={
         "eposta": "ali@universite.edu.tr", "sifre": "Yeni12345",
     })

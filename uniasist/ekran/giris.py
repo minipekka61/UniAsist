@@ -85,7 +85,7 @@ def giris():
     return render_template("giris.html", hata=hata)
 
 
-@giris_bp.route("/cikis")
+@giris_bp.route("/cikis", methods=["POST"])
 def cikis():
     kur_ = paket_getir()
     kur_.kimlik.cikisYap(request.cookies.get("uniasist_oturum"))

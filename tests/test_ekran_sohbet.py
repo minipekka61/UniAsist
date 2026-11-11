@@ -304,7 +304,7 @@ def test_yabanci_sohbet_id_ile_yanit_403_doner(ortam):
     assert yabanci_sohbetler
     yabanci_sohbet_id = yabanci_sohbetler[0].sohbet_id
 
-    istemci.get("/cikis")
+    istemci.post("/cikis")
     giris_yap(istemci, paket)
     yanit = istemci.post(
         "/sohbet/yanit",
