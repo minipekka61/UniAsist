@@ -78,7 +78,9 @@ def giris():
             kullanici = kur_.kimlik.kullanici_deposu.idIleBul(oturum.kullanici_id)
             hedef = "/sohbet"
             yanit = make_response(redirect(hedef))
-            yanit.set_cookie("uniasist_oturum", oturum.oturum_id, httponly=True)
+            yanit.set_cookie(
+                "uniasist_oturum", oturum.oturum_id, httponly=True, samesite="Lax"
+            )
             return yanit
         except IsKuraliIhlaliException as e:
             hata = e.mesaj

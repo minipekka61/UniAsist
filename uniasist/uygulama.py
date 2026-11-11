@@ -34,6 +34,7 @@ def uygulama_olustur(paket=None):
         static_folder=str(_KOK / "statik"),
     )
     uygulama.secret_key = config.SECRET_KEY
+    uygulama.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     CSRFProtect(uygulama)
     uygulama.config["MAX_CONTENT_LENGTH"] = config.AZAMI_BELGE_BOYUTU + 1024 * 1024
     uygulama.extensions["uniasist"] = paket

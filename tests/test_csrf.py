@@ -162,3 +162,18 @@ def test_cikis_post_ile_yapilir(istemci, paket):
 
 def test_cikis_get_405_doner(istemci):
     assert istemci.get("/cikis").status_code == 405
+
+
+def test_oturum_cerezi_samesite_lax(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    yanit = _giris_yap(istemci)  # giriş yanıtını döndürür
+    set_cerez = yanit.headers.get("Set-Cookie", "")
+    assert "uniasist_oturum" in set_cerez
+    assert "SameSite=Lax" in set_cerez
+
+
+def test_session_cerezi_samesite_lax(istemci):
+    yanit = istemci.get("/giris")
+    set_cerez = yanit.headers.get("Set-Cookie", "")
+    assert "session" in set_cerez
+    assert "SameSite=Lax" in set_cerez
