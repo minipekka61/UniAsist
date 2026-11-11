@@ -46,7 +46,21 @@ python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 ```
 
-Gereksinimler: Python 3.13, Flask, pypdf, requests, pytest.
+Gereksinimler: Python 3.13, Flask, flask-wtf, pypdf, requests, pytest.
+
+## Güvenlik
+
+- **CSRF koruması:** Tüm durum değiştiren POST istekleri CSRF token'ı gerektirir
+  (flask-wtf `CSRFProtect`). Formlar gizli `csrf_token` alanı, JavaScript
+  istekleri `X-CSRFToken` başlığı ile gönderir; token `<meta name="csrf-token">`
+  etiketinden okunur. Çıkış (`/cikis`) dahil tüm formlar korunur.
+- **Çerezler:** `uniasist_oturum` ve Flask `session` çerezleri `HttpOnly` ve
+  `SameSite=Lax` öznitelikleriyle set edilir.
+- **Token geçerliliği:** CSRF token'ı 1 saat geçerlidir (`WTF_CSRF_TIME_LIMIT`).
+  Sayfayı uzun süre açık bırakan kullanıcı bir sonraki POST'ta 400 alır;
+  sayfayı yenilemek yeterlidir.
+- **Bilinçli ertelenmiş:** HTTPS ve `Secure` çerez bayrağı canlıya çıkışta
+  eklenecek (geliştirme aşamasında HTTP kullanılıyor).
 
 ## Çalıştırma
 
