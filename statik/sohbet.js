@@ -92,7 +92,10 @@
             yaziyorGoster(true);
             var balon = null;
             fetch("/sohbet/yanit", { method: "POST", body: veri, headers: { "X-CSRFToken": csrfToken } })
-                .then(function (yanit) { return yanit.body.getReader(); })
+                .then(function (yanit) {
+                    if (!yanit.ok) throw new Error("HTTP_" + yanit.status);
+                    return yanit.body.getReader();
+                })
                 .then(function (okuyucu) {
                     var tampon = "";
                     function isle(satirlar) {
@@ -143,9 +146,13 @@
                     }
                     return oku();
                 })
-                .catch(function () {
+                .catch(function (hata) {
                     yaziyorGoster(false);
-                    balonEkle("SISTEM", "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
+                    var mesaj = hata && hata.message === "HTTP_400"
+                        ? "Güvenlik anahtarının süresi dolmuş olabilir. Sayfayı yenileyip soruyu tekrar gönderin."
+                        : "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.";
+                    balonEkle("SISTEM", mesaj);
+                    if (!soruKutusu.value) soruKutusu.value = soru;
                 })
                 .finally(function () { yaziyorGoster(false); });
         });
@@ -200,7 +207,13 @@
                 var veri = new FormData();
                 veri.append("baslik", yeniAd);
                 fetch("/sohbet/" + sohbetId + "/ad", { method: "POST", body: veri, headers: { "X-CSRFToken": csrfToken } })
-                    .then(function () { window.location.reload(); });
+                    .then(function (yanit) {
+                        if (!yanit.ok) {
+                            alert("Sohbet adı kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+                            return;
+                        }
+                        window.location.reload();
+                    });
             }
             kaydet.addEventListener("click", adlandir);
             giris.addEventListener("keydown", function (e) {
@@ -238,6 +251,8 @@
         }).then(function (yanit) {
             if (yanit.ok) {
                 kutu2.innerHTML = '<span class="gb-tesekkur">Geri bildiriminiz için teşekkürler.</span>';
+            } else {
+                kutu2.innerHTML = '<span class="uyari-kucuk">Geri bildirim gönderilemedi. Sayfayı yenileyip tekrar deneyin.</span>';
             }
         });
     });

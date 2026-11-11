@@ -1,3 +1,4 @@
+import io
 import re
 
 import pytest
@@ -177,3 +178,27 @@ def test_session_cerezi_samesite_lax(istemci):
     set_cerez = yanit.headers.get("Set-Cookie", "")
     assert "session" in set_cerez
     assert "SameSite=Lax" in set_cerez
+
+
+def test_multipart_yukleme_tokenuyle_calisir(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    _giris_yap(istemci)
+    sayfa = istemci.get("/belgelerim").get_data(as_text=True)
+    eslesme = re.search(r'name="csrf_token" value="([^"]+)"', sayfa)
+    assert eslesme, "belgelerim yükleme formunda gizli csrf_token yok"
+    yanit = istemci.post(
+        "/belgelerim/yukle",
+        data={
+            "baslik": "Burs Yönergesi",
+            "kategori": "Burs",
+            "csrf_token": eslesme.group(1),
+            "dosya": (
+                io.BytesIO("Burs yonergesi ogrencilere destek saglar.".encode("utf-8")),
+                "burs.txt",
+            ),
+        },
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert yanit.status_code == 200
+    assert "Burs Yönergesi" in yanit.get_data(as_text=True)
