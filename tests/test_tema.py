@@ -10,6 +10,7 @@ def ortam():
     paket = kur(db=gecici_db(), yapay_zeka=SahteYZ())
     uygulama = uygulama_olustur(paket)
     uygulama.config["TESTING"] = True
+    uygulama.config["WTF_CSRF_ENABLED"] = False
     with uygulama.test_client() as istemci:
         yield istemci
 

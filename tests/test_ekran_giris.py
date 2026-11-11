@@ -25,6 +25,7 @@ def istemci(paket):
         return "gizli"
 
     uygulama.config["TESTING"] = True
+    uygulama.config["WTF_CSRF_ENABLED"] = False
     with uygulama.test_client() as istemci:
         yield istemci
 

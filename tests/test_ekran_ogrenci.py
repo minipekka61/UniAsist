@@ -34,6 +34,7 @@ def ortam(paket, tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DOSYA_KLASORU", str(tmp_path / "dosyalar"))
     uygulama = uygulama_olustur(paket)
     uygulama.config["TESTING"] = True
+    uygulama.config["WTF_CSRF_ENABLED"] = False
     with uygulama.test_client() as istemci:
         yield istemci, paket
 
