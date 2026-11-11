@@ -79,3 +79,73 @@ def test_get_istekleri_etkilenmez(istemci):
 def test_meta_etiketi_token_tasir(istemci):
     metin = istemci.get("/giris").get_data(as_text=True)
     assert '<meta name="csrf-token"' in metin
+
+
+def _dogrulanmis_kullanici(paket):
+    from uniasist.entity import Kullanici
+    from uniasist.enumlar import Rol
+    from uniasist.guvenlik import sifre_hashle
+
+    ogrenci = Kullanici(
+        ad_soyad="Ali Veli",
+        eposta="ali@universite.edu.tr",
+        sifre_hash=sifre_hashle("Gizli1234"),
+        rol=Rol.OGRENCI,
+        universite="Üniversite",
+        bolum="Bilgisayar Mühendisliği",
+        eposta_dogrulandi=True,
+    )
+    paket.kimlik.kullanici_deposu.kaydet(ogrenci)
+
+
+def _giris_yap(istemci):
+    metin = istemci.get("/giris").get_data(as_text=True)
+    eslesme = re.search(r'name="csrf_token" value="([^"]+)"', metin)
+    assert eslesme, "giris formunda gizli csrf_token yok"
+    yanit = istemci.post(
+        "/giris",
+        data={
+            "eposta": "ali@universite.edu.tr",
+            "sifre": "Gizli1234",
+            "csrf_token": eslesme.group(1),
+        },
+    )
+    assert yanit.status_code == 302
+    assert yanit.headers["Location"].endswith("/sohbet")
+    return yanit
+
+
+def test_giris_formunda_gizli_token(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    yanit = _giris_yap(istemci)
+    assert yanit.headers["Location"].endswith("/sohbet")
+
+
+def test_yanit_rotasi_baslik_tokeni_ile_calisir(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    _giris_yap(istemci)
+    token = _token_al(istemci, "/sohbet")
+    yanit = istemci.post(
+        "/sohbet/yanit",
+        data={"soru": "Burs başvurusu ne zaman yapılır?"},
+        headers={"X-CSRFToken": token},
+    )
+    assert yanit.status_code == 200
+
+
+def test_geri_bildirim_json_rotasi_korumali(istemci, paket):
+    _dogrulanmis_kullanici(paket)
+    _giris_yap(istemci)
+    token = _token_al(istemci, "/sohbet")
+    yanit = istemci.post(
+        "/geri-bildirim", json={"mesaj_id": 999999, "tur": "YARARLI"}
+    )
+    assert yanit.status_code == 400
+    assert yanit.get_json(silent=True) is None  # CSRF 400'ü — view çalışmadı
+    yanit = istemci.post(
+        "/geri-bildirim",
+        json={"mesaj_id": 999999, "tur": "YARARLI"},
+        headers={"X-CSRFToken": token},
+    )
+    veri = yanit.get_json(silent=True)
+    assert veri is not None and veri["ok"] is False  # view çalıştı, mesaj yok

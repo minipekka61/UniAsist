@@ -11,6 +11,7 @@
                 <span class="sohbet-satir-butonlar">
                     <button type="button" class="sohbet-adlandir-buton buton-kucuk" title="Sohbeti adlandır">✎</button>
                     <form method="post" action="/sohbet/{{ s.sohbet_id }}/sil" class="satir-ici">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk buton-tehlike" title="Sohbeti sil">✕</button>
                     </form>
                 </span>

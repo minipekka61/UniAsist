@@ -28,6 +28,7 @@
                     {% if k.kullanici_id != aktif_kullanici.kullanici_id and k.rol.value != 'YONETICI' %}
                     <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/rol" class="satir-ici"
                           onsubmit="return confirm('Bu kullanıcının rolü değiştirilecek. Devam edilsin mi?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <select name="yeni_rol" aria-label="Yeni rol">
                             <option value="OGRENCI" {% if k.rol.value == 'OGRENCI' %}selected{% endif %}>OGRENCI</option>
                         </select>
@@ -35,6 +36,7 @@
                     </form>
                     <form method="post" action="/yonetici/kullanicilar/{{ k.kullanici_id }}/devre-disi" class="satir-ici"
                           onsubmit="return confirm('Bu hesap devre dışı bırakılacak ve oturumları kapatılacak. Devam edilsin mi?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk buton-tehlike">Devre Dışı Bırak</button>
                     </form>
                     {% endif %}

@@ -13,6 +13,7 @@
     {% if takipte %}
         <p><span class="rozet">Takiptesiniz</span></p>
         <form method="post" action="/dersler/{{ ders.ders_id }}/birak">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="buton-kucuk">Takibi bırak</button>
         </form>
         {% if belgeler %}
@@ -28,6 +29,7 @@
                     <td>
                         <form method="post" action="/belgelerim/{{ belge.kaynak_id }}/bildir"
                               onsubmit="return confirm('Bu belge bildirilecek. Devam edilsin mi?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="neden" value="Uygunsuz içerik">
                             <button type="submit" class="buton-kucuk buton-tehlike">Bildir</button>
                         </form>
@@ -44,6 +46,7 @@
             Bu dersin paylaşılan belgelerini görmek için dersi takip etmelisiniz.
         </p>
         <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="buton-birincil">Takip et</button>
         </form>
     {% endif %}

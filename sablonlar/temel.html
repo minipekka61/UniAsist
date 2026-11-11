@@ -40,6 +40,7 @@
     <div class="mesaj mesaj-uyari">
         E-posta adresinizi doğrulayın — UniAsist'i kullanabilmek için gereklidir.
         <form method="post" action="/dogrulama/yeniden" class="satir-ici">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="buton buton-kucuk">Doğrulama e-postasını tekrar gönder</button>
         </form>
     </div>

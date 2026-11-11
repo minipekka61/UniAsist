@@ -22,6 +22,7 @@
                 <td>
                     {% if k.durum.value == 'ACIK' %}
                     <form method="post" action="/yonetici/yanitlanamayan-sorular/{{ k.kayit_id }}/coz" class="satir-ici">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk buton-birincil">Çözüldü işaretle</button>
                     </form>
                     {% endif %}

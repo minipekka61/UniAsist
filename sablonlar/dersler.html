@@ -9,6 +9,7 @@
             <button type="submit" class="buton">Ara</button>
         </form>
         <form method="post" action="/dersler" class="satir-ici">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="ad" placeholder="Yeni ders adı" required class="giris">
             <button type="submit" class="buton-birincil">Ders ekle</button>
         </form>
@@ -27,10 +28,12 @@
                 <td>
                     {% if takipte %}
                     <form method="post" action="/dersler/{{ ders.ders_id }}/birak">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk">Bırak</button>
                     </form>
                     {% else %}
                     <form method="post" action="/dersler/{{ ders.ders_id }}/takip">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk buton-birincil">Takip et</button>
                     </form>
                     {% endif %}

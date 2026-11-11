@@ -21,6 +21,7 @@
             {% endif %}
             {% if haklar.plan.value == 'PRO' %}
             <form method="post" action="/plan/ucretsiz">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="buton">Ücretsiz plana dön</button>
             </form>
             {% else %}
@@ -40,6 +41,7 @@
             <p><span class="rozet">Mevcut planınız</span></p>
             {% else %}
             <form method="post" action="/plan/pro">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="buton-birincil">Pro'ya Geç</button>
             </form>
             {% endif %}

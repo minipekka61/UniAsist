@@ -12,6 +12,7 @@
         Bağlantıya ulaşamadıysanız doğrulama e-postasını tekrar gönderebilirsiniz.
     </p>
     <form method="post" action="/dogrulama/yeniden">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="buton-birincil">Doğrulama e-postasını tekrar gönder</button>
     </form>
 </div>

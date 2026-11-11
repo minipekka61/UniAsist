@@ -19,10 +19,12 @@
                 <td>
                     <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici"
                           onsubmit="return confirm('Belge kalıcı olarak silinecek. Devam edilsin mi?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="sil" value="1">
                         <button type="submit" class="buton-kucuk buton-tehlike">Belgeyi Sil</button>
                     </form>
                     <form method="post" action="/yonetici/bildirimler/{{ kayit.bildirim.bildirim_id }}/karar" class="satir-ici">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="buton-kucuk">Yok Say</button>
                     </form>
                 </td>

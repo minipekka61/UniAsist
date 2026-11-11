@@ -4,6 +4,7 @@
 <div class="kart">
     <h1>Giriş Yap</h1>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label>E-posta
             <input class="giris" type="email" name="eposta" required placeholder="ad@universite.edu.tr">
         </label>

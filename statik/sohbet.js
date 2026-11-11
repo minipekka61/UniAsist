@@ -8,6 +8,8 @@
     var dersFiltre = document.getElementById("ders-filtre");
     var aktifSohbetId = window.uniasistSohbetId || null;
     var girisli = window.uniasistGirisli === true;
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    var csrfToken = csrfMeta ? csrfMeta.content : null;
 
     function balonEkle(gonderen, metin) {
         var mesaj = document.createElement("div");
@@ -89,7 +91,7 @@
             balonEkle("KULLANICI", soru);
             yaziyorGoster(true);
             var balon = null;
-            fetch("/sohbet/yanit", { method: "POST", body: veri })
+            fetch("/sohbet/yanit", { method: "POST", body: veri, headers: { "X-CSRFToken": csrfToken } })
                 .then(function (yanit) { return yanit.body.getReader(); })
                 .then(function (okuyucu) {
                     var tampon = "";
@@ -197,7 +199,7 @@
                 }
                 var veri = new FormData();
                 veri.append("baslik", yeniAd);
-                fetch("/sohbet/" + sohbetId + "/ad", { method: "POST", body: veri })
+                fetch("/sohbet/" + sohbetId + "/ad", { method: "POST", body: veri, headers: { "X-CSRFToken": csrfToken } })
                     .then(function () { window.location.reload(); });
             }
             kaydet.addEventListener("click", adlandir);
@@ -231,7 +233,7 @@
         var aciklama = kutu2.querySelector(".gb-aciklama") ? kutu2.querySelector(".gb-aciklama").value : null;
         fetch("/geri-bildirim", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
             body: JSON.stringify({ mesaj_id: mesajId, tur: tur, aciklama: aciklama || null }),
         }).then(function (yanit) {
             if (yanit.ok) {

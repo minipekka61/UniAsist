@@ -31,6 +31,7 @@
     <section class="kart">
         <h2>Profili düzenle</h2>
         <form method="post" action="/profil" class="form-dikey">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label>Ad Soyad
                 <input type="text" name="ad_soyad" value="{{ kullanici.ad_soyad }}" required>
             </label>
@@ -47,6 +48,7 @@
     <section class="kart">
         <h2>Şifre değiştir</h2>
         <form method="post" action="/profil/sifre" class="form-dikey">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label>Mevcut şifre
                 <input type="password" name="mevcut_sifre" required>
             </label>
